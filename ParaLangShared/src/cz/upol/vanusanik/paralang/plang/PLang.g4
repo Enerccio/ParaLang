@@ -195,8 +195,8 @@ expression
     |   expression '.' Identifier
     |   expression '->' Identifier '(' expressionList? ')'
     |   expression '(' expressionList? ')'
-    |   'new' Identifier '(' expressionList? ')'
-    |   'new' Identifier '.' Identifier '(' expressionList? ')'
+    |   'new' constructorCall
+    |   'new' Identifier '.' constructorCall
     |   expression ('++' | '--')
     |   ('+'|'-'|'++'|'--') expression
     |   ('~'|'!') expression
@@ -228,6 +228,10 @@ expression
         )
         expression
     ;
+    
+constructorCall 
+	:	Identifier '(' expressionList? ')'
+	;
     
 extended 
 	: identified 

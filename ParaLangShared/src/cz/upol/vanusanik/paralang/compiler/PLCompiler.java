@@ -447,10 +447,10 @@ public class PLCompiler {
 			}
 		} else if (expression.getChild(0).getText().equals("new")){
 			String fqName = null;
-			if (expression.getChildCount() == 5){ // fq
-				 fqName = expression.getChild(1).getText() + "." + expression.getChild(3);
+			if (expression.getChildCount() == 4){ // fq
+				 fqName = expression.getChild(1).getText() + "." + expression.constructorCall().getChild(0).getText();
 			} else {
-				String refName = expression.getChild(1).getText();
+				String refName = expression.constructorCall().getChild(0).getText();
 				Reference r = referenceMap.get(refName);
 				if (r == null)
 					throw new CompilationException("Unknown type reference: " + refName + " at " + expression.start.getLine());
@@ -458,7 +458,7 @@ public class PLCompiler {
 			}
 			addGetRuntime();
 			bc.addLdc(cacheStrings(fqName));			// load string from constants
-			compileParameters(expression.expressionList());
+			compileParameters(expression.constructorCall().expressionList());
 			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
 					"(" + Strings.STRING_L + "["+ Strings.PLANGOBJECT_L +")" + Strings.PL_CLASS_L);
 		} else if (expression.getChildCount() == 3){
