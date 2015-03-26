@@ -3,16 +3,13 @@ package cz.upol.vanusanik.paralang.compiler;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -31,14 +28,11 @@ import javassist.bytecode.SourceFileAttribute;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.commons.collections4.map.AbstractReferenceMap.ReferenceStrength;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import cz.upol.vanusanik.paralang.compiler.VariableScopeStack.VariableType;
 import cz.upol.vanusanik.paralang.plang.PLangLexer;
-import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PLangParser;
 import cz.upol.vanusanik.paralang.plang.PLangParser.BlockContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.BlockStatementContext;
@@ -46,6 +40,8 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.ClassBodyDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ClassDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.CompilationUnitContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ExpressionContext;
+import cz.upol.vanusanik.paralang.plang.PLangParser.ExpressionListContext;
+import cz.upol.vanusanik.paralang.plang.PLangParser.ExtendedContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FieldDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FormalParameterContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FormalParametersContext;
@@ -62,7 +58,6 @@ import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLModule;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
-import cz.upol.vanusanik.paralang.utils.IndexedSet;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
 public class PLCompiler {
@@ -141,7 +136,7 @@ public class PLCompiler {
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
 				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 				
-				PLClass o = PLRuntime.getRuntime().newInstance(moduleName + "." + mdc.classDeclaration().children.get(1).getText());
+				PLClass o = PLRuntime.getRuntime().newInstance(moduleName + "." + mdc.classDeclaration().children.get(1).getText(), new Int(1234));
 				PLRuntime.getRuntime().run(o.__getkey("foo"), new Int(5000));
 			}
 		}
@@ -158,6 +153,7 @@ public class PLCompiler {
 	private int lastLineWritten;
 	private HashMap<String, Integer> cache;
 	private VariableScopeStack varStack;
+	private boolean isRestrictedMethodQualifier;
 	
 	@SuppressWarnings("unused")
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
@@ -213,6 +209,7 @@ public class PLCompiler {
 
 			@Override
 			protected void compileDataSources() throws Exception {
+				isRestrictedMethodQualifier = true; // default fields are always in restricted mode check off
 				compileInitMethod(fields, methods);
 			}
 			
@@ -236,6 +233,10 @@ public class PLCompiler {
 	private String compileFunction(final FunctionDeclarationContext fcx) throws Exception{
 		final boolean restricted = fcx.getText().startsWith("restricted");
 		String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+		
+		isRestrictedMethodQualifier = restricted;
+		if (name.equals("init"))
+			isRestrictedMethodQualifier = true;
 		
 		FormalParametersContext fpx = fcx.formalParameters();
 		final List<String> args = new ArrayList<String>();
@@ -289,7 +290,7 @@ public class PLCompiler {
 		
 		compileBlock(functionBody.block());	
 		
-		bc.addGetstatic(Strings.NONETYPE, "NOVALUE", Strings.NONETYPE_L); // load NOVALUE
+		addNil();
 		bc.add(Opcode.ARETURN);
 	}
 
@@ -308,7 +309,7 @@ public class PLCompiler {
 					if (vd.variableInitializer() != null){
 						compileExpression(vd.variableInitializer().expression());
 					} else {
-						bc.addGetstatic(Strings.NONETYPE, "NOVALUE", Strings.NONETYPE_L); // load NOVALUE
+						addNil();
 					}
 					bc.addAstore(localId);
 					
@@ -327,6 +328,11 @@ public class PLCompiler {
 		markLine(bc.currentPc(), statement.start.getLine());
 		if (statement.block() != null){
 			compileBlock(statement.block());
+			return;
+		}
+		if (statement.statementExpression() != null){
+			compileExpression(statement.statementExpression().expression());
+			bc.add(Opcode.POP);
 			return;
 		}
 	}
@@ -373,12 +379,16 @@ public class PLCompiler {
 					if (vd.variableInitializer() != null){
 						compileExpression(vd.variableInitializer().expression());
 					} else {
-						bc.addGetstatic(Strings.NONETYPE, "NOVALUE", Strings.NONETYPE_L); // load NOVALUE
+						addNil();
 					}
 				}
 				
 			}.compile();
 		}
+	}
+
+	protected void addNil() {
+		bc.addGetstatic(Strings.NONETYPE, "NOVALUE", Strings.NONETYPE_L); // load NOVALUE
 	}
 
 	private abstract class StoreToClassField {
@@ -399,6 +409,24 @@ public class PLCompiler {
 
 			varStack.addVariable(varId, VariableType.CLASS_VARIABLE);
 		}
+	}
+	
+	private Set<String> setOperators = new HashSet<String>();
+	{
+		setOperators.add("=");
+		setOperators.add("+=");
+		setOperators.add("-=");
+		setOperators.add("+=");
+		setOperators.add("-=");
+		setOperators.add("*=");
+		setOperators.add("/=");
+		setOperators.add("&=");
+		setOperators.add("|=");
+		setOperators.add("^=");
+		setOperators.add(">>=");
+		setOperators.add(">>>=");
+		setOperators.add("<<=");
+		setOperators.add("%=");
 	}
 
 	private void compileExpression(ExpressionContext expression) throws Exception {
@@ -430,9 +458,146 @@ public class PLCompiler {
 			}
 			addGetRuntime();
 			bc.addLdc(cacheStrings(fqName));			// load string from constants
+			compileParameters(expression.expressionList());
 			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
-					"(" + Strings.STRING_L +")" + Strings.PL_CLASS_L);
+					"(" + Strings.STRING_L + "["+ Strings.PLANGOBJECT_L +")" + Strings.PL_CLASS_L);
+		} else if (expression.getChildCount() == 3){
+			String operator = expression.getChild(1).getText();
+			
+			if (setOperators.contains(operator)){
+				compileSetOperator(operator, expression);
+				addNil();
+			}
 		}
+	}
+
+	private void compileParameters(ExpressionListContext expressionList) throws Exception {
+		if (expressionList == null)
+			return;
+		
+		int numExpr = expressionList.expression().size();
+		int store = stacker.acquire();
+		
+		// create PLangObject[] array and save it in local variable
+		bc.addAnewarray(cp.getCtClass(Strings.PLANGOBJECT_N), numExpr);
+		bc.addAstore(store);
+		
+		// Evaluate every expression and save it to the array
+		int i = 0;
+		for (ExpressionContext e : expressionList.expression()){
+			bc.addAload(store);
+			bc.addIconst(i++);
+			compileExpression(e);
+			bc.add(Opcode.AASTORE);
+		}
+		
+		// put reference array on stack
+		bc.addAload(store);
+		
+		stacker.release();
+	}
+
+	private void compileSetOperator(final String operator,
+			ExpressionContext expression) throws Exception {
+		
+		ExtendedContext lvalue = expression.extended();
+		final ExpressionContext second = (ExpressionContext) expression.getChild(2);
+		
+		new CompileSetOperator(lvalue, operator.equals("=")){
+
+			@Override
+			public void compileRight() throws Exception {
+				compileExpression(second);
+				
+				if (!operator.equals("=")){
+					// Simple assignment
+				} else {
+					// Operation assignment
+					// TODO
+				}
+			}
+			
+		}.compileSetOperator();
+		
+	}
+	
+	private abstract class CompileSetOperator {
+		private ExtendedContext lvalue;
+		private boolean simpleSet;
+		public CompileSetOperator(ExtendedContext lvalue, boolean simpleSet) {
+			this.lvalue = lvalue;
+			this.simpleSet = simpleSet;
+		}
+
+		public void compileSetOperator() throws Exception {
+			markLine(bc.currentPc(), lvalue.start.getLine());
+			String identifier = null;
+			VariableType vt = null;
+			int ord = -1;
+			if (lvalue.constExpr() != null){
+				identifier = lvalue.constExpr().id() != null ? lvalue.constExpr().id().getText() : lvalue.getText();
+				vt = varStack.getType(identifier);
+				if (vt == VariableType.LOCAL_VARIABLE)
+					ord = varStack.getLocal(identifier);
+			} else {
+				vt = null;
+				compilePrimaryExpression(lvalue.identified().primary());
+				identifier = lvalue.identified().getChild(2).getText();
+			}
+			
+			if (vt == null || vt != VariableType.LOCAL_VARIABLE){
+				if (restrictionCheck())
+					throw new CompilationException("Action not allowed in non restricted context");
+				
+				{
+					/*
+					 * Prepares the store operation by getting either class or module on the stack and ready
+					 */
+					if (vt != null && vt == VariableType.CLASS_VARIABLE){
+						bc.addAload(0); 								// load this
+					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
+						addGetRuntime();
+						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
+								"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
+					}
+					
+					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+					bc.addLdc(cacheStrings(identifier));			// load string from constants
+				}
+				
+				if (!simpleSet){
+					/*
+					 * Loads the old value on the stack either from instance or from module field
+					 */
+					if (vt != null && vt == VariableType.CLASS_VARIABLE){
+						bc.addAload(0); 								// load this
+					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
+						addGetRuntime();
+						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
+								"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+					}
+					bc.addLdc(cacheStrings(identifier));			// load string from constants
+					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
+							"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+					
+				}
+				
+				compileRight();
+				
+				/* Stores the value into __setKey of the object on stack */
+				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__SETKEY, 
+						"(" + Strings.STRING_L + Strings.PLANGOBJECT_L +")V");
+			} else {
+				/* Loads the local varaible on stack, then writes to the same position */
+				if (!simpleSet)
+					bc.addAload(ord);
+				compileRight();
+				bc.addAstore(ord);
+			}
+		}
+		
+		public abstract void compileRight() throws Exception;
 	}
 
 	private void compilePrimaryExpression(PrimaryContext primary) throws Exception {
@@ -445,7 +610,7 @@ public class PLCompiler {
 			LiteralContext l = primary.literal();
 			markLine(bc.currentPc(), l.start.getLine());
 			if (l.getText().startsWith("NoValue"))
-				bc.addGetstatic(Strings.NONETYPE, "NOVALUE", Strings.NONETYPE_L); // load NOVALUE
+				addNil();
 			else if (l.IntegerLiteral() != null){
 				bc.addNew(Strings.INT);
 				bc.add(Opcode.DUP);
@@ -478,8 +643,8 @@ public class PLCompiler {
 			}
 		}
 		
-		if (primary.id() != null || primary.getText().startsWith("inst") || primary.getText().startsWith("parent")){
-			String identifier = primary.id() != null ? primary.id().getText() : primary.getText();
+		if (primary.constExpr() != null || primary.getText().startsWith("inst") || primary.getText().startsWith("parent")){
+			String identifier = primary.constExpr().id() != null ? primary.constExpr().id().getText() : primary.getText();
 			VariableType vt = varStack.getType(identifier);
 			
 			switch (vt){
@@ -505,6 +670,20 @@ public class PLCompiler {
 			}
 		}
 		
+	}
+	
+	private boolean isSystemCompiler = false;
+	
+	public void setSystemCompiler(){
+		isSystemCompiler = true;
+	}
+
+	public boolean restrictionCheck() {
+		if (isRestrictedMethodQualifier)
+			return false;
+		if (isSystemCompiler)
+			return false;
+		return true;
 	}
 
 	private abstract class MethodCompiler {

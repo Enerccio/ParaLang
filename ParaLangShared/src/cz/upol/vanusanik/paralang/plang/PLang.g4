@@ -156,19 +156,6 @@ statement
     |   statementExpression ';'
     ;
 
-
-resourceSpecification
-    :   '(' resources ';'? ')'
-    ;
-
-resources
-    :   resource (';' resource)*
-    ;
-
-resource
-    :   variableDeclaratorId '=' expression
-    ;
-
 forControl
     :   enhancedForControl
     |   forInit? ';' expression? ';' forUpdate?
@@ -186,8 +173,6 @@ enhancedForControl
 forUpdate
     :   expressionList
     ;
-
-// EXPRESSIONS
 
 parExpression
     :   '(' expression ')'
@@ -210,8 +195,8 @@ expression
     |   expression '.' Identifier
     |   expression '->' Identifier '(' expressionList? ')'
     |   expression '(' expressionList? ')'
-    |   'new' Identifier '()'
-    |   'new' Identifier '.' Identifier '()'
+    |   'new' Identifier '(' expressionList? ')'
+    |   'new' Identifier '.' Identifier '(' expressionList? ')'
     |   expression ('++' | '--')
     |   ('+'|'-'|'++'|'--') expression
     |   ('~'|'!') expression
@@ -227,7 +212,7 @@ expression
     |   expression '&&' expression
     |   expression '||' expression
     |   expression '?' expression ':' expression
-    |   <assoc=right> expression
+    |   <assoc=right> extended
         (   '='
         |   '+='
         |   '-='
@@ -243,12 +228,25 @@ expression
         )
         expression
     ;
+    
+extended 
+	: identified 
+	| constExpr
+	;
+	
+identified
+	: primary '.' Identifier
+	;
 
 primary
     :   '(' expression ')'
-    |   'inst'
-    |   'parent'
+    |   constExpr
     |   literal
+    ;
+    
+constExpr
+	:   'inst'
+    |   'parent'
     |   id
     ;
     

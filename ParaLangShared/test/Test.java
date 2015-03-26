@@ -10,7 +10,7 @@ public class Test {
 	public static void main(String[] xx){
 		
 		
-		File f = new File("bin\\x.pl");
+		File f = new File("bin\\x.plng");
 		PLCompiler c = new PLCompiler();
 		
 		new PLRuntime();
