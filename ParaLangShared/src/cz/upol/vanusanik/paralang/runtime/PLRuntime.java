@@ -82,4 +82,8 @@ public class PLRuntime {
 		}
 		return null;
 	}
+
+	public void setRestricted(boolean restricted) {
+		isRestricted = restricted;
+	}
 }

@@ -13,7 +13,7 @@ public class Test {
 		File f = new File("bin\\x.plng");
 		PLCompiler c = new PLCompiler();
 		
-		new PLRuntime();
+		new PLRuntime().setRestricted(false);
 		c.compile(new DiskFileDesignator(f));
 		
 	}

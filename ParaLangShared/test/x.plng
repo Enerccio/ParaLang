@@ -3,19 +3,15 @@ import java.util.Map;
 
 module HelloWorldModule {
 	class Helper {
-	
-		var a;
+		var augumented;
 		
-		init(x){
-			a = x;
+		init(augumented){
+			inst.augumented = augumented;
 		}
 		
-		foo(bar){
-			var a = new Helper(bar);
+		restricted foo(arg){
+			augumented = new Helper(arg);
 		}
-		
-		restricted baz(){
-		}
-		
 	}
+	
 };
