@@ -1,6 +1,14 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
+import org.apache.commons.codec.binary.Base64;
+
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
@@ -54,4 +62,17 @@ public class Pointer extends PLangObject {
 		return true;
 	}
 
+	@Override
+	public JsonValue toObject(long previousTime) {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ObjectOutputStream serstream = new ObjectOutputStream(out);
+			serstream.writeObject(value);
+			String serializedForm = Base64.encodeBase64String(out.toByteArray());
+			return new JsonObject().add("metaObjectType", getType().toString())
+					.add("value", serializedForm);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

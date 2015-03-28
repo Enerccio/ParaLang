@@ -6,11 +6,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 
 public abstract class BaseCompiledStub extends PLangObject {
 	protected Map<String, PLangObject> __fieldsAndMethods;
-	
 	private Map<String, Long> __fieldModificationMap = new HashMap<String, Long>();
 	private Map<PLangObject, Set<String>> __reverseMapLookup = new HashMap<PLangObject, Set<String>>(){
 
@@ -25,6 +28,15 @@ public abstract class BaseCompiledStub extends PLangObject {
 		
 	};
 	private Set<BaseCompiledStub> __containers = new HashSet<BaseCompiledStub>();
+	private final long objectId;
+	
+	protected BaseCompiledStub(){
+		objectId = PLRuntime.getRuntime().registerObject(this);
+	}
+	
+	public long __getObjectId(){
+		return objectId;
+	}
 	
 	public void __decouple(BaseCompiledStub coupler){
 		__containers.remove(coupler);
@@ -98,7 +110,7 @@ public abstract class BaseCompiledStub extends PLangObject {
 		__propagateChanges();
 	}
 
-	private static final ThreadLocal<Set<Object>> chainSet = new ThreadLocal<Set<Object>>(){
+	private static final ThreadLocal<Set<Object>> traversalChainSet = new ThreadLocal<Set<Object>>(){
 
 		@Override
 		protected Set<Object> initialValue() {
@@ -108,11 +120,43 @@ public abstract class BaseCompiledStub extends PLangObject {
 	};
 	
 	private void __propagateChanges() {
-		if (chainSet.get().contains(this))
+		if (traversalChainSet.get().contains(this))
 			return;
-		chainSet.get().add(this);
+		traversalChainSet.get().add(this);
 		for (BaseCompiledStub owner : __containers)
 			owner.__update(this);
-		chainSet.get().remove(this);
+		traversalChainSet.get().remove(this);
+	}
+	
+	@Override
+	public JsonValue toObject(long previousTime) {
+		PLRuntime runtime = PLRuntime.getRuntime();
+		JsonObject metaData = new JsonObject().add("metaObjectType", getType().toString());
+		if (runtime.isAlreadySerialized(this)){
+			metaData.add("link", true)
+					.add("linkId", __getObjectId());
+		} else {
+			runtime.setAsAlreadySerialized(this);
+			metaData.add("link", false)
+					.add("isInited", isInited)
+					.add("modifiedFrom", previousTime)
+					.add("modifiedFromFields", getDeltaFields(previousTime));
+		}
+		return metaData;
+	}
+
+	private JsonArray getDeltaFields(long previousTime) {
+		JsonArray array = new JsonArray();
+		for (String field : __fieldModificationMap.keySet()){
+			if (__fieldModificationMap.get(field) > previousTime){
+				JsonObject f = new JsonObject();
+				
+				f.add("fieldName", field);
+				f.add("fieldValue", __fieldsAndMethods.get(field).toObject(previousTime));
+				
+				array.add(f);
+			}
+		}
+		return array;
 	}
 }

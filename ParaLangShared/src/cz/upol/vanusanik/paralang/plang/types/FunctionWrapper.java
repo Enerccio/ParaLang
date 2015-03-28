@@ -2,6 +2,9 @@ package cz.upol.vanusanik.paralang.plang.types;
 
 import java.lang.reflect.Method;
 
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
@@ -106,5 +109,12 @@ public class FunctionWrapper extends PLangObject {
 		return true;
 	}
 	
-	
+	@Override
+	public JsonValue toObject(long previousTime) {
+		return new JsonObject().add("metaObjectType", getType().toString())
+				.add("value", new JsonObject()
+					.add("methodName", methodName)
+					.add("owner", owner.toObject(previousTime))
+					.add("isClassMethod", isMethod));
+	}
 }

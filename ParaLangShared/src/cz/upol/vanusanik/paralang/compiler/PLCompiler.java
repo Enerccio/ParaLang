@@ -355,6 +355,7 @@ public class PLCompiler {
 		
 		compileBlock(functionBody.block());	
 		
+		markLine(bc.currentPc(), functionBody.stop.getLine());
 		addNil();
 		bc.add(Opcode.ARETURN);
 	}

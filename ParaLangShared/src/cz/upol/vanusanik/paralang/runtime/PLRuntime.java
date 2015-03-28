@@ -1,7 +1,14 @@
 package cz.upol.vanusanik.paralang.runtime;
 
+import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.WriterConfig;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
@@ -12,6 +19,12 @@ public class PLRuntime {
 	
 	public static final PLRuntime getRuntime(){
 		return localRuntime.get();
+	}
+	
+	private long objectIdCounter = 0;
+	
+	public long registerObject(BaseCompiledStub object){
+		return objectIdCounter++;
 	}
 
 	private Map<String, Class<? extends PLModule>> preloadedModuleMap = new HashMap<String, Class<? extends PLModule>>();
@@ -97,5 +110,32 @@ public class PLRuntime {
 
 	public void setRestricted(boolean restricted) {
 		isRestricted = restricted;
+	}
+
+	private Set<Object> serializedObjects = new HashSet<Object>();
+	
+	public void setAsAlreadySerialized(BaseCompiledStub baseCompiledStub) {
+		serializedObjects.add(baseCompiledStub);
+	}
+
+	public boolean isAlreadySerialized(BaseCompiledStub baseCompiledStub) {
+		return serializedObjects.contains(baseCompiledStub);
+	}
+	
+	/*
+	 * Only serializes the actual content, not class definitions
+	 */
+	public void serializeRuntimeContent(OutputStream os, long previousSerialization) throws Exception {
+		serializedObjects.clear();
+		
+		JsonObject root = new JsonObject();
+		JsonArray modules = new JsonArray();
+		
+		for (String moduleName : moduleMap.keySet()){
+			modules.add(moduleMap.get(moduleName).toObject(previousSerialization));
+		}
+		
+		root.add("modules", modules);
+		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
 	}
 }
