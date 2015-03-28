@@ -3,6 +3,7 @@ package cz.upol.vanusanik.paralang.compiler;
 public class Strings {
 
 	public static final String CLASS_BASE_CLASS = "cz.upol.vanusanik.paralang.runtime.PLClass";
+	public static final String MODULE_BASE_CLASS = "cz.upol.vanusanik.paralang.runtime.PLModule";
 	
 	public static final String BASE_COMPILED_STUB = "cz/upol/vanusanik/paralang/runtime/BaseCompiledStub";
 	public static final String BASE_COMPILED_STUB_L = "L" + BASE_COMPILED_STUB + ";";

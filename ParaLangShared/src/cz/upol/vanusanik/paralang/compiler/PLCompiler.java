@@ -54,11 +54,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.PrimaryContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.StatementContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorsContext;
-import cz.upol.vanusanik.paralang.plang.types.Int;
-import cz.upol.vanusanik.paralang.runtime.PLClass;
-import cz.upol.vanusanik.paralang.runtime.PLModule;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
-import cz.upol.vanusanik.paralang.utils.Utils;
 
 public class PLCompiler {
 	
@@ -68,23 +64,22 @@ public class PLCompiler {
 	private String source;
 	private String moduleName;
 	
-	public Class<? extends PLModule> compile(FileDesignator in){
+	public void compile(FileDesignator in){
 		try {
-			return compileFile(in);
+			compileFile(in);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
 		}
 	}
 	
-	private Class<? extends PLModule> compileFile(FileDesignator in) throws Exception {
+	private void compileFile(FileDesignator in) throws Exception {
 		CompilationUnitContext ctx = parse(in);
 		
 		buildReferenced(ctx);
 		System.err.println();
 		source = in.getSource();
 		
-		return compileModule(ctx, in);
+		compileModule(ctx, in);
 	}
 
 	private void buildReferenced(CompilationUnitContext ctx) {
@@ -130,19 +125,18 @@ public class PLCompiler {
 		return parser.compilationUnit();
 	}
 
-	private Class<? extends PLModule> compileModule(CompilationUnitContext ctx, FileDesignator in) throws Exception{
+	private void compileModule(CompilationUnitContext ctx, FileDesignator in) throws Exception{
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
 				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 				
-				PLClass o = PLRuntime.getRuntime().newInstance(moduleName + "." + mdc.classDeclaration().children.get(1).getText(), new Int(1234));
-				PLRuntime.getRuntime().run(o.__getkey("foo"), new Int(5000));
 			}
 		}
-		return null;
+		
+		compileModuleClass(ctx, in);
 	}
-	
+
 	private boolean compilingClass = false;
 	private ClassPool cp;
 	private DataOutputStream lineNumberStream;
@@ -155,13 +149,84 @@ public class PLCompiler {
 	private VariableScopeStack varStack;
 	private boolean isRestrictedMethodQualifier;
 	
-	@SuppressWarnings("unused")
+	@SuppressWarnings("unchecked")
+	private void compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
+		String moduleName = ctx.moduleDeclaration().children.get(1).getText();
+		compilingClass = false;
+		
+		cp = ClassPool.getDefault();
+
+		cache = new HashMap<String, Integer>();
+		String className = moduleName;
+		File output = new File(in.getOutputDir(), className + ".class");
+		
+		cls = cp.makeClass(className);
+		cls.setSuperclass(cp.getCtClass(Strings.MODULE_BASE_CLASS));
+		
+		CtConstructor ct = CtNewConstructor.defaultConstructor(cls);
+		cls.addConstructor(ct);
+		
+		final List<FieldDeclarationContext> fields = new ArrayList<FieldDeclarationContext>();
+		// List all fields
+		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
+			FieldDeclarationContext fdc = mdc.fieldDeclaration();
+			if (fdc != null)
+				fields.add(fdc);
+		}
+		
+		varStack.pushNewStack(); // push module variables
+		varStack.addVariable("init", VariableType.CLASS_VARIABLE);
+		
+		// Find all methods
+		final Set<String> methods = new HashSet<String>();
+		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
+			if (mdc.functionDeclaration() != null){
+				FunctionDeclarationContext fcx = mdc.functionDeclaration();
+				boolean restricted = fcx.getText().startsWith("restricted");
+				String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+				methods.add(name);
+			}
+		}
+		
+		if (!methods.contains("init")){
+			CtMethod initM = CtNewMethod.make("public cz.upol.vanusanik.paralang.plang.PLangObject init(cz.upol.vanusanik.paralang.plang.PLangObject inst) { return cz.upol.vanusanik.paralang.plang.types.NoValue.NOVALUE; }", cls);
+			cls.addMethod(initM);
+			methods.add("init");
+		}
+		
+		// Compile system init method
+		final CtMethod m = CtNewMethod.make("protected void __init_internal_datafields() { return null; }", cls);
+		new MethodCompiler(m){
+
+			@Override
+			protected void compileDataSources() throws Exception {
+				isRestrictedMethodQualifier = true; // default fields are always in restricted mode check off
+				compileInitMethod(fields, methods);
+			}
+			
+		}.compileMethod();
+		
+		// Compile all methods
+		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
+			if (mdc.functionDeclaration() != null){
+				FunctionDeclarationContext fcx = mdc.functionDeclaration();
+				compileFunction(fcx);
+			}
+		}
+		
+		varStack.popStack(); // pop class variables
+		
+		cls.debugWriteFile();
+		cls.toBytecode(new DataOutputStream(new FileOutputStream(output)));
+		
+		PLRuntime.getRuntime().addModule(moduleName, cls.toClass());
+	}
+	
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
 		compilingClass = true;
 		
 		cp = ClassPool.getDefault();
 		
-		String packageName = Utils.packageName(in);
 		cache = new HashMap<String, Integer>();
 		String className = moduleName + "$" + classDeclaration.children.get(1).getText();
 		File output = new File(in.getOutputDir(), className + ".class");
@@ -348,7 +413,7 @@ public class PLCompiler {
 			compileField(field);
 		}
 		for (final String method : methods){
-			new StoreToClassField(method){
+			new StoreToField(method){
 
 				@Override
 				protected void provideSourceValue() throws Exception {
@@ -356,7 +421,7 @@ public class PLCompiler {
 					bc.add(Opcode.DUP);
 					bc.addLdc(cacheStrings(method)); // Load string name of method
 					bc.addAload(0); // Load this
-					bc.addIconst(1);
+					bc.addIconst(compilingClass ? 1 : 0);
 					bc.addInvokespecial(Strings.FUNCTION_WRAPPER, 
 							"<init>", "(" + Strings.STRING_L + Strings.BASE_COMPILED_STUB_L + "Z)V");
 				}
@@ -372,7 +437,7 @@ public class PLCompiler {
 			markLine(bc.currentPc(), vd.start.getLine());
 			String varId = vd.variableDeclaratorId().getText();
 			
-			new StoreToClassField(varId){
+			new StoreToField(varId){
 
 				@Override
 				protected void provideSourceValue() throws Exception {
@@ -391,9 +456,9 @@ public class PLCompiler {
 		bc.addGetstatic(Strings.NONETYPE, "NOVALUE", Strings.NONETYPE_L); // load NOVALUE
 	}
 
-	private abstract class StoreToClassField {
+	private abstract class StoreToField {
 		private String varId;
-		public StoreToClassField(String varId) {
+		public StoreToField(String varId) {
 			this.varId = varId;
 		}
 		protected abstract void provideSourceValue() throws Exception;

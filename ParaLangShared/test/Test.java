@@ -13,9 +13,11 @@ public class Test {
 		File f = new File("bin\\x.plng");
 		PLCompiler c = new PLCompiler();
 		
-		new PLRuntime().setRestricted(false);
+		PLRuntime r = new PLRuntime();
+		r.setRestricted(false);
 		c.compile(new DiskFileDesignator(f));
 		
+		r.run("HelloWorldModule", "run");
 	}
 	
 }

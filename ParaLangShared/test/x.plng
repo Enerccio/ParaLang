@@ -2,6 +2,8 @@ using SecondModule.Class4;
 import java.util.Map;
 
 module HelloWorldModule {
+	var foobar;
+	
 	class Helper {
 		var augumented;
 		
@@ -14,4 +16,14 @@ module HelloWorldModule {
 		}
 	}
 	
+	init(){
+		foobar = new Helper(1);
+	}
+	
+	var foobaz;
+	
+	restricted run(){
+		foobaz = new Helper(foobar);
+		foobar.augumented = foobaz;
+	}
 };

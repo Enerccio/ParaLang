@@ -14,6 +14,7 @@ public class PLRuntime {
 		return localRuntime.get();
 	}
 
+	private Map<String, Class<? extends PLModule>> preloadedModuleMap = new HashMap<String, Class<? extends PLModule>>();
 	private Map<String, PLModule> moduleMap = new HashMap<String, PLModule>();
 	private Map<String, Map<String, Class<?>>> classMap = new HashMap<String, Map<String,Class<?>>>();
 	
@@ -44,16 +45,27 @@ public class PLRuntime {
 		}
 	}
 	
-	public void addModlue(String fqName, PLModule module){
-		moduleMap.put(fqName, module);
+	public void addModule(String fqName, Class<? extends PLModule> module){
+		preloadedModuleMap.put(fqName, module);
 	}
 	
 	public PLModule getModule(String moduleName){
+		if (!moduleMap.containsKey(moduleName)){
+			if (!preloadedModuleMap.containsKey(moduleName))
+				throw new RuntimeException("Module load failed: No such module " + moduleName);
+			try {
+				PLModule module = preloadedModuleMap.get(moduleName).newInstance();
+				moduleMap.put(moduleName, module);
+				run(moduleName, "init");
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
 		return moduleMap.get(moduleName);
 	}
 	
 	public PLangObject run(String module, String runnable){
-		PLModule mod = moduleMap.get(module);
+		PLModule mod = getModule(module);
 		return run(mod.__getkey(runnable));
 	}
 	
