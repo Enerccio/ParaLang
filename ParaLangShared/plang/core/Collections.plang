@@ -1,0 +1,31 @@
+import cz.upol.vanusanik.paralang.runtime.wrappers.PLangHashSet;
+
+module Collections {
+
+	class HashSet {
+		var wrappedSet;
+	
+		init(){
+			inst.wrappedSet = PLangHashSet->PLangHashSet();
+		}
+		
+		restricted insert(o){
+			wrappedSet->insert(o);
+		}
+		
+		push(o){
+			var set = new HashSet();
+			wrappedSet->push(o, set.wrappedSet);
+			return set;
+		}
+		
+		contains(o){
+			return wrappedSet->contains(o);
+		}
+		
+		__str(){
+			return wrappedSet;
+		}
+	}
+
+};

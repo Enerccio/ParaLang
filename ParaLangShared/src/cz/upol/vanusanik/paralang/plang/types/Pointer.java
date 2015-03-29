@@ -103,4 +103,9 @@ public class Pointer extends PLangObject {
 		else
 			return false;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T getPointer(){
+		return (T)value;
+	}
 }

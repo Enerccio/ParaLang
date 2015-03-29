@@ -197,7 +197,7 @@ public class PLCompiler {
 		}
 		
 		if (!methods.contains("init")){
-			CtMethod initM = CtNewMethod.make("public cz.upol.vanusanik.paralang.plang.PLangObject init(cz.upol.vanusanik.paralang.plang.PLangObject inst) { return cz.upol.vanusanik.paralang.plang.types.NoValue.NOVALUE; }", cls);
+			CtMethod initM = CtNewMethod.make("public cz.upol.vanusanik.paralang.plang.PLangObject init() { return cz.upol.vanusanik.paralang.plang.types.NoValue.NOVALUE; }", cls);
 			cls.addMethod(initM);
 			methods.add("init");
 		}
@@ -429,6 +429,20 @@ public class PLCompiler {
 			compileBlock(statement.block());
 			return;
 		}
+		
+		if (statement.getText().startsWith("return")){
+			if (statement.expression() != null){
+				isStatementExpression.add(false);
+				compileExpression(statement.expression());
+				isStatementExpression.pop();
+			} else {
+				addNil();
+			}
+			
+			functionExitProtocol();
+			bc.add(Opcode.ARETURN);
+		}
+		
 		if (statement.statementExpression() != null){
 			isStatementExpression.add(true);
 			compileExpression(statement.statementExpression().expression());
@@ -1001,6 +1015,16 @@ public class PLCompiler {
 		
 		if (primary.constExpr() != null || primary.getText().startsWith("inst") || primary.getText().startsWith("parent")){
 			String identifier = primary.constExpr().id() != null ? primary.constExpr().id().getText() : primary.getText();
+			
+			if (referenceMap.containsKey(identifier)){
+				// is a module identifier, use it as key to the module map
+				addGetRuntime();
+				bc.addLdc(cacheStrings(identifier));			// load string from constants
+				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
+						"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
+				return;
+			}
+			
 			VariableType vt = varStack.getType(identifier);
 			
 			switch (vt){

@@ -12,6 +12,7 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
+import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
 public abstract class BaseCompiledStub extends PLangObject {
 	protected Map<String, PLangObject> __fieldsAndMethods;
@@ -184,5 +185,16 @@ public abstract class BaseCompiledStub extends PLangObject {
 	
 	protected PLangObject __convertBoolean(boolean b){
 		return BooleanValue.fromBoolean(b);
+	}
+	
+	@Override
+	public String toString(){
+		if (__fieldsAndMethods.containsKey("__str")){
+			PLangObject str = __getkey("__str");
+			if (str instanceof FunctionWrapper){
+				return PLRuntime.getRuntime().run(str).toString();
+			}
+		}
+		return super.toString();
 	}
 }

@@ -1,15 +1,25 @@
 package cz.upol.vanusanik.paralang.runtime;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collection;
+
+import org.apache.commons.io.DirectoryWalker;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.WriterConfig;
 
+import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
+import cz.upol.vanusanik.paralang.compiler.PLCompiler;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
@@ -37,6 +47,43 @@ public class PLRuntime {
 	
 	public PLRuntime(){
 		localRuntime.set(this);
+		
+		initialize();
+	}
+	
+	public void initialize(){
+		final List<File> fList = new ArrayList<File>();
+		final File f = new File("plang//");
+		new DirectoryWalker<File>(){
+			public void doIt(){
+				try {
+					walk(f, fList);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			protected boolean handleDirectory(File directory, int depth, Collection<File> results) {
+				results.add(directory);
+			    return true;
+			}
+		}.doIt();
+
+		setSafeContext(true);
+		setRestricted(false);
+		for (File ffd : fList){
+			for (File ff : ffd.listFiles(new FileFilter(){
+
+				@Override
+				public boolean accept(File pathname) {
+					return pathname.getName().endsWith(".plang");
+				}
+				
+			})){
+				PLCompiler c = new PLCompiler();
+				c.compile(new DiskFileDesignator(ff));
+			}
+		}
 	}
 	
 	public void registerClass(String module, String className, Class<?> cls){

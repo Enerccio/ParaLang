@@ -1,37 +1,19 @@
-using SecondModule.Class4;
-
-import cz.upol.vanusanik.paralang.runtime.wrappers.PrintStreamWrapper;
+using IO;
+using Collections.HashSet;
 
 module HelloWorldModule {
-	class SystemPrinter {
-		var wrappedPrinter;
-		var emptyLine = "";
-		init(wp){
-			inst.wrappedPrinter = PrintStreamWrapper->PrintStreamWrapper(wp);
-		}
-		print(object){
-			wrappedPrinter->print(object);
-		}
-		println(object){
-			print(object); lerp();
-		}
-		lerp(){
-			wrappedPrinter->println(emptyLine);
-		}
-	}
-	var out = new SystemPrinter(true);
-	var err = new SystemPrinter(false);
-	
-	init(){
-		
-	}
-	
-	test(){
-		out.print("TEST");
-	}
 	
 	restricted run(){
-		out.println(false || test());
-		out.println(true && test());
+		var set = new HashSet();
+		set.insert(1);
+		var set2 = set.push(2);
+		set.insert(3);
+		set2.insert(4);
+		
+		IO.out.println(set2.contains(1));
+		
+		IO.out.println(set);
+		IO.out.println(set2);
+		IO.out.println(set);
 	}
 };

@@ -4,3 +4,7 @@
 bin
 /HelloWorldModule.class
 /HelloWorldModule$SystemPrinter.class
+/Collections.class
+/Collections$HashSet.class
+/Collections$InternalHashSet.class
+*.class

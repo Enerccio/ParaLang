@@ -1,0 +1,26 @@
+
+import cz.upol.vanusanik.paralang.runtime.wrappers.PrintStreamWrapper;
+
+module IO {
+
+	class SystemPrinter {
+		var wrappedPrinter;
+		var emptyLine = "";
+		init(wp){
+			inst.wrappedPrinter = PrintStreamWrapper->PrintStreamWrapper(wp);
+		}
+		restricted print(object){
+			wrappedPrinter->print(object);
+		}
+		restricted println(object){
+			print(object); lerp();
+		}
+		restricted lerp(){
+			wrappedPrinter->println(emptyLine);
+		}
+	}
+	
+	var out = new SystemPrinter(true);
+	var err = new SystemPrinter(false);
+
+};
