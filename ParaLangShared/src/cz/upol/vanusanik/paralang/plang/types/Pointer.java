@@ -85,4 +85,22 @@ public class Pointer extends PLangObject {
 		}
 		throw new RuntimeException("Unknown method: " + methodName);
 	}
+	
+	@Override
+	public boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	public Float getNumber() {
+		return null;
+	}
+	
+	@Override
+	public boolean eq(PLangObject b) {
+		if (b.getType().equals(getType()))
+			return value.equals(((Pointer)b).value);
+		else
+			return false;
+	}
 }

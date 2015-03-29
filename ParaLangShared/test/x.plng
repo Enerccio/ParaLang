@@ -12,7 +12,10 @@ module HelloWorldModule {
 		print(object){
 			wrappedPrinter->print(object);
 		}
-		println(){
+		println(object){
+			print(object); lerp();
+		}
+		lerp(){
 			wrappedPrinter->println(emptyLine);
 		}
 	}
@@ -25,8 +28,14 @@ module HelloWorldModule {
 	
 	restricted run(){
 		var foobaz = 3.14;
-		out.print(foobaz);
-		err.print(err.wrappedPrinter);
-		out.println();
+		out.println(foobaz + 20 * 4 / 2 % 3);
+		
+		out.println(true == true);
+		out.println(true == 4);
+		out.println(4 != true);
+		out.println(3 < 10);
+		out.println(3 > 10);
+		out.println(3 >= 3);
+		out.println(3 <= 3);
 	}
 };

@@ -28,4 +28,19 @@ public class NoValue extends PLangObject {
 	public JsonValue toObject(long previousTime) {
 		return new JsonObject().add("metaObjectType", getType().toString());
 	}
+	
+	@Override
+	public boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	public Float getNumber() {
+		return null;
+	}
+	
+	@Override
+	public boolean eq(PLangObject b) {
+		return this == b;
+	}
 }

@@ -165,4 +165,19 @@ public abstract class BaseCompiledStub extends PLangObject {
 		}
 		return array;
 	}
+	
+	@Override
+	public boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	public Float getNumber() {
+		return null;
+	}
+	
+	@Override
+	public boolean eq(PLangObject b) {
+		return this == b;
+	}
 }

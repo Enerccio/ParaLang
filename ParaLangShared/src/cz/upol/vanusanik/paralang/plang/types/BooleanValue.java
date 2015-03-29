@@ -33,4 +33,23 @@ public class BooleanValue extends PLangObject {
 				.add("value", value);
 	}
 
+	@Override
+	public boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	public Float getNumber() {
+		return null;
+	}
+
+	public static PLangObject fromBoolean(boolean result) {
+		return result ? TRUE : FALSE;
+	}
+
+	@Override
+	public boolean eq(PLangObject b) {
+		return this == b;
+	}
+
 }

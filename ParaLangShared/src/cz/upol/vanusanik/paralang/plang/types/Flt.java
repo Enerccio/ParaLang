@@ -55,4 +55,20 @@ public class Flt extends PLangObject {
 		return new JsonObject().add("metaObjectType", getType().toString())
 				.add("value", value);
 	}
+	
+	@Override
+	public boolean isNumber() {
+		return true;
+	}
+
+	@Override
+	public Float getNumber() {
+		return value;
+	}
+
+	@Override
+	public boolean eq(PLangObject b) {
+		if (!b.isNumber()) return false;
+		return value == b.getNumber();
+	}
 }

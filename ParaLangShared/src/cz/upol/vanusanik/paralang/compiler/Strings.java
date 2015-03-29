@@ -27,6 +27,23 @@ public class Strings {
 	public static final String RUNTIME__WRAP_JAVA_OBJECT = "wrapJavaObject";
 	public static final String RUNTIME__RUN = "run";
 	public static final String RUNTIME__RUN_JAVA_WRAPPER = "runJavaWrapper";
+	public static final String TYPEOPS__PLUS = "plus";
+	public static final String TYPEOPS__MINUS = "minus";
+	public static final String TYPEOPS__MUL = "mul";
+	public static final String TYPEOPS__DIV = "div";
+	public static final String TYPEOPS__MOD = "mod";
+	public static final String TYPEOPS__LSHIFT = "lshift";
+	public static final String TYPEOPS__RSHIFT = "rshift";
+	public static final String TYPEOPS__RUSHIFT = "rushift";
+	public static final String TYPEOPS__BITOR = "bitor";
+	public static final String TYPEOPS__BITAND = "bitand";
+	public static final String TYPEOPS__BITXOR = "bitxor";
+	public static final String TYPEOPS__EQ = "eq";
+	public static final String TYPEOPS__NEQ = "neq";
+	public static final String TYPEOPS__MORE = "more";
+	public static final String TYPEOPS__LESS = "less";
+	public static final String TYPEOPS__LEQ = "leq";
+	public static final String TYPEOPS__MEQ = "meq";
 	
 	public static final String TYPEOPS = "cz/upol/vanusanik/paralang/plang/types/TypeOperations";
 	public static final String TYPEOPS__CONVERT_TO_BOOLEAN = "convertToBoolean";

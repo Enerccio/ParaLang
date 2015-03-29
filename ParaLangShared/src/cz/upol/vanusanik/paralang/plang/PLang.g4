@@ -203,7 +203,7 @@ expression
     |   ('~'|'!') expression
     |   expression ('*'|'/'|'%') expression
     |   expression ('+'|'-') expression
-    |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
+    |   expression ('<<' | '>>>' | '>>') expression
     |   expression ('<=' | '>=' | '>' | '<') expression
     |   expression 'instanceof' type
     |   expression ('==' | '!=') expression

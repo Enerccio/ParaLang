@@ -58,4 +58,22 @@ public class Str extends PLangObject {
 		return new JsonObject().add("metaObjectType", getType().toString())
 				.add("value", value);
 	}
+	
+	@Override
+	public boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	public Float getNumber() {
+		return null;
+	}
+	
+	@Override
+	public boolean eq(PLangObject b) {
+		if (b.getType().equals(getType()))
+			return value.equals(((Str)b).value);
+		else
+			return false;
+	}
 }

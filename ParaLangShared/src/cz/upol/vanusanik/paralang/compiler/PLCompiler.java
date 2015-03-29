@@ -560,6 +560,7 @@ public class PLCompiler {
 	}
 	
 	private Set<String> setOperators = new HashSet<String>();
+	private Set<String> bioperators = new HashSet<String>();
 	{
 		setOperators.add("=");
 		setOperators.add("+=");
@@ -575,6 +576,24 @@ public class PLCompiler {
 		setOperators.add(">>>=");
 		setOperators.add("<<=");
 		setOperators.add("%=");
+		
+		bioperators.add("+");
+		bioperators.add("-");
+		bioperators.add("*");
+		bioperators.add("/");
+		bioperators.add("<<");
+		bioperators.add(">>");
+		bioperators.add(">>>");
+		bioperators.add("%");
+		bioperators.add("==");
+		bioperators.add("!=");
+		bioperators.add("<");
+		bioperators.add(">");
+		bioperators.add("<=");
+		bioperators.add(">=");
+		bioperators.add("&");
+		bioperators.add("|");
+		bioperators.add("^");
 	}
 
 	private void compileExpression(ExpressionContext expression) throws Exception {
@@ -640,17 +659,23 @@ public class PLCompiler {
 					"(" + Strings.PLANGOBJECT_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
 			
 		} else if (expression.getChild(0) instanceof ExpressionContext){
-			isStatementExpression.add(false);
-			compileExpression((ExpressionContext) expression.getChild(0));
-			isStatementExpression.pop();
-			if (expression.getChild(1).getText().equals(".")){
-				// compiling field accessor
-				markLine(bc.currentPc(), expression.stop.getLine());
-				String identifier = expression.getChild(2).getText();
-				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
-				bc.addLdc(cacheStrings(identifier));			// load string from constants
-				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
-						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+			String operator = expression.getChild(1).getText();
+			if (bioperators.contains(operator)){
+				compileBinaryOperator(operator, 
+						(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2));
+			} else {
+				isStatementExpression.add(false);
+				compileExpression((ExpressionContext) expression.getChild(0));
+				isStatementExpression.pop();
+				if (expression.getChild(1).getText().equals(".")){
+					// compiling field accessor
+					markLine(bc.currentPc(), expression.stop.getLine());
+					String identifier = expression.getChild(2).getText();
+					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+					bc.addLdc(cacheStrings(identifier));			// load string from constants
+					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
+							"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+				}	
 			}
 		} else if (expression.getChild(0).getText().equals("new")){
 			String fqName = null;
@@ -675,6 +700,41 @@ public class PLCompiler {
 				compileSetOperator(operator, expression);
 			}
 		} 
+	}
+
+	private void compileBinaryOperator(String operator,
+			ExpressionContext expression1, ExpressionContext expression2) throws Exception {
+		
+		
+		
+		isStatementExpression.add(false);
+		compileExpression(expression1);
+		compileExpression(expression2);
+		isStatementExpression.pop();
+		
+		String method = null;
+		
+		switch (operator){
+		case "+": method = Strings.TYPEOPS__PLUS; break;
+		case "-": method = Strings.TYPEOPS__MINUS; break;
+		case "*": method = Strings.TYPEOPS__MUL; break;
+		case "/": method = Strings.TYPEOPS__DIV; break;
+		case "%": method = Strings.TYPEOPS__MOD; break;
+		case "<<": method = Strings.TYPEOPS__LSHIFT; break;
+		case ">>": method = Strings.TYPEOPS__RSHIFT; break;
+		case ">>>": method = Strings.TYPEOPS__RUSHIFT; break;
+		case "&": method = Strings.TYPEOPS__BITAND; break;
+		case "|": method = Strings.TYPEOPS__BITOR; break;
+		case "==": method = Strings.TYPEOPS__EQ; break;
+		case "!=": method = Strings.TYPEOPS__NEQ; break;
+		case "<": method = Strings.TYPEOPS__LESS; break;
+		case ">": method = Strings.TYPEOPS__MORE; break;
+		case "<=": method = Strings.TYPEOPS__LEQ; break;
+		case ">=": method = Strings.TYPEOPS__MEQ; break;
+		}
+		
+		bc.addInvokestatic(Strings.TYPEOPS, method, 
+				"("+ Strings.PLANGOBJECT_L + Strings.PLANGOBJECT_L + ")" + Strings.PLANGOBJECT_L);
 	}
 
 	private void compileParameters(ExpressionListContext expressionList) throws Exception {
@@ -755,8 +815,6 @@ public class PLCompiler {
 			}
 			
 			if (vt == null || vt != VariableType.LOCAL_VARIABLE){
-//				if (restrictionCheck(vt))
-//					throw new CompilationException("Action not allowed in non restricted context");
 				
 				{
 					/*
@@ -1041,3 +1099,4 @@ public class PLCompiler {
 			bc.add(Opcode.NOP);
 	}
 }
+
