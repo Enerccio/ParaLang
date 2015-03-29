@@ -12,6 +12,7 @@ module HelloWorldModule {
 				inst.augumented = 10;
 			} else
 				inst.augumented = 1.5;
+			foobar = 1.0;
 		}
 		
 		restricted foo(arg){
@@ -27,6 +28,6 @@ module HelloWorldModule {
 	
 	restricted run(){
 		foobaz = new Helper(foobar);
-		foobar.augumented = foobaz;
+		foobaz.augumented = foobaz;
 	}
 };

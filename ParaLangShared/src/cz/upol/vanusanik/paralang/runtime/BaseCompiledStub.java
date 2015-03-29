@@ -29,6 +29,7 @@ public abstract class BaseCompiledStub extends PLangObject {
 	};
 	private Set<BaseCompiledStub> __containers = new HashSet<BaseCompiledStub>();
 	private final long objectId;
+	protected boolean __restrictedOverride = false;
 	
 	protected BaseCompiledStub(){
 		objectId = PLRuntime.getRuntime().registerObject(this);
@@ -53,7 +54,9 @@ public abstract class BaseCompiledStub extends PLangObject {
 	public void __init_class(){
 		__fieldsAndMethods = new HashMap<String, PLangObject>();
 		isInited = true;
+		__restrictedOverride = true;
 		__init_internal_datafields();
+		__restrictedOverride = false;
 	}
 	
 	protected boolean isInited;
@@ -79,6 +82,9 @@ public abstract class BaseCompiledStub extends PLangObject {
 	public void __setkey(String key, PLangObject var){
 		if (!isInited)
 			__init_class();
+		
+		if (!__restrictedOverride)
+			PLRuntime.getRuntime().checkRestrictedAccess();
 		
 		if (__fieldsAndMethods.containsKey(key)){
 			PLangObject oldValue = __fieldsAndMethods.remove(key);

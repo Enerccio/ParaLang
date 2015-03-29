@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -149,7 +150,8 @@ public class PLCompiler {
 	private int lastLineWritten;
 	private HashMap<String, Integer> cache;
 	private VariableScopeStack varStack;
-	private boolean isRestrictedMethodQualifier;
+	private enum RestrictedTo { CLASS, MODULE };
+	private RestrictedTo isRestrictedMethodQualifier;
 	
 	@SuppressWarnings("unchecked")
 	private void compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
@@ -186,6 +188,8 @@ public class PLCompiler {
 				FunctionDeclarationContext fcx = mdc.functionDeclaration();
 				boolean restricted = fcx.getText().startsWith("restricted");
 				String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+				if (methods.contains(name))
+					throw new CompilationException("Already containing function " + name);
 				methods.add(name);
 			}
 		}
@@ -202,7 +206,7 @@ public class PLCompiler {
 
 			@Override
 			protected void compileDataSources() throws Exception {
-				isRestrictedMethodQualifier = true; // default fields are always in restricted mode check off
+				isRestrictedMethodQualifier = RestrictedTo.MODULE; // default fields are always in restricted mode check off
 				compileInitMethod(fields, methods);
 			}
 			
@@ -260,6 +264,8 @@ public class PLCompiler {
 				FunctionDeclarationContext fcx = cbd.memberDeclaration().functionDeclaration();
 				boolean restricted = fcx.getText().startsWith("restricted");
 				String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+				if (methods.contains(name))
+					throw new CompilationException("Already containing function " + name);
 				methods.add(name);
 			}
 		}
@@ -276,7 +282,7 @@ public class PLCompiler {
 
 			@Override
 			protected void compileDataSources() throws Exception {
-				isRestrictedMethodQualifier = true; // default fields are always in restricted mode check off
+				isRestrictedMethodQualifier = RestrictedTo.CLASS; // default fields are always in restricted mode check off
 				compileInitMethod(fields, methods);
 			}
 			
@@ -297,13 +303,17 @@ public class PLCompiler {
 		return cls.toClass(getClassLoader(), null);
 	}
 
+	private boolean compilingInit;
 	private String compileFunction(final FunctionDeclarationContext fcx) throws Exception{
 		final boolean restricted = fcx.getText().startsWith("restricted");
 		String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
 		
-		isRestrictedMethodQualifier = restricted;
-		if (name.equals("init"))
-			isRestrictedMethodQualifier = true;
+		isRestrictedMethodQualifier = restricted ? RestrictedTo.MODULE : null;
+		if (name.equals("init")){
+			isRestrictedMethodQualifier = compilingClass ? RestrictedTo.CLASS : RestrictedTo.MODULE;
+			compilingInit = true;
+		} else
+			compilingInit = false;
 		
 		FormalParametersContext fpx = fcx.formalParameters();
 		final List<String> args = new ArrayList<String>();
@@ -333,6 +343,12 @@ public class PLCompiler {
 
 			@Override
 			protected void compileDataSources() throws Exception {
+				if (compilingInit){
+					bc.addAload(0);  // load this
+					bc.addIconst(1); // add true
+					bc.addPutfield(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__RESTRICTED_OVERRIDE, "Z");
+				}
+				
 				varStack.pushNewStack();
 				for (String arg : args){
 					varStack.addVariable(arg, VariableType.LOCAL_VARIABLE, stacker.acquire());
@@ -358,8 +374,18 @@ public class PLCompiler {
 		compileBlock(functionBody.block());	
 		
 		markLine(bc.currentPc(), functionBody.stop.getLine());
+		functionExitProtocol();
 		addNil();
 		bc.add(Opcode.ARETURN);
+	}
+
+	private void functionExitProtocol() {
+		if (!compilingInit) 
+			return;
+		
+		bc.addAload(0);  // load this
+		bc.addIconst(0); // add false
+		bc.addPutfield(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__RESTRICTED_OVERRIDE, "Z");
 	}
 
 	private void compileBlock(BlockContext block) throws Exception {
@@ -375,7 +401,9 @@ public class PLCompiler {
 					++pushCount;
 					
 					if (vd.variableInitializer() != null){
+						isStatementExpression.add(false);
 						compileExpression(vd.variableInitializer().expression());
+						isStatementExpression.pop();
 					} else {
 						addNil();
 					}
@@ -392,6 +420,7 @@ public class PLCompiler {
 		varStack.popStack();
 	}
 
+	private Stack<Boolean> isStatementExpression = new Stack<Boolean>();
 	private void compileStatement(StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
 		if (statement.block() != null){
@@ -399,11 +428,14 @@ public class PLCompiler {
 			return;
 		}
 		if (statement.statementExpression() != null){
+			isStatementExpression.add(true);
 			compileExpression(statement.statementExpression().expression());
-			bc.add(Opcode.POP);
+			isStatementExpression.pop();
 		} else if (statement.getText().startsWith("if")){
 			ExpressionContext e = statement.parExpression().expression();
+			isStatementExpression.add(false);
 			compileExpression(e);
+			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 			boolean hasElse = statement.getChildCount() == 5;
@@ -489,7 +521,9 @@ public class PLCompiler {
 				@Override
 				protected void provideSourceValue() throws Exception {
 					if (vd.variableInitializer() != null){
+						isStatementExpression.add(false);
 						compileExpression(vd.variableInitializer().expression());
+						isStatementExpression.pop();
 					} else {
 						addNil();
 					}
@@ -547,7 +581,9 @@ public class PLCompiler {
 			compilePrimaryExpression(expression.primary());
 			return;
 		} else if (expression.getChild(0) instanceof ExpressionContext){
+			isStatementExpression.add(false);
 			compileExpression((ExpressionContext) expression.getChild(0));
+			isStatementExpression.pop();
 			if (expression.getChild(1).getText().equals(".")){
 				// compiling field accessor
 				markLine(bc.currentPc(), expression.stop.getLine());
@@ -598,7 +634,9 @@ public class PLCompiler {
 		for (ExpressionContext e : expressionList.expression()){
 			bc.addAload(store);
 			bc.addIconst(i++);
+			isStatementExpression.add(false);
 			compileExpression(e);
+			isStatementExpression.pop();
 			bc.add(Opcode.AASTORE);
 		}
 		
@@ -618,7 +656,9 @@ public class PLCompiler {
 
 			@Override
 			public void compileRight() throws Exception {
+				isStatementExpression.add(false);
 				compileExpression(second);
+				isStatementExpression.pop();
 				
 				if (!operator.equals("=")){
 					// Simple assignment
@@ -657,8 +697,8 @@ public class PLCompiler {
 			}
 			
 			if (vt == null || vt != VariableType.LOCAL_VARIABLE){
-				if (restrictionCheck())
-					throw new CompilationException("Action not allowed in non restricted context");
+//				if (restrictionCheck(vt))
+//					throw new CompilationException("Action not allowed in non restricted context");
 				
 				{
 					/*
@@ -668,6 +708,7 @@ public class PLCompiler {
 						bc.addAload(0); 								// load this
 					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
 						addGetRuntime();
+						bc.addLdc(cacheStrings(moduleName));
 						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
 								"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
 					}
@@ -700,29 +741,34 @@ public class PLCompiler {
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__SETKEY, 
 						"(" + Strings.STRING_L + Strings.PLANGOBJECT_L +")V");
 				
-				/* Put new value on stack */
-				if (vt != null && vt == VariableType.CLASS_VARIABLE){
-					bc.addAload(0); 								// load this
-				} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
-					addGetRuntime();
-					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
-							"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
-					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
-				} else {
-					compilePrimaryExpression(lvalue.identified().primary());
-					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+				if (isStatementExpression.peek() == false){
+					/* Put new value on stack */
+					if (vt != null && vt == VariableType.CLASS_VARIABLE){
+						bc.addAload(0); 								// load this
+					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
+						addGetRuntime();
+						bc.addLdc(cacheStrings(moduleName));
+						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
+								"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+					} else {
+						compilePrimaryExpression(lvalue.identified().primary());
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+					}
+					
+					bc.addLdc(cacheStrings(identifier));			// load string from constants
+					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
+							"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 				}
-				
-				bc.addLdc(cacheStrings(identifier));			// load string from constants
-				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
-						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 			} else {
 				/* Loads the local varaible on stack, then writes to the same position */
 				if (!simpleSet)
 					bc.addAload(ord);
 				compileRight();
 				bc.addAstore(ord);
-				bc.addAload(ord);
+				if (isStatementExpression.peek() == false){
+					bc.addAload(ord);
+				}
 			}
 			
 			
@@ -733,7 +779,9 @@ public class PLCompiler {
 
 	private void compilePrimaryExpression(PrimaryContext primary) throws Exception {
 		if (primary.expression() != null){
+			isStatementExpression.add(false);
 			compileExpression(primary.expression());
+			isStatementExpression.pop();
 			return;
 		}
 		
@@ -809,9 +857,11 @@ public class PLCompiler {
 		isSystemCompiler = true;
 	}
 
-	public boolean restrictionCheck() {
-		if (isRestrictedMethodQualifier)
-			return false;
+	public boolean restrictionCheck(VariableType vt) {
+		if (isRestrictedMethodQualifier != null)
+			return vt == null ? false : (vt == VariableType.MODULE_VARIABLE ? 
+					isRestrictedMethodQualifier == RestrictedTo.CLASS 
+					: false);
 		if (isSystemCompiler)
 			return false;
 		return true;
