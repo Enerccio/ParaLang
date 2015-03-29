@@ -23,6 +23,10 @@ module Collections {
 			return wrappedSet->contains(o);
 		}
 		
+		remove(o){
+			return wrappedSet->remove(o);
+		}
+		
 		__str(){
 			return wrappedSet;
 		}

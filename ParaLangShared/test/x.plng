@@ -10,10 +10,11 @@ module HelloWorldModule {
 		set.insert(3);
 		set2.insert(4);
 		
-		IO.out.println(set2.contains(1));
-		
 		IO.out.println(set);
 		IO.out.println(set2);
+		
+		set.remove(3);
+		
 		IO.out.println(set);
 	}
 };

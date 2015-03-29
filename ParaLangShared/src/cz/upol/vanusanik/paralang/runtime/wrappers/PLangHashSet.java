@@ -27,7 +27,7 @@ public class PLangHashSet implements Serializable{
 		if (args.length != 1) 
 			throw new RuntimeException("Wrong number of parameters, expected 1, got " + args.length);
 		
-		return set.contains(args[0]) ? BooleanValue.TRUE : BooleanValue.FALSE;
+		return BooleanValue.fromBoolean(set.contains(args[0]));
 	}
 	
 	/**
@@ -41,6 +41,18 @@ public class PLangHashSet implements Serializable{
 		
 		set.add(args[0]);
 		return args[0];
+	}
+	
+	/**
+	 * Removes from the original set, restricted access
+	 * @param args
+	 * @return
+	 */
+	public PLangObject remove(PLangObject... args){
+		if (args.length != 1) 
+			throw new RuntimeException("Wrong number of parameters, expected 1, got " + args.length);
+		
+		return BooleanValue.fromBoolean(set.remove(args[0]));
 	}
 	
 	/**
