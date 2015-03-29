@@ -194,7 +194,8 @@ expression
     :   primary
     |   expression '.' Identifier
     |   expression '->' Identifier '(' expressionList? ')'
-    |   expression '(' expressionList? ')'
+    |   Identifier '->' Identifier '(' expressionList? ')'
+    |   expression methodCall
     |   'new' constructorCall
     |   'new' Identifier '.' constructorCall
     |   expression ('++' | '--')
@@ -228,6 +229,10 @@ expression
         )
         expression
     ;
+    
+methodCall
+	: '(' expressionList? ')'
+	;
     
 constructorCall 
 	:	Identifier '(' expressionList? ')'

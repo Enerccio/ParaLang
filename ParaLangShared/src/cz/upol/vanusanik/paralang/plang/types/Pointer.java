@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -74,5 +75,14 @@ public class Pointer extends PLangObject {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public PLangObject runMethod(String methodName, PLangObject[] args) throws Throwable {
+		for (Method m : value.getClass().getMethods()){
+			if (m.getName().equals(methodName)){
+				return (PLangObject) m.invoke(value, new Object[]{args});
+			}
+		}
+		throw new RuntimeException("Unknown method: " + methodName);
 	}
 }

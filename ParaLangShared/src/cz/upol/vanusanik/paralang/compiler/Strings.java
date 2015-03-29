@@ -24,6 +24,9 @@ public class Strings {
 	public static final String RUNTIME__CHECK_RESTRICTED_ACCESS = "checkRestrictedAccess";
 	public static final String RUNTIME__GET_MODULE = "getModule";
 	public static final String RUNTIME__NEW_INSTANCE = "newInstance";
+	public static final String RUNTIME__WRAP_JAVA_OBJECT = "wrapJavaObject";
+	public static final String RUNTIME__RUN = "run";
+	public static final String RUNTIME__RUN_JAVA_WRAPPER = "runJavaWrapper";
 	
 	public static final String TYPEOPS = "cz/upol/vanusanik/paralang/plang/types/TypeOperations";
 	public static final String TYPEOPS__CONVERT_TO_BOOLEAN = "convertToBoolean";
@@ -43,6 +46,9 @@ public class Strings {
 	public static final String BOOLEAN_VALUE_L = "L" + BOOLEAN_VALUE + ";";
 	public static final String FUNCTION_WRAPPER = "cz/upol/vanusanik/paralang/plang/types/FunctionWrapper";
 	public static final String FUNCTION_WRAPPER_L = "L" + FUNCTION_WRAPPER + ";";
+	public static final String POINTER = "cz/upol/vanusanik/paralang/plang/types/Pointer";
+	public static final String POINTER_L = "L" + POINTER + ";";
 	
 	public static final String STRING_L = "Ljava/lang/String;";
+	public static final String OBJECT_L = "Ljava/lang/Object;";
 }

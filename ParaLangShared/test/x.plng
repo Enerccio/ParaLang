@@ -1,33 +1,32 @@
 using SecondModule.Class4;
-import java.util.Map;
+
+import cz.upol.vanusanik.paralang.runtime.wrappers.PrintStreamWrapper;
 
 module HelloWorldModule {
-	var foobar;
-	
-	class Helper {
-		var augumented;
-		
-		init(augumented){
-			if (augumented){
-				inst.augumented = 10;
-			} else
-				inst.augumented = 1.5;
-			foobar = 1.0;
+	class SystemPrinter {
+		var wrappedPrinter;
+		var emptyLine = "";
+		init(wp){
+			inst.wrappedPrinter = PrintStreamWrapper->PrintStreamWrapper(wp);
 		}
-		
-		restricted foo(arg){
-			augumented = new Helper(arg);
+		print(object){
+			wrappedPrinter->print(object);
+		}
+		println(){
+			wrappedPrinter->println(emptyLine);
 		}
 	}
+	var out = new SystemPrinter(true);
+	var err = new SystemPrinter(false);
 	
 	init(){
-		foobar = new Helper(1);
+		
 	}
 	
-	var foobaz;
-	
 	restricted run(){
-		foobaz = new Helper(foobar);
-		foobaz.augumented = foobaz;
+		var foobaz = 3.14;
+		out.print(foobaz);
+		err.print(err.wrappedPrinter);
+		out.println();
 	}
 };

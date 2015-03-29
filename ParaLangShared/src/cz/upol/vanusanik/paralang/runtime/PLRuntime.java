@@ -13,6 +13,7 @@ import com.eclipsesource.json.WriterConfig;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
+import cz.upol.vanusanik.paralang.plang.types.Pointer;
 
 public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
@@ -87,14 +88,16 @@ public class PLRuntime {
 			throw new RuntimeException("Restricted mode");
 	}
 	
-	public PLangObject runUnsafe(PLangObject runner, PLangObject...args){
-		if (!isSafeContext)
-			throw new RuntimeException("Unsafe context for this call");
-		return run(runner, args);
+	public boolean isSafeContext(){
+		return isSafeContext;
+	}
+	
+	public void setSafeContext(boolean sc){
+		isSafeContext = sc;
 	}
 	
 	public PLangObject run(PLangObject runner, PLangObject... args){
-		if (runner.getType() != PlangObjectType.FUNCTION && runner.getType() != PlangObjectType.JAVAWRAPPER)
+		if (runner.getType() != PlangObjectType.FUNCTION)
 			throw new RuntimeException("Field is not callable");
 	
 		if (runner.getType() == PlangObjectType.FUNCTION){
@@ -106,6 +109,15 @@ public class PLRuntime {
 			}
 		}
 		return null;
+	}
+	
+
+	public PLangObject runJavaWrapper(Pointer runner, String mname, PLangObject... args){
+		try {
+			return runner.runMethod(mname, args);
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
 	}
 
 	public void setRestricted(boolean restricted) {
@@ -120,6 +132,10 @@ public class PLRuntime {
 
 	public boolean isAlreadySerialized(BaseCompiledStub baseCompiledStub) {
 		return serializedObjects.contains(baseCompiledStub);
+	}
+	
+	public PLangObject wrapJavaObject(Object object){
+		return new Pointer(object);
 	}
 	
 	/*

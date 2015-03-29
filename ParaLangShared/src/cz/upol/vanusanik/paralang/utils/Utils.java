@@ -2,6 +2,8 @@ package cz.upol.vanusanik.paralang.utils;
 
 import java.lang.reflect.Array;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.upol.vanusanik.paralang.compiler.FileDesignator;
 
 public class Utils {
@@ -24,6 +26,16 @@ public class Utils {
 		} else
 			return in.getPackageName();
 
+	}
+
+	public static String slashify(String fqName) {
+		return StringUtils.replace(fqName, ".", "/");
+	}
+
+	public static String removeStringQuotes(String text) {
+		if (text.equals(""))
+			return "";
+		return StringUtils.removeEnd(StringUtils.removeStart(text, "\""), "\"");
 	}
 
 }

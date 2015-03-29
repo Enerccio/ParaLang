@@ -29,6 +29,7 @@ import javassist.bytecode.SourceFileAttribute;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -56,6 +57,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.StatementContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorsContext;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
+import cz.upol.vanusanik.paralang.utils.Utils;
 
 public class PLCompiler {
 	
@@ -580,6 +582,63 @@ public class PLCompiler {
 		if (expression.primary() != null){
 			compilePrimaryExpression(expression.primary());
 			return;
+		} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("->")){
+			if (!PLRuntime.getRuntime().isSafeContext())
+				throw new CompilationException("Java method call being compiled under unsafe context.");
+			
+			// java call
+			ParseTree init = expression.getChild(0);
+			String mname = expression.getChild(2).getText();
+			String refName = init.getText();
+			if (!referenceMap.containsKey(refName)){
+				// instance method, grab Pointer value from it, then call it
+				
+				addGetRuntime();
+				isStatementExpression.add(false);
+				compileExpression((ExpressionContext) init);
+				isStatementExpression.pop();
+				bc.addCheckcast(Strings.POINTER);
+				bc.addLdc(cacheStrings(mname));
+				compileParameters(expression.expressionList());
+				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN_JAVA_WRAPPER, 
+						"(" + Strings.POINTER_L + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+				
+			} else {
+				// static method or constructor
+				Reference r = referenceMap.get(refName);
+				if (r == null)
+					throw new CompilationException("Unknown type reference: " + refName + " at " + expression.start.getLine());
+				String fqName = r.getFullReference();
+				if (!r.isJava())
+					throw new CompilationException("Type is not java type!");
+				
+				boolean isConstructorCall = refName.equals(mname);
+				String fqNameS = Utils.slashify(fqName);
+				
+				if (isConstructorCall){
+					addGetRuntime();
+					bc.addNew(fqNameS);
+					bc.add(Opcode.DUP);
+					compileParameters(expression.expressionList());
+					bc.addInvokespecial(fqNameS, 
+							"<init>", "([" +  Strings.PLANGOBJECT_L + ")V");
+					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__WRAP_JAVA_OBJECT, 
+							"(" + Strings.OBJECT_L +")" + Strings.PLANGOBJECT_L);
+				} else {
+					// TODO
+					
+				}
+			}
+		} else if (expression.methodCall() != null){
+			// method call
+			addGetRuntime();
+			isStatementExpression.add(false);
+			compileExpression((ExpressionContext) expression.getChild(0));
+			isStatementExpression.pop();
+			compileParameters(expression.methodCall().expressionList());
+			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, 
+					"(" + Strings.PLANGOBJECT_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+			
 		} else if (expression.getChild(0) instanceof ExpressionContext){
 			isStatementExpression.add(false);
 			compileExpression((ExpressionContext) expression.getChild(0));
@@ -615,14 +674,12 @@ public class PLCompiler {
 			if (setOperators.contains(operator)){
 				compileSetOperator(operator, expression);
 			}
-		}
+		} 
 	}
 
 	private void compileParameters(ExpressionListContext expressionList) throws Exception {
-		if (expressionList == null)
-			return;
 		
-		int numExpr = expressionList.expression().size();
+		int numExpr = expressionList == null ? 0 : expressionList.expression().size();
 		int store = stacker.acquire();
 		
 		// create PLangObject[] array and save it in local variable
@@ -631,14 +688,15 @@ public class PLCompiler {
 		
 		// Evaluate every expression and save it to the array
 		int i = 0;
-		for (ExpressionContext e : expressionList.expression()){
-			bc.addAload(store);
-			bc.addIconst(i++);
-			isStatementExpression.add(false);
-			compileExpression(e);
-			isStatementExpression.pop();
-			bc.add(Opcode.AASTORE);
-		}
+		if (expressionList != null)
+			for (ExpressionContext e : expressionList.expression()){
+				bc.addAload(store);
+				bc.addIconst(i++);
+				isStatementExpression.add(false);
+				compileExpression(e);
+				isStatementExpression.pop();
+				bc.add(Opcode.AASTORE);
+			}
 		
 		// put reference array on stack
 		bc.addAload(store);
@@ -811,7 +869,7 @@ public class PLCompiler {
 			} else if (l.StringLiteral() != null){
 				bc.addNew(Strings.STRING_TYPE);
 				bc.add(Opcode.DUP);
-				bc.addLdc(cacheStrings(l.StringLiteral().getText()));
+				bc.addLdc(cacheStrings(Utils.removeStringQuotes(l.StringLiteral().getText())));
 				bc.addInvokespecial(Strings.STRING_TYPE, 
 						"<init>", "(" + Strings.STRING_L + ")V");
 			} else if (l.BooleanLiteral() != null){
