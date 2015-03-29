@@ -8,7 +8,10 @@ module HelloWorldModule {
 		var augumented;
 		
 		init(augumented){
-			inst.augumented = augumented;
+			if (augumented){
+				inst.augumented = 10;
+			} else
+				inst.augumented = 1.5;
 		}
 		
 		restricted foo(arg){

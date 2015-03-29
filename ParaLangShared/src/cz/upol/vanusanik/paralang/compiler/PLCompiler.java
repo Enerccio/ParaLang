@@ -136,7 +136,9 @@ public class PLCompiler {
 		
 		compileModuleClass(ctx, in);
 	}
-
+	
+	private int counter;
+	private Map<Integer, Integer> labelMap;
 	private boolean compilingClass = false;
 	private ClassPool cp;
 	private DataOutputStream lineNumberStream;
@@ -399,7 +401,51 @@ public class PLCompiler {
 		if (statement.statementExpression() != null){
 			compileExpression(statement.statementExpression().expression());
 			bc.add(Opcode.POP);
-			return;
+		} else if (statement.getText().startsWith("if")){
+			ExpressionContext e = statement.parExpression().expression();
+			compileExpression(e);
+			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+			boolean hasElse = statement.getChildCount() == 5;
+			int key = counter++;
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
+					bc.write16bit(bcpos+1, offset);
+				}
+				
+			}, key);
+			int key2 = -1;
+			
+			compileStatement((StatementContext) statement.getChild(2));
+			if (hasElse){
+				key2 = counter++;
+				addLabel(new LabelInfo(){
+
+					@Override
+					protected void add(Bytecode bc) throws CompilationException {
+						int offset = getValue(poskey) - bcpos;
+						if (Math.abs(offset) > (65535/2)){
+							throw new CompilationException("Too long jump. Please reformate the code!");
+						} else {
+							bc.write(bcpos, Opcode.GOTO);
+							bc.write16bit(bcpos+1, offset);
+						}
+					}
+					
+				}, key2);
+			}
+			
+			setLabelPos(key);
+			
+			if (hasElse){
+				compileStatement((StatementContext) statement.getChild(4));
+				setLabelPos(key2);
+			}
+			bc.add(Opcode.NOP);
 		}
 	}
 
@@ -532,7 +578,6 @@ public class PLCompiler {
 			
 			if (setOperators.contains(operator)){
 				compileSetOperator(operator, expression);
-				addNil();
 			}
 		}
 	}
@@ -654,13 +699,33 @@ public class PLCompiler {
 				/* Stores the value into __setKey of the object on stack */
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__SETKEY, 
 						"(" + Strings.STRING_L + Strings.PLANGOBJECT_L +")V");
+				
+				/* Put new value on stack */
+				if (vt != null && vt == VariableType.CLASS_VARIABLE){
+					bc.addAload(0); 								// load this
+				} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
+					addGetRuntime();
+					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
+							"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
+					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+				} else {
+					compilePrimaryExpression(lvalue.identified().primary());
+					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+				}
+				
+				bc.addLdc(cacheStrings(identifier));			// load string from constants
+				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
+						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 			} else {
 				/* Loads the local varaible on stack, then writes to the same position */
 				if (!simpleSet)
 					bc.addAload(ord);
 				compileRight();
 				bc.addAstore(ord);
+				bc.addAload(ord);
 			}
+			
+			
 		}
 		
 		public abstract void compileRight() throws Exception;
@@ -751,6 +816,15 @@ public class PLCompiler {
 			return false;
 		return true;
 	}
+	
+	private abstract class LabelInfo {
+		public int bcpos;
+		public int poskey;
+		
+		protected abstract void add(Bytecode bc) throws CompilationException;
+	}
+	
+	private List<LabelInfo> labelList;
 
 	private abstract class MethodCompiler {
 		private CtMethod m;
@@ -761,6 +835,9 @@ public class PLCompiler {
 		public void compileMethod() throws Exception{
 			lastLineWritten = -1;
 			stacker = new AutoIntStacker(1);
+			counter = 0;
+			labelMap = new HashMap<Integer, Integer>();
+			labelList = new ArrayList<LabelInfo>();
 			
 			pool = m.getMethodInfo().getConstPool();
 			SourceFileAttribute attr = new SourceFileAttribute(pool, source);
@@ -773,6 +850,9 @@ public class PLCompiler {
 			bc = new Bytecode(pool);
 			
 			compileDataSources();
+			
+			for (LabelInfo nfo : labelList)
+				nfo.add(bc);
 			
 			byte[] bytes = stream.toByteArray();
 			int size = (bytes.length - 2) / 4;
@@ -787,6 +867,7 @@ public class PLCompiler {
 			at.getAttributes().add(lineNubmerInfo);
 			
 			m.getMethodInfo().setCodeAttribute(at);
+			m.getMethodInfo().rebuildStackMap(cp);
 			
 			InstructionPrinter.print(m, System.err);
 			
@@ -831,5 +912,24 @@ public class PLCompiler {
 			cache.put(string, pool.addStringInfo(string));
 		}
 		return cache.get(string);
+	}
+	
+	private int setLabelPos(int key){
+		int cpc = bc.currentPc();
+		labelMap.put(key, cpc);
+		return key;
+	}
+	
+	private int getValue(int key){
+		return labelMap.get(key);
+	}
+	
+	private void addLabel(LabelInfo nfo, int key){
+		nfo.poskey = key;
+		nfo.bcpos = bc.currentPc();
+		labelList.add(nfo);
+		// Placeholder NOPs
+		for (int i=0; i<3; i++)
+			bc.add(Opcode.NOP);
 	}
 }

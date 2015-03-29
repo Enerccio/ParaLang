@@ -25,6 +25,7 @@ public class Strings {
 	public static final String RUNTIME__NEW_INSTANCE = "newInstance";
 	
 	public static final String TYPEOPS = "cz/upol/vanusanik/paralang/plang/types/TypeOperations";
+	public static final String TYPEOPS__CONVERT_TO_BOOLEAN = "convertToBoolean";
 	
 	public static final String PLANGOBJECT = "cz/upol/vanusanik/paralang/plang/PLangObject";
 	public static final String PLANGOBJECT_L = "L" + PLANGOBJECT + ";";
