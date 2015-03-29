@@ -11,6 +11,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
+import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 
 public abstract class BaseCompiledStub extends PLangObject {
 	protected Map<String, PLangObject> __fieldsAndMethods;
@@ -179,5 +180,9 @@ public abstract class BaseCompiledStub extends PLangObject {
 	@Override
 	public boolean eq(PLangObject b) {
 		return this == b;
+	}
+	
+	protected PLangObject __convertBoolean(boolean b){
+		return BooleanValue.fromBoolean(b);
 	}
 }

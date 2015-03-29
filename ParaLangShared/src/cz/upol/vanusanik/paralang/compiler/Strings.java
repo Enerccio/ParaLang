@@ -12,6 +12,7 @@ public class Strings {
 	public static final String BASE_COMPILED_STUB__GET_RUNTIME = "__get_runtime";
 	public static final String BASE_COMPILED_STUB__GET_THIS = "__get_this";
 	public static final String BASE_COMPILED_STUB__RESTRICTED_OVERRIDE = "__restrictedOverride";
+	public static final String BASE_COMPILED_STUB__CONVERT_BOOLEAN = "__convertBoolean";
 	
 	public static final String PL_MODULE = "cz/upol/vanusanik/paralang/runtime/PLModule";
 	public static final String PL_MODULE_L = "L" + PL_MODULE + ";";

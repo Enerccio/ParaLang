@@ -26,16 +26,12 @@ module HelloWorldModule {
 		
 	}
 	
+	test(){
+		out.print("TEST");
+	}
+	
 	restricted run(){
-		var foobaz = 3.14;
-		out.println(foobaz + 20 * 4 / 2 % 3);
-		
-		out.println(true == true);
-		out.println(true == 4);
-		out.println(4 != true);
-		out.println(3 < 10);
-		out.println(3 > 10);
-		out.println(3 >= 3);
-		out.println(3 <= 3);
+		out.println(false || test());
+		out.println(true && test());
 	}
 };

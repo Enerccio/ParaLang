@@ -663,6 +663,9 @@ public class PLCompiler {
 			if (bioperators.contains(operator)){
 				compileBinaryOperator(operator, 
 						(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2));
+			} else if ("||".equals(operator) || "&&".equals(operator)) {
+				compileLogic((ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2),
+						"||".equals(operator));
 			} else {
 				isStatementExpression.add(false);
 				compileExpression((ExpressionContext) expression.getChild(0));
@@ -702,10 +705,68 @@ public class PLCompiler {
 		} 
 	}
 
+	private void compileLogic(ExpressionContext left,
+			ExpressionContext right, final boolean or) throws Exception {
+		
+		bc.addAload(0);
+		
+		isStatementExpression.add(false);
+		compileExpression(left);
+		isStatementExpression.pop();
+		
+		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+		
+		int shortCut = counter++;
+		int reminder = counter++;
+		addLabel(new LabelInfo(){
+
+			@Override
+			protected void add(Bytecode bc) throws CompilationException {
+				int offset = getValue(poskey) - bcpos;
+				bc.write(bcpos, or ? Opcode.IFNE : Opcode.IFEQ);  
+				bc.write16bit(bcpos+1, offset);
+			}
+			
+		}, shortCut);
+		
+		isStatementExpression.add(false);
+		compileExpression(right);
+		isStatementExpression.pop();
+		
+		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+		
+		addLabel(new LabelInfo(){
+
+			@Override
+			protected void add(Bytecode bc) throws CompilationException {
+				int offset = getValue(poskey) - bcpos;
+				if (Math.abs(offset) > (65535/2)){
+					throw new CompilationException("Too long jump. Please reformate the code!");
+				} else {
+					bc.write(bcpos, Opcode.GOTO);
+					bc.write16bit(bcpos+1, offset);
+				}
+			}
+			
+		}, reminder);
+		
+		setLabelPos(shortCut);
+		
+		if (or){
+			bc.addIconst(1);
+		} else {
+			bc.addIconst(0);
+		}
+		
+		setLabelPos(reminder);
+		bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__CONVERT_BOOLEAN, 
+				"(Z)" + Strings.PLANGOBJECT_L);
+	}
+
 	private void compileBinaryOperator(String operator,
 			ExpressionContext expression1, ExpressionContext expression2) throws Exception {
-		
-		
 		
 		isStatementExpression.add(false);
 		compileExpression(expression1);
