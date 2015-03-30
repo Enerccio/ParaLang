@@ -5,6 +5,8 @@ import java.util.HashSet;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
+import cz.upol.vanusanik.paralang.plang.types.Int;
+import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
 
 public class PLangHashSet implements Serializable{
@@ -23,11 +25,8 @@ public class PLangHashSet implements Serializable{
 	 * @param args
 	 * @return
 	 */
-	public PLangObject contains(PLangObject... args){
-		if (args.length != 1) 
-			throw new RuntimeException("Wrong number of parameters, expected 1, got " + args.length);
-		
-		return BooleanValue.fromBoolean(set.contains(args[0]));
+	public PLangObject contains(PLangObject arg){
+		return BooleanValue.fromBoolean(set.contains(arg));
 	}
 	
 	/**
@@ -35,12 +34,9 @@ public class PLangHashSet implements Serializable{
 	 * @param args
 	 * @return
 	 */
-	public PLangObject insert(PLangObject... args){
-		if (args.length != 1) 
-			throw new RuntimeException("Wrong number of parameters, expected 1, got " + args.length);
-		
-		set.add(args[0]);
-		return args[0];
+	public PLangObject insert(PLangObject arg){
+		set.add(arg);
+		return arg;
 	}
 	
 	/**
@@ -48,11 +44,8 @@ public class PLangHashSet implements Serializable{
 	 * @param args
 	 * @return
 	 */
-	public PLangObject remove(PLangObject... args){
-		if (args.length != 1) 
-			throw new RuntimeException("Wrong number of parameters, expected 1, got " + args.length);
-		
-		return BooleanValue.fromBoolean(set.remove(args[0]));
+	public PLangObject remove(PLangObject arg){
+		return BooleanValue.fromBoolean(set.remove(arg));
 	}
 	
 	/**
@@ -60,21 +53,32 @@ public class PLangHashSet implements Serializable{
 	 * @param args
 	 * @return
 	 */
-	public PLangObject push(PLangObject... args){
-		if (args.length != 2) 
-			throw new RuntimeException("Wrong number of parameters, expected 2, got " + args.length);
+	public PLangObject push(PLangObject a2, Pointer p){
 		
-		Pointer p = (Pointer) args[1];
 		PLangHashSet inner = p.getPointer();
 		
 		inner.set.addAll(set);
-		inner.set.add(args[0]);
+		inner.set.add(a2);
 		
 		return p;
 	}
 	
+	/**
+	 * Clears inner set
+	 * @param args
+	 * @return
+	 */
+	public PLangObject clear(){
+		set.clear();
+		return NoValue.NOVALUE;
+	}
+	
+	public PLangObject size(){
+		return new Int(set.size());
+	}
+	
 	@Override
 	public String toString(){
-		return set.toString();
+		return "Set=" + set.toString();
 	}
 }

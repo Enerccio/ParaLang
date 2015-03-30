@@ -13,6 +13,7 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.utils.Utils;
 
 public class Pointer extends PLangObject {
 	
@@ -80,7 +81,11 @@ public class Pointer extends PLangObject {
 	public PLangObject runMethod(String methodName, PLangObject[] args) throws Throwable {
 		for (Method m : value.getClass().getMethods()){
 			if (m.getName().equals(methodName)){
-				return (PLangObject) m.invoke(value, new Object[]{args});
+				try {
+					return (PLangObject) m.invoke(value, Utils.asObjectArray(args));
+				} catch (Exception e){
+					throw new RuntimeException(e);
+				}
 			}
 		}
 		throw new RuntimeException("Unknown method: " + methodName);

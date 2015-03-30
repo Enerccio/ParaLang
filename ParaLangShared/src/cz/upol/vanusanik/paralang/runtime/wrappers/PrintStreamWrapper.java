@@ -6,7 +6,6 @@ import java.io.Serializable;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
-import cz.upol.vanusanik.paralang.plang.types.NoValue;
 
 public class PrintStreamWrapper implements Serializable {
 	
@@ -18,9 +17,6 @@ public class PrintStreamWrapper implements Serializable {
 	}
 	
 	public PrintStreamWrapper(PLangObject... args){
-		if (args.length != 1) 
-			throw new RuntimeException("Wrong number of parameters, expected 1, got " + args.length);
-		
 		PLangObject arg0 = args[0];
 		if (arg0.getType() != PlangObjectType.BOOLEAN)
 			throw new RuntimeException("Argument 0 must be of type BOOLEAN!");
@@ -33,24 +29,14 @@ public class PrintStreamWrapper implements Serializable {
 		this.stream = isOutStream ? System.out : System.err;
 	}
 	
-	public PLangObject print(PLangObject... args){
-		if (args.length > 1) 
-			throw new RuntimeException("Wrong number of parameters, expected 0..1, got " + args.length);
-		
-		if (args.length == 1){
-			PLangObject arg0 = args[0];
-			this.stream.print(arg0);
-			this.stream.flush();
-			return arg0;
-		} else {
-			this.stream.print("");
-			this.stream.flush();
-			return NoValue.NOVALUE;
-		}
+	public PLangObject print(PLangObject arg0){
+		this.stream.print(arg0);
+		this.stream.flush();
+		return arg0;
 	}
 	
-	public PLangObject println(PLangObject... args){
-		PLangObject arg = print(args);
+	public PLangObject println(PLangObject arg){
+		print(arg);
 		this.stream.println();
 		return arg;
 	}

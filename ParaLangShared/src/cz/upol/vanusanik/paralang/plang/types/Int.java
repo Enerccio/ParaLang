@@ -71,4 +71,8 @@ public class Int extends PLangObject {
 		if (!b.isNumber()) return false;
 		return value == b.getNumber();
 	}
+
+	public int getValue() {
+		return value;
+	}
 }

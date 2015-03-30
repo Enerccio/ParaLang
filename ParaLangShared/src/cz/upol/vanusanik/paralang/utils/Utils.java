@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.upol.vanusanik.paralang.compiler.FileDesignator;
+import cz.upol.vanusanik.paralang.plang.PLangObject;
 
 public class Utils {
 
@@ -36,6 +37,10 @@ public class Utils {
 		if (text.equals(""))
 			return "";
 		return StringUtils.removeEnd(StringUtils.removeStart(text, "\""), "\"");
+	}
+
+	public static Object[] asObjectArray(PLangObject[] args) {
+		return args;
 	}
 
 }

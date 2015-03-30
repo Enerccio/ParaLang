@@ -15,7 +15,7 @@ public class Test {
 		
 		PLRuntime r = new PLRuntime();
 		r.setRestricted(false);
-		r.setSafeContext(true);
+		r.setSafeContext(false);
 		c.compile(new DiskFileDesignator(f));
 		
 		r.run("HelloWorldModule", "run");

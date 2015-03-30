@@ -1,20 +1,22 @@
 using IO;
-using Collections.HashSet;
+using Collections.List;
 
 module HelloWorldModule {
 	
 	restricted run(){
-		var set = new HashSet();
-		set.insert(1);
-		var set2 = set.push(2);
-		set.insert(3);
-		set2.insert(4);
+		var list = new List();
+		list.add(1);
+		list.add(2);
+		list.add(3);
 		
-		IO.out.println(set);
-		IO.out.println(set2);
+		IO.out.println(list);
+		IO.out.println(list.size());
 		
-		set.remove(3);
+		var list2 = list.append(4);
 		
-		IO.out.println(set);
+		list.clear();
+		IO.out.println(list);
+		IO.out.println(list2);
+		IO.out.println(list.size());
 	}
 };
