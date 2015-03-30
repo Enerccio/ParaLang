@@ -69,4 +69,7 @@ public class Strings {
 	
 	public static final String STRING_L = "Ljava/lang/String;";
 	public static final String OBJECT_L = "Ljava/lang/Object;";
+	
+	public static final String SERIALIZABLE = "java/io/Serializable";
+	public static final String SERIALIZATION_UID = "serialVersionUID";
 }

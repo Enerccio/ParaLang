@@ -3,16 +3,19 @@ using Collections.List;
 
 module HelloWorldModule {
 	
+	var list, list2;
+	
 	restricted run(){
-		var list = new List();
+		list = new List();
 		list.add(1);
 		list.add(2);
 		list.add(3);
+		list.add(list);
 		
 		IO.out.println(list);
 		IO.out.println(list.size());
 		
-		var list2 = list.append(4);
+		list2 = list.append(4);
 		
 		list.clear();
 		IO.out.println(list);

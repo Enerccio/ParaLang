@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Collection;
 
@@ -41,6 +44,7 @@ public class PLRuntime {
 	private Map<String, Class<? extends PLModule>> preloadedModuleMap = new HashMap<String, Class<? extends PLModule>>();
 	private Map<String, PLModule> moduleMap = new HashMap<String, PLModule>();
 	private Map<String, Map<String, Class<?>>> classMap = new HashMap<String, Map<String,Class<?>>>();
+	private Map<String, Long> uuidMap = new HashMap<String, Long>();
 	
 	private boolean isSafeContext = false;
 	private boolean isRestricted = true;
@@ -49,6 +53,30 @@ public class PLRuntime {
 		localRuntime.set(this);
 		
 		initialize();
+	}
+	
+	public void addUuidMap(String fqName, Long uuid){
+		uuidMap.put(fqName, uuid);
+	}
+	
+	public PLModule resolveModule(String moduleName){
+		return moduleMap.get(moduleName);
+	}
+	
+	private static Random prng;
+	static {
+		 try {
+			prng = SecureRandom.getInstance("SHA1PRNG");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			prng = new Random();
+		}
+	}
+	public Long getUuid(String fqName){
+		if (!uuidMap.containsKey(fqName)){
+			addUuidMap(fqName, prng.nextLong());
+		}
+		return uuidMap.get(fqName);
 	}
 	
 	public void initialize(){
@@ -193,9 +221,18 @@ public class PLRuntime {
 		
 		JsonObject root = new JsonObject();
 		JsonArray modules = new JsonArray();
+		JsonArray uniqueIds = new JsonArray();
+		
+		for (String key : uuidMap.keySet()){
+			Long value = uuidMap.get(key);
+			uniqueIds.add(new JsonObject().add("fullyQualifiedName", key).add("serialVersionUID", value));
+		}
+		
+		root.add("serialVersionUIDs", uniqueIds);
 		
 		for (String moduleName : moduleMap.keySet()){
-			modules.add(moduleMap.get(moduleName).toObject(previousSerialization));
+			modules.add(new JsonObject().add("moduleName", moduleName)
+					.add("module", moduleMap.get(moduleName).toObject(previousSerialization)));
 		}
 		
 		root.add("modules", modules);

@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Stack;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
+import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
@@ -169,8 +171,17 @@ public class PLCompiler {
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.MODULE_BASE_CLASS));
 		
+		// Serialization
+		cls.addInterface(cp.getCtClass(Strings.SERIALIZABLE));
+		CtField f = new CtField(CtClass.longType, Strings.SERIALIZATION_UID, cls);
+		f.setModifiers(Modifier.STATIC | Modifier.FINAL);
+		cls.addField(f, "" + PLRuntime.getRuntime().getUuid(className));
+		
 		CtConstructor ct = CtNewConstructor.defaultConstructor(cls);
 		cls.addConstructor(ct);
+		
+		CtMethod serM = CtNewMethod.make("private java.lang.Object readResolve() { return cz.upol.vanusanik.paralang.runtime.PLRuntime.getRuntime().resolveModule(\""+ moduleName + "\"); }", cls);
+		cls.addMethod(serM);
 		
 		final List<FieldDeclarationContext> fields = new ArrayList<FieldDeclarationContext>();
 		// List all fields
@@ -241,6 +252,12 @@ public class PLCompiler {
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.CLASS_BASE_CLASS));
+		
+		// Serialization
+		cls.addInterface(cp.getCtClass(Strings.SERIALIZABLE));
+		CtField f = new CtField(CtClass.longType, Strings.SERIALIZATION_UID, cls);
+		f.setModifiers(Modifier.STATIC | Modifier.FINAL);
+		cls.addField(f, "" + PLRuntime.getRuntime().getUuid(className));
 		
 		CtConstructor ct = CtNewConstructor.defaultConstructor(cls);
 		cls.addConstructor(ct);

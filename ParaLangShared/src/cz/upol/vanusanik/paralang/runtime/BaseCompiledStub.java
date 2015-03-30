@@ -14,7 +14,7 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
-public abstract class BaseCompiledStub extends PLangObject {
+public abstract class BaseCompiledStub extends PLangObject{
 	protected Map<String, PLangObject> __fieldsAndMethods;
 	private Map<String, Long> __fieldModificationMap = new HashMap<String, Long>();
 	private Map<PLangObject, Set<String>> __reverseMapLookup = new HashMap<PLangObject, Set<String>>(){

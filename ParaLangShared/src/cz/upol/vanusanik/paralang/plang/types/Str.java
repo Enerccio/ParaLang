@@ -1,13 +1,16 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.io.Serializable;
+
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 
-public class Str extends PLangObject {
-	
+public class Str extends PLangObject implements Serializable {
+	private static final long serialVersionUID = -7656132457086147070L;
+
 	public Str(){
 		
 	}

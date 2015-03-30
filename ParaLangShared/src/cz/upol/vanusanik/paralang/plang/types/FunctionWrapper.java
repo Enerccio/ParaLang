@@ -1,5 +1,6 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import com.eclipsesource.json.JsonObject;
@@ -10,8 +11,9 @@ import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
-public class FunctionWrapper extends PLangObject {
-	
+public class FunctionWrapper extends PLangObject implements Serializable {
+	private static final long serialVersionUID = 3998164784189902299L;
+
 	public FunctionWrapper(){
 		
 	}

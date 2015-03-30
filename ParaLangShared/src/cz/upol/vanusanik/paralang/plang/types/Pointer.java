@@ -15,8 +15,9 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
-public class Pointer extends PLangObject {
-	
+public class Pointer extends PLangObject implements Serializable {
+	private static final long serialVersionUID = -4564277494396267580L;
+
 	public Pointer(){
 		
 	}

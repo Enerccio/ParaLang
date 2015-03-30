@@ -7,7 +7,7 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 
-public class PrintStreamWrapper implements Serializable {
+public class PrintStreamWrapper extends ObjectBase implements Serializable {
 	
 	private static final long serialVersionUID = -7893331337659396685L;
 	private transient PrintStream stream;
@@ -39,6 +39,11 @@ public class PrintStreamWrapper implements Serializable {
 		print(arg);
 		this.stream.println();
 		return arg;
+	}
+
+	@Override
+	protected String doToString() {
+		return stream.toString();
 	}
 
 }

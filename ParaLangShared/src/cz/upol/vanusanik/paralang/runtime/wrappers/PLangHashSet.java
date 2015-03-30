@@ -9,7 +9,7 @@ import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
 
-public class PLangHashSet implements Serializable{
+public class PLangHashSet extends ObjectBase implements Serializable{
 	private static final long serialVersionUID = -7098990803194029764L;
 	private HashSet<PLangObject> set = new HashSet<PLangObject>();
 	
@@ -78,7 +78,7 @@ public class PLangHashSet implements Serializable{
 	}
 	
 	@Override
-	public String toString(){
+	public String doToString(){
 		return "Set=" + set.toString();
 	}
 }

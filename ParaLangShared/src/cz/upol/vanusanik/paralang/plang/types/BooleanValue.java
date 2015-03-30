@@ -1,13 +1,15 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.io.Serializable;
+
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 
-public class BooleanValue extends PLangObject {
-
+public class BooleanValue extends PLangObject implements Serializable {
+	private static final long serialVersionUID = -4278817229742488910L;
 	boolean value;
 	
 	private BooleanValue(boolean value){
@@ -50,6 +52,10 @@ public class BooleanValue extends PLangObject {
 	@Override
 	public boolean eq(PLangObject b) {
 		return this == b;
+	}
+	
+	private Object readResolve()  {
+		return value ? TRUE : FALSE;
 	}
 
 }
