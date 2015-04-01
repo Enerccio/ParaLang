@@ -5,7 +5,7 @@ import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 public abstract class PLModule extends BaseCompiledStub {
 
 	@Override
-	public PlangObjectType getType() {
+	public PlangObjectType __sys_m_getType() {
 		return PlangObjectType.MODULE;
 	}
 	

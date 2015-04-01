@@ -70,7 +70,7 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public PlangObjectType getType() {
+	public PlangObjectType __sys_m_getType() {
 		return PlangObjectType.FUNCTION;
 	}
 	
@@ -112,21 +112,21 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	}
 	
 	@Override
-	public JsonValue toObject(long previousTime) {
-		return new JsonObject().add("metaObjectType", getType().toString())
+	public JsonValue __sys_m_toObject(long previousTime) {
+		return new JsonObject().add("metaObjectType", __sys_m_getType().toString())
 				.add("value", new JsonObject()
 					.add("methodName", methodName)
-					.add("owner", owner.toObject(previousTime))
+					.add("owner", owner.__sys_m_toObject(previousTime))
 					.add("isClassMethod", isMethod));
 	}
 	
 	@Override
-	public boolean isNumber() {
+	public boolean __sys_m_isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float getNumber() {
+	public Float __sys_m_getNumber() {
 		return null;
 	}
 	

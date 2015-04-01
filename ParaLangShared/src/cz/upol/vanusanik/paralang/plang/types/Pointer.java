@@ -31,7 +31,7 @@ public class Pointer extends PLangObject implements Serializable {
 	Object value;
 	
 	@Override
-	public PlangObjectType getType() {
+	public PlangObjectType __sys_m_getType() {
 		return PlangObjectType.JAVAOBJECT;
 	}
 	
@@ -66,13 +66,13 @@ public class Pointer extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public JsonValue toObject(long previousTime) {
+	public JsonValue __sys_m_toObject(long previousTime) {
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ObjectOutputStream serstream = new ObjectOutputStream(out);
 			serstream.writeObject(value);
 			String serializedForm = Base64.encodeBase64String(out.toByteArray());
-			return new JsonObject().add("metaObjectType", getType().toString())
+			return new JsonObject().add("metaObjectType", __sys_m_getType().toString())
 					.add("value", serializedForm);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -93,18 +93,18 @@ public class Pointer extends PLangObject implements Serializable {
 	}
 	
 	@Override
-	public boolean isNumber() {
+	public boolean __sys_m_isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float getNumber() {
+	public Float __sys_m_getNumber() {
 		return null;
 	}
 	
 	@Override
 	public boolean eq(PLangObject b) {
-		if (b.getType().equals(getType()))
+		if (b.__sys_m_getType().equals(__sys_m_getType()))
 			return value.equals(((Pointer)b).value);
 		else
 			return false;

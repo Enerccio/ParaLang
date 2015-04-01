@@ -19,13 +19,17 @@ module HelloWorldModule {
 			var c = 5;
 			var d = 8;
 			
-			IO.out.println(c > a);
+			IO.out.println(c > new Integer(a));
 			IO.out.println(d < a);
+			
+			IO.out.println(c + a + b);
+			
+			inst == new Test();
 		}
 		
-		equalityTest(me, other){
+		__eq(me, other){
 			IO.out.println("Test!");
-			return parent.equalityTest(me, other);
+			return parent.__eq(me, other);
 		}
 	}
 	

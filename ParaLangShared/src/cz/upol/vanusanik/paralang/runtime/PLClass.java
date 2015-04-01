@@ -3,12 +3,13 @@ package cz.upol.vanusanik.paralang.runtime;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
+import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
 public abstract class PLClass extends BaseCompiledStub{
 	public static final String __superKey = "$$__parent__$$";
 
 	@Override
-	public PlangObjectType getType() {
+	public PlangObjectType __sys_m_getType() {
 		return PlangObjectType.CLASS;
 	}
 	
@@ -34,7 +35,7 @@ public abstract class PLClass extends BaseCompiledStub{
 		return data;
 	}
 
-	private PLClass __getSuper() {
+	public PLClass __getSuper() {
 		if (!isInited){
 			__init_class();
 		}
@@ -42,11 +43,11 @@ public abstract class PLClass extends BaseCompiledStub{
 		if (!__fieldsAndMethods.containsKey(__superKey))
 			return null;
 		
-		return (PLClass) __fieldsAndMethods.get(__superKey);
+		return (PLClass) __getkey(__superKey);
 	}
 	
 	@Override
 	public boolean eq(PLangObject b) {
-		return BooleanValue.toBoolean(PLRuntime.getRuntime().run(__getkey("equalityTest"), this, b));
+		return BooleanValue.toBoolean(PLRuntime.getRuntime().run(__getkey(Operator.EQ.classMethod), this, b));
 	}
 }

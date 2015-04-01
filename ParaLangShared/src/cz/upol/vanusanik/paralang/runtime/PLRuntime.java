@@ -38,6 +38,7 @@ public class PLRuntime {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
 		__SYSTEM_CLASSES.put("Function", Function.class);
 		__SYSTEM_CLASSES.put("Integer", BaseInteger.class);
+		__SYSTEM_CLASSES.put("Float", BaseFloat.class);
 	}
 	
 	public static final PLRuntime getRuntime(){
@@ -188,15 +189,17 @@ public class PLRuntime {
 	}
 	
 	public PLangObject run(PLangObject runner, PLangObject... args){
+		if (runner == null)
+			throw new NullPointerException("Runner is mepty");
 	
-		if (runner.getType() == PlangObjectType.FUNCTION){
+		if (runner.__sys_m_getType() == PlangObjectType.FUNCTION){
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
 			try {
 				return wrapper.run(args);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		} else if (runner.getType() == PlangObjectType.CLASS){
+		} else if (runner.__sys_m_getType() == PlangObjectType.CLASS){
 			PLClass c = (PLClass)runner;
 			PLangObject callableMethod = c.__getkey(Function.__applyMethod);
 			if (c != null){
@@ -252,7 +255,7 @@ public class PLRuntime {
 		
 		for (String moduleName : moduleMap.keySet()){
 			modules.add(new JsonObject().add("moduleName", moduleName)
-					.add("module", moduleMap.get(moduleName).toObject(previousSerialization)));
+					.add("module", moduleMap.get(moduleName).__sys_m_toObject(previousSerialization)));
 		}
 		
 		root.add("modules", modules);

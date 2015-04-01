@@ -137,9 +137,9 @@ public abstract class BaseCompiledStub extends PLangObject{
 	}
 	
 	@Override
-	public JsonValue toObject(long previousTime) {
+	public JsonValue __sys_m_toObject(long previousTime) {
 		PLRuntime runtime = PLRuntime.getRuntime();
-		JsonObject metaData = new JsonObject().add("metaObjectType", getType().toString());
+		JsonObject metaData = new JsonObject().add("metaObjectType", __sys_m_getType().toString());
 		if (runtime.isAlreadySerialized(this)){
 			metaData.add("link", true)
 					.add("linkId", __getObjectId());
@@ -160,7 +160,7 @@ public abstract class BaseCompiledStub extends PLangObject{
 				JsonObject f = new JsonObject();
 				
 				f.add("fieldName", field);
-				f.add("fieldValue", __fieldsAndMethods.get(field).toObject(previousTime));
+				f.add("fieldValue", __fieldsAndMethods.get(field).__sys_m_toObject(previousTime));
 				
 				array.add(f);
 			}
@@ -169,12 +169,12 @@ public abstract class BaseCompiledStub extends PLangObject{
 	}
 	
 	@Override
-	public boolean isNumber() {
+	public boolean __sys_m_isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float getNumber() {
+	public Float __sys_m_getNumber() {
 		return null;
 	}
 	

@@ -13,12 +13,12 @@ public class SystemModule extends PLModule implements Serializable {
 	protected void __init_internal_datafields() {
 		this.__restrictedOverride = true;
 		
-		__setkey("init", new FunctionWrapper("init", this, false));
+		__setkey("init", new FunctionWrapper("__init", this, false));
 		
 		this.__restrictedOverride = false;
 	}
 
-	public PLangObject init(){
+	public PLangObject __init(){
 		return NoValue.NOVALUE;
 	}
 }

@@ -18,7 +18,7 @@ public class PrintStreamWrapper extends ObjectBase implements Serializable {
 	
 	public PrintStreamWrapper(PLangObject... args){
 		PLangObject arg0 = args[0];
-		if (arg0.getType() != PlangObjectType.BOOLEAN)
+		if (arg0.__sys_m_getType() != PlangObjectType.BOOLEAN)
 			throw new RuntimeException("Argument 0 must be of type BOOLEAN!");
 		isOutStream = !(arg0 == BooleanValue.FALSE);
 		this.stream = isOutStream ? System.out : System.err;
