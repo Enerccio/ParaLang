@@ -4,14 +4,13 @@ compilationUnit
     :   importDeclaration* moduleDeclaration EOF
     ;
 
-
 importDeclaration
 	:   'using' singleQualifiedName ';'
     |   'import' qualifiedName ';'
-    ;
+    ; 
     
-moduleDeclaration 
-	: 'module' Identifier '{' moduleDeclarations* '};'
+moduleDeclaration  
+	: 'module' Identifier '{' moduleDeclarations* '};' 
 	; 
 	
 moduleDeclarations 
@@ -426,7 +425,7 @@ BinaryDigitOrUnderscore
     |   '_'
     ;
 
-// ˜3.10.2 Floating-Point Literals
+// ï¿½ï¿½3.10.2 Floating-Point Literals
 
 FloatingPointLiteral
     :   DecimalFloatingPointLiteral
@@ -502,7 +501,7 @@ SingleCharacter
     :   ~['\\]
     ;
 
-// ˜3.10.5 String Literals
+// ï¿½ï¿½3.10.5 String Literals
 
 StringLiteral
     :   '"' StringCharacters? '"'
@@ -557,7 +556,7 @@ SEMI            : ';';
 COMMA           : ',';
 DOT             : '.';
 
-// ˜3.12 Operators
+// ï¿½ï¿½3.12 Operators
 
 ASSIGN          : '=';
 GT              : '>';
@@ -595,7 +594,7 @@ LSHIFT_ASSIGN   : '<<=';
 RSHIFT_ASSIGN   : '>>=';
 URSHIFT_ASSIGN  : '>>>=';
 
-// ˜3.8 Identifiers (must appear after all keywords in the grammar)
+// ï¿½ï¿½3.8 Identifiers (must appear after all keywords in the grammar)
 
 Identifier
     :   JavaLetter JavaLetterOrDigit*

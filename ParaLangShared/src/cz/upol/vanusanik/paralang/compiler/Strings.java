@@ -18,6 +18,8 @@ public class Strings {
 	public static final String PL_MODULE_L = "L" + PL_MODULE + ";";
 	public static final String PL_CLASS = "cz/upol/vanusanik/paralang/runtime/PLClass";
 	public static final String PL_CLASS_L = "L" + PL_CLASS + ";";
+	public static final String BASE_CLASS = "cz/upol/vanusanik/paralang/runtime/BaseClass";
+	public static final String BASE_CLASS_L = "L" + BASE_CLASS + ";";
 	
 	public static final String RUNTIME = "cz/upol/vanusanik/paralang/runtime/PLRuntime";
 	public static final String RUNTIME_L = "L" + RUNTIME + ";";

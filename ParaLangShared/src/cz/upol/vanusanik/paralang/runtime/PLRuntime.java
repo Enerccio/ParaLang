@@ -99,6 +99,10 @@ public class PLRuntime {
 
 		setSafeContext(true);
 		setRestricted(false);
+		
+		addModule("System", SystemModule.class);
+		registerClass("System", "BaseClass", SystemModule.class);
+		
 		for (File ffd : fList){
 			for (File ff : ffd.listFiles(new FileFilter(){
 

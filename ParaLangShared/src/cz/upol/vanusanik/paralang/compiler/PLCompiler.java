@@ -58,6 +58,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.PrimaryContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.StatementContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorsContext;
+import cz.upol.vanusanik.paralang.runtime.BaseClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
@@ -220,7 +221,7 @@ public class PLCompiler {
 			@Override
 			protected void compileDataSources() throws Exception {
 				isRestrictedMethodQualifier = RestrictedTo.MODULE; // default fields are always in restricted mode check off
-				compileInitMethod(fields, methods);
+				compileInitMethod(fields, methods, null);
 			}
 			
 		}.compileMethod();
@@ -252,6 +253,11 @@ public class PLCompiler {
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.CLASS_BASE_CLASS));
+		
+		String superClass = null;
+		if (classDeclaration.type() != null)
+			superClass = classDeclaration.type().getText();
+		final String sc = superClass;
 		
 		// Serialization
 		cls.addInterface(cp.getCtClass(Strings.SERIALIZABLE));
@@ -289,12 +295,6 @@ public class PLCompiler {
 			}
 		}
 		
-		if (!methods.contains("init")){
-			CtMethod initM = CtNewMethod.make("public cz.upol.vanusanik.paralang.plang.PLangObject init(cz.upol.vanusanik.paralang.plang.PLangObject inst) { return cz.upol.vanusanik.paralang.plang.types.NoValue.NOVALUE; }", cls);
-			cls.addMethod(initM);
-			methods.add("init");
-		}
-		
 		// Compile system init method
 		final CtMethod m = CtNewMethod.make("protected void __init_internal_datafields() { return null; }", cls);
 		new MethodCompiler(m){
@@ -302,7 +302,7 @@ public class PLCompiler {
 			@Override
 			protected void compileDataSources() throws Exception {
 				isRestrictedMethodQualifier = RestrictedTo.CLASS; // default fields are always in restricted mode check off
-				compileInitMethod(fields, methods);
+				compileInitMethod(fields, methods, sc);
 			}
 			
 		}.compileMethod();
@@ -520,7 +520,33 @@ public class PLCompiler {
 				"()" + Strings.RUNTIME_L); // call to __get_runtime, PLRuntime is on stack
 	}
 
-	private void compileInitMethod(List<FieldDeclarationContext> fields, Set<String> methods) throws Exception{
+	private void compileInitMethod(List<FieldDeclarationContext> fields, Set<String> methods, final String superClass) throws Exception{
+		if (compilingClass)
+			new StoreToField(BaseClass.__superKey){
+	
+				@Override
+				protected void provideSourceValue() throws Exception {
+					
+					if (superClass == null || superClass.equals("BaseClass")){
+						bc.addNew(Strings.BASE_CLASS);
+						bc.add(Opcode.DUP);
+						bc.addInvokespecial(Strings.BASE_CLASS, 
+								"<init>", "()V");	
+					} else {
+						if (referenceMap.containsKey(superClass)){
+							Reference r = referenceMap.get(superClass);
+							if (r.isJava()){
+								throw new CompilationException("Reference is reference to java class, not PLang class!");
+							}
+							bc.addLdc(cacheStrings(r.getFullReference()));
+							bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
+									"(" + Strings.STRING_L + ")" + Strings.PLANGOBJECT_L);
+						}
+					}
+				}
+				
+			}.compile();
+		
 		for (FieldDeclarationContext field : fields){
 			compileField(field);
 		}
@@ -1033,6 +1059,9 @@ public class PLCompiler {
 		if (primary.constExpr() != null || primary.getText().startsWith("inst") || primary.getText().startsWith("parent")){
 			String identifier = primary.constExpr().id() != null ? primary.constExpr().id().getText() : primary.getText();
 			
+			if (identifier.equals("parent"))
+				identifier = BaseClass.__superKey;
+			
 			if (referenceMap.containsKey(identifier)){
 				// is a module identifier, use it as key to the module map
 				addGetRuntime();
@@ -1055,6 +1084,25 @@ public class PLCompiler {
 				bc.addAload(varStack.getLocal(identifier)); // load from local variables
 				break;
 			case MODULE_VARIABLE:
+				// test whether class contains the variable since it might be owned by superclass
+				bc.addAload(0);
+				bc.addLdc(cacheStrings(identifier));			// load string from constants
+				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
+						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+				bc.add(Opcode.DUP);
+				
+				int key = counter++;
+				addLabel(new LabelInfo(){
+
+					@Override
+					protected void add(Bytecode bc) throws CompilationException {
+						int offset = getValue(poskey) - bcpos;
+						bc.write(bcpos, Opcode.IFNONNULL); // jump to else if true or to the next bytecode if not 
+						bc.write16bit(bcpos+1, offset);
+					}
+					
+				}, key);
+				bc.add(Opcode.POP);
 				addGetRuntime();
 				bc.addLdc(cacheStrings(moduleName));			// load string from constants
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
@@ -1063,6 +1111,11 @@ public class PLCompiler {
 				bc.addLdc(cacheStrings(identifier));			// load string from constants
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
 						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+				
+
+				setLabelPos(key);
+				bc.add(Opcode.NOP);
+				
 				break;
 			}
 		}
