@@ -23,4 +23,12 @@ public abstract class PLangObject {
 	}
 
 	public abstract boolean eq(PLangObject b);
+
+	public boolean less(PLangObject other, boolean equals) {
+		throw new RuntimeException("Undefined method for this type!");
+	}
+	
+	public boolean more(PLangObject other, boolean equals) {
+		throw new RuntimeException("Undefined method for this type!");
+	}
 }

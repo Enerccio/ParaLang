@@ -58,4 +58,8 @@ public class BooleanValue extends PLangObject implements Serializable {
 		return value ? TRUE : FALSE;
 	}
 
+	public static boolean toBoolean(PLangObject b) {
+		return TypeOperations.convertToBoolean(b);
+	}
+
 }

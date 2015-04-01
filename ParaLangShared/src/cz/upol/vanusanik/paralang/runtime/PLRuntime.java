@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,13 @@ import cz.upol.vanusanik.paralang.plang.types.Pointer;
 
 public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
+	private static final HashMap<String, Class<? extends PLClass>> __SYSTEM_CLASSES = new HashMap<String, Class<? extends PLClass>>();
+	public static final Map<String, Class<? extends PLClass>> SYSTEM_CLASSES = Collections.synchronizedMap(Collections.unmodifiableMap(__SYSTEM_CLASSES));
+	
+	static {
+		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
+		__SYSTEM_CLASSES.put("Integer", BaseInteger.class);
+	}
 	
 	public static final PLRuntime getRuntime(){
 		return localRuntime.get();
@@ -101,7 +109,10 @@ public class PLRuntime {
 		setRestricted(false);
 		
 		addModule("System", SystemModule.class);
-		registerClass("System", "BaseClass", SystemModule.class);
+		
+		for (String cn : SYSTEM_CLASSES.keySet()){
+			registerClass("System", cn, SYSTEM_CLASSES.get(cn));	
+		}
 		
 		for (File ffd : fList){
 			for (File ff : ffd.listFiles(new FileFilter(){

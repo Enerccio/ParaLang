@@ -77,4 +77,12 @@ public class Int extends PLangObject implements Serializable {
 	public int getValue() {
 		return value;
 	}
+	
+	public boolean less(PLangObject other, boolean equals) {
+		return equals ? (value <= other.getNumber()) : (value < other.getNumber());
+	}
+	
+	public boolean more(PLangObject other, boolean equals) {
+		return equals ? (value >= other.getNumber()) : (value > other.getNumber());
+	}
 }

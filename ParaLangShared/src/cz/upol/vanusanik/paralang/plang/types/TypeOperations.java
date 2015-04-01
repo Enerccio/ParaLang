@@ -4,13 +4,26 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.runtime.PLClass;
+import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
 public class TypeOperations {
 	
-	private enum Operator {
-		PLUS, MINUS, MUL, DIV, MOD, LSHIFT, RSHIFT, RUSHIFT, BITOR, BITAND, BITXOR,
+	public enum Operator {
+		PLUS("__plus"), MINUS("__minus"), MUL("__mul"), 
+		DIV("__div"), MOD("__mod"), LSHIFT("__left_shift"), 
+		RSHIFT("__right_shift"), RUSHIFT("__right_ushift"), 
+		BITOR("__bit_or"), BITAND("__bit_and"), BITXOR("__bit_xor"),
 		
-		EQ, NEQ, LESS, MORE, LEQ, MEQ
+		EQ("__eq"), NEQ("__neq"), LESS("__less"), MORE("__more"), 
+		LEQ("__less_eq"), MEQ("__more_eq");
+		
+		Operator(String cm){
+			classMethod = cm;
+		}
+		
+		public String classMethod;
+		
 	}
 
 	public static boolean convertToBoolean(PLangObject object){
@@ -162,6 +175,10 @@ public class TypeOperations {
 	private static PLangObject operator(PLangObject a, PLangObject b,
 			Operator o) {
 		
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).__getkey(o.classMethod), a, b);
+		}
+		
 		switch (o){
 		case DIV:
 		case MINUS:
@@ -223,8 +240,6 @@ public class TypeOperations {
 		case MORE:
 		case NEQ:{
 			
-			Float va = a.getNumber();
-			Float vb = b.getNumber();
 			boolean result = false;
 			
 			switch (o){
@@ -232,16 +247,16 @@ public class TypeOperations {
 				result = a.eq(b);
 				break;
 			case LEQ:
-				result = va <= vb;
+				result = a.less(b, true);
 				break;
 			case LESS:
-				result = va < vb;
+				result = a.less(b, false);
 				break;
 			case MEQ:
-				result = va >= vb;
+				result = a.more(b, true);
 				break;
 			case MORE:
-				result = va > vb;
+				result = a.more(b, false);
 				break;
 			case NEQ:
 				result = !a.eq(b);

@@ -4,24 +4,24 @@ using Collections.List;
 module HelloWorldModule {
 
 	class Test {
-		var list, list2;
+		var a, b;
 		
 		restricted run(){
-			list = new List();
-			list.add(1);
-			list.add(2);
-			list.add(3);
-			list.add(list);
+			b = 6;
+			a = new Integer(b);
+			IO.out.println(a == b);
+			IO.out.println(b == a);
 			
-			IO.out.println(list);
-			IO.out.println(list.size());
+			var c = 5;
+			var d = 8;
 			
-			list2 = list.append(4);
-			
-			list.clear();
-			IO.out.println(list);
-			IO.out.println(list2);
-			IO.out.println(list.size());
+			IO.out.println(c > a);
+			IO.out.println(d < a);
+		}
+		
+		equalityTest(me, other){
+			IO.out.println("Test!");
+			return parent.equalityTest(me, other);
 		}
 	}
 	

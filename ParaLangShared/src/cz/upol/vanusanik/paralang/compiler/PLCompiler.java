@@ -121,6 +121,11 @@ public class PLCompiler {
 				referenceMap.put(name, r);
 			}
 		}
+		
+		for (String cn : PLRuntime.SYSTEM_CLASSES.keySet()){
+			Reference r = new Reference("System." + cn, cn, false);
+			referenceMap.put(cn, r);
+		}
 	}
 
 	private CompilationUnitContext parse(FileDesignator in) throws Exception{

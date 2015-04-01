@@ -74,4 +74,12 @@ public class Flt extends PLangObject implements Serializable  {
 		if (!b.isNumber()) return false;
 		return value == b.getNumber();
 	}
+	
+	public boolean less(PLangObject other, boolean equals) {
+		return equals ? (value <= other.getNumber()) : (value < other.getNumber());
+	}
+	
+	public boolean more(PLangObject other, boolean equals) {
+		return equals ? (value >= other.getNumber()) : (value > other.getNumber());
+	}
 }
