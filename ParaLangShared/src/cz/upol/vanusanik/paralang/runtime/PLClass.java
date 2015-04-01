@@ -23,8 +23,12 @@ public abstract class PLClass extends BaseCompiledStub{
 			__init_class();
 		}
 		
-		if (!__fieldsAndMethods.containsKey(key))
-			return __getSuper().__getkey(key);
+		PLClass parent = null;
+		if (!__fieldsAndMethods.containsKey(key) && ((parent = __getSuper())!=null))
+			return parent.__getkey(key);
+		else if (!__fieldsAndMethods.containsKey(key) && (parent == null)){
+			return null;
+		}
 		
 		PLangObject data = __fieldsAndMethods.get(key);
 		return data;

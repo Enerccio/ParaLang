@@ -6,6 +6,10 @@ module HelloWorldModule {
 	class Test {
 		var a, b;
 		
+		restricted __apply(){
+			run();
+		}
+		
 		restricted run(){
 			b = 6;
 			a = new Integer(b);
@@ -26,6 +30,6 @@ module HelloWorldModule {
 	}
 	
 	restricted run(){
-		new Test().run();
+		new Test()();
 	}
 };

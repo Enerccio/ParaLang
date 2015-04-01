@@ -36,6 +36,7 @@ public class PLRuntime {
 	
 	static {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
+		__SYSTEM_CLASSES.put("Function", Function.class);
 		__SYSTEM_CLASSES.put("Integer", BaseInteger.class);
 	}
 	
@@ -187,8 +188,6 @@ public class PLRuntime {
 	}
 	
 	public PLangObject run(PLangObject runner, PLangObject... args){
-		if (runner.getType() != PlangObjectType.FUNCTION)
-			throw new RuntimeException("Field is not callable");
 	
 		if (runner.getType() == PlangObjectType.FUNCTION){
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
@@ -197,8 +196,14 @@ public class PLRuntime {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+		} else if (runner.getType() == PlangObjectType.CLASS){
+			PLClass c = (PLClass)runner;
+			PLangObject callableMethod = c.__getkey(Function.__applyMethod);
+			if (c != null){
+				return run(callableMethod, args);
+			}
 		}
-		return null;
+		throw new RuntimeException(runner + " cannot be run!");
 	}
 	
 
