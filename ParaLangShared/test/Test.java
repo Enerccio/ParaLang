@@ -18,7 +18,11 @@ public class Test {
 		r.setSafeContext(false);
 		c.compile(new DiskFileDesignator(f));
 		
-		r.run("HelloWorldModule", "run");
+		try {
+			r.run("HelloWorldModule", "run");
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 		
 		ByteArrayOutputStream test = new ByteArrayOutputStream();
 		

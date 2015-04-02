@@ -427,7 +427,7 @@ public class PLCompiler {
 					
 					if (vd.variableInitializer() != null){
 						isStatementExpression.add(false);
-						compileExpression(vd.variableInitializer().expression());
+						compileExpression(vd.variableInitializer().expression(), false, -1);
 						isStatementExpression.pop();
 					} else {
 						addNil();
@@ -593,7 +593,7 @@ public class PLCompiler {
 		if (statement.getText().startsWith("return")){
 			if (statement.expression() != null){
 				isStatementExpression.add(false);
-				compileExpression(statement.expression());
+				compileExpression(statement.expression(), false, -1);
 				isStatementExpression.pop();
 			} else {
 				addNil();
@@ -606,7 +606,7 @@ public class PLCompiler {
 		
 		if (statement.getText().startsWith("throw")){
 			isStatementExpression.add(false);
-			compileExpression(statement.expression());
+			compileExpression(statement.expression(), false, -1);
 			isStatementExpression.pop();
 			bc.add(Opcode.ATHROW);
 			return;
@@ -614,12 +614,12 @@ public class PLCompiler {
 		
 		if (statement.statementExpression() != null){
 			isStatementExpression.add(true);
-			compileExpression(statement.statementExpression().expression());
+			compileExpression(statement.statementExpression().expression(), false, -1);
 			isStatementExpression.pop();
 		} else if (statement.getText().startsWith("if")){
 			ExpressionContext e = statement.parExpression().expression();
 			isStatementExpression.add(false);
-			compileExpression(e);
+			compileExpression(e, false, -1);
 			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
@@ -758,7 +758,7 @@ public class PLCompiler {
 				protected void provideSourceValue() throws Exception {
 					if (vd.variableInitializer() != null){
 						isStatementExpression.add(false);
-						compileExpression(vd.variableInitializer().expression());
+						compileExpression(vd.variableInitializer().expression(), false, -1);
 						isStatementExpression.pop();
 					} else {
 						addNil();
@@ -830,11 +830,11 @@ public class PLCompiler {
 		bioperators.add("^");
 	}
 
-	private void compileExpression(ExpressionContext expression) throws Exception {
+	private void compileExpression(ExpressionContext expression, boolean compilingMethodCall, int storeVar) throws Exception {
 		markLine(bc.currentPc(), expression.start.getLine());
 		try {
 			if (expression.primary() != null){
-				compilePrimaryExpression(expression.primary());
+				compilePrimaryExpression(expression.primary(), compilingMethodCall, storeVar);
 				return;
 			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("->")){
 				if (!PLRuntime.getRuntime().isSafeContext())
@@ -849,7 +849,7 @@ public class PLCompiler {
 					
 					addGetRuntime();
 					isStatementExpression.add(false);
-					compileExpression((ExpressionContext) init);
+					compileExpression((ExpressionContext) init, false, -1);
 					isStatementExpression.pop();
 					bc.addCheckcast(Strings.POINTER);
 					bc.addLdc(cacheStrings(mname));
@@ -884,31 +884,40 @@ public class PLCompiler {
 					}
 				}
 			} else if (expression.methodCall() != null){
+				int stack = stacker.acquire();
 				// method call
 				addGetRuntime();
 				isStatementExpression.add(false);
-				compileExpression((ExpressionContext) expression.getChild(0));
+				compileExpression((ExpressionContext) expression.getChild(0), true, stack);
 				isStatementExpression.pop();
-				bc.add(Opcode.DUP);
-				bc.addInvokevirtual(Strings.PLANGOBJECT, Strings.PLANGOBJECT__GET_LOWEST_CLASSDEF, 
-						"()" + Strings.BASE_COMPILED_STUB_L);
+				bc.addAload(stack);
+				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+//				bc.addInvokevirtual(Strings.PLANGOBJECT, Strings.PLANGOBJECT__GET_LOWEST_CLASSDEF, 
+//						"()" + Strings.BASE_COMPILED_STUB_L);
 				compileParameters(expression.methodCall().expressionList());
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, 
 						"(" + Strings.PLANGOBJECT_L + Strings.BASE_COMPILED_STUB_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+				stacker.release();
 			} else if (expression.getChild(0) instanceof ExpressionContext){
 				String operator = expression.getChild(1).getText();
 				if (bioperators.contains(operator)){
 					compileBinaryOperator(operator, 
-							(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2));
+							(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2), 
+							compilingMethodCall, storeVar);
 				} else if ("||".equals(operator) || "&&".equals(operator)) {
 					compileLogic((ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2),
-							"||".equals(operator));
+							"||".equals(operator), compilingMethodCall, storeVar);
 				} else {
 					isStatementExpression.add(false);
-					compileExpression((ExpressionContext) expression.getChild(0));
+					compileExpression((ExpressionContext) expression.getChild(0), false, -1);
 					isStatementExpression.pop();
 					if (expression.getChild(1).getText().equals(".")){
 						// compiling field accessor
+						if (compilingMethodCall){
+							bc.add(Opcode.DUP);
+							bc.addAstore(storeVar);
+						}
+						
 						markLine(bc.currentPc(), expression.stop.getLine());
 						String identifier = expression.getChild(2).getText();
 						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
@@ -933,11 +942,16 @@ public class PLCompiler {
 				compileParameters(expression.constructorCall().expressionList());
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
 						"(" + Strings.STRING_L + "["+ Strings.PLANGOBJECT_L +")" + Strings.PL_CLASS_L);
+				
+				if (compilingMethodCall){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
+				}
 			} else if (expression.getChildCount() == 3){
 				String operator = expression.getChild(1).getText();
 				
 				if (setOperators.contains(operator)){
-					compileSetOperator(operator, expression);
+					compileSetOperator(operator, expression, compilingMethodCall, storeVar);
 				}
 			}
 		} finally {
@@ -948,12 +962,12 @@ public class PLCompiler {
 	}
 
 	private void compileLogic(ExpressionContext left,
-			ExpressionContext right, final boolean or) throws Exception {
+			ExpressionContext right, final boolean or, boolean compilingMethod, int storeVar) throws Exception {
 		
 		bc.addAload(0);
 		
 		isStatementExpression.add(false);
-		compileExpression(left);
+		compileExpression(left, false, -1);
 		isStatementExpression.pop();
 		
 		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
@@ -973,7 +987,7 @@ public class PLCompiler {
 		}, shortCut);
 		
 		isStatementExpression.add(false);
-		compileExpression(right);
+		compileExpression(right, false, -1);
 		isStatementExpression.pop();
 		
 		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
@@ -1005,14 +1019,19 @@ public class PLCompiler {
 		setLabelPos(reminder);
 		bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__CONVERT_BOOLEAN, 
 				"(Z)" + Strings.PLANGOBJECT_L);
+		if (compilingMethod){
+			bc.add(Opcode.DUP);
+			bc.addAstore(storeVar);
+		}
 	}
 
 	private void compileBinaryOperator(String operator,
-			ExpressionContext expression1, ExpressionContext expression2) throws Exception {
+			ExpressionContext expression1, ExpressionContext expression2, 
+			boolean compilingMethod, int storeVar) throws Exception {
 		
 		isStatementExpression.add(false);
-		compileExpression(expression1);
-		compileExpression(expression2);
+		compileExpression(expression1, false, -1);
+		compileExpression(expression2, false, -1);
 		isStatementExpression.pop();
 		
 		String method = null;
@@ -1038,6 +1057,11 @@ public class PLCompiler {
 		
 		bc.addInvokestatic(Strings.TYPEOPS, method, 
 				"("+ Strings.PLANGOBJECT_L + Strings.PLANGOBJECT_L + ")" + Strings.PLANGOBJECT_L);
+		
+		if (compilingMethod){
+			bc.add(Opcode.DUP);
+			bc.addAstore(storeVar);
+		}
 	}
 
 	private void compileParameters(ExpressionListContext expressionList) throws Exception {
@@ -1056,7 +1080,7 @@ public class PLCompiler {
 				bc.addAload(store);
 				bc.addIconst(i++);
 				isStatementExpression.add(false);
-				compileExpression(e);
+				compileExpression(e, false, -1);
 				isStatementExpression.pop();
 				bc.add(Opcode.AASTORE);
 			}
@@ -1068,17 +1092,17 @@ public class PLCompiler {
 	}
 
 	private void compileSetOperator(final String operator,
-			ExpressionContext expression) throws Exception {
+			ExpressionContext expression, boolean compilingMethod, int storeVar) throws Exception {
 		
 		ExtendedContext lvalue = expression.extended();
 		final ExpressionContext second = (ExpressionContext) expression.getChild(2);
 		
-		new CompileSetOperator(lvalue, operator.equals("=")){
+		new CompileSetOperator(lvalue, operator.equals("="), compilingMethod, storeVar){
 
 			@Override
 			public void compileRight() throws Exception {
 				isStatementExpression.add(false);
-				compileExpression(second);
+				compileExpression(second, false, -1);
 				isStatementExpression.pop();
 				
 				if (!operator.equals("=")){
@@ -1096,9 +1120,13 @@ public class PLCompiler {
 	private abstract class CompileSetOperator {
 		private ExtendedContext lvalue;
 		private boolean simpleSet;
-		public CompileSetOperator(ExtendedContext lvalue, boolean simpleSet) {
+		private boolean compilingMethod;
+		private int storeVar;
+		public CompileSetOperator(ExtendedContext lvalue, boolean simpleSet, boolean compilingMethod, int storeVar) {
 			this.lvalue = lvalue;
 			this.simpleSet = simpleSet;
+			this.compilingMethod = compilingMethod;
+			this.storeVar = storeVar;
 		}
 
 		public void compileSetOperator() throws Exception {
@@ -1113,7 +1141,7 @@ public class PLCompiler {
 					ord = varStack.getLocal(identifier);
 			} else {
 				vt = null;
-				compilePrimaryExpression(lvalue.identified().primary());
+				compilePrimaryExpression(lvalue.identified().primary(), false, -1);
 				identifier = lvalue.identified().getChild(2).getText();
 			}
 			
@@ -1171,7 +1199,7 @@ public class PLCompiler {
 								"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
 						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 					} else {
-						compilePrimaryExpression(lvalue.identified().primary());
+						compilePrimaryExpression(lvalue.identified().primary(), false, -1);
 						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 					}
 					
@@ -1180,6 +1208,11 @@ public class PLCompiler {
 							"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 				} else {
 					addNil();
+				}
+				
+				if (compilingMethod){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
 				}
 			} else {
 				/* Loads the local varaible on stack, then writes to the same position */
@@ -1192,6 +1225,11 @@ public class PLCompiler {
 				} else {
 					addNil();
 				}
+				
+				if (compilingMethod){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
+				}
 			}
 			
 			
@@ -1200,10 +1238,10 @@ public class PLCompiler {
 		public abstract void compileRight() throws Exception;
 	}
 
-	private void compilePrimaryExpression(PrimaryContext primary) throws Exception {
+	private void compilePrimaryExpression(PrimaryContext primary, boolean compilingMethod, int storeVar) throws Exception {
 		if (primary.expression() != null){
 			isStatementExpression.add(false);
-			compileExpression(primary.expression());
+			compileExpression(primary.expression(), compilingMethod, storeVar);
 			isStatementExpression.pop();
 			return;
 		}
@@ -1243,6 +1281,11 @@ public class PLCompiler {
 				else
 					bc.addGetstatic(Strings.BOOLEAN_VALUE, "FALSE", Strings.BOOLEAN_VALUE_L); // load FALSE
 			}
+			
+			if (compilingMethod){
+				bc.add(Opcode.DUP);
+				bc.addAstore(storeVar);
+			}
 		}
 		
 		if (primary.constExpr() != null || primary.getText().startsWith("inst") || primary.getText().startsWith("parent")){
@@ -1265,16 +1308,28 @@ public class PLCompiler {
 			switch (vt){
 			case CLASS_VARIABLE:
 				bc.addAload(0); 								// load this
+				if (compilingMethod){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
+				}
 				bc.addLdc(cacheStrings(identifier));			// load string from constants
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
 						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 				break;
 			case LOCAL_VARIABLE:
 				bc.addAload(varStack.getLocal(identifier)); // load from local variables
+				if (compilingMethod){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
+				}
 				break;
 			case MODULE_VARIABLE:
 				// test whether class contains the variable since it might be owned by superclass
 				bc.addAload(0);
+				if (compilingMethod){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
+				}
 				bc.addLdc(cacheStrings(identifier));			// load string from constants
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
 						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
@@ -1296,6 +1351,10 @@ public class PLCompiler {
 				bc.addLdc(cacheStrings(moduleName));			// load string from constants
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
 						"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
+				if (compilingMethod){
+					bc.add(Opcode.DUP);
+					bc.addAstore(storeVar);
+				}
 				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 				bc.addLdc(cacheStrings(identifier));			// load string from constants
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 

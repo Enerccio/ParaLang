@@ -180,9 +180,14 @@ public class PLRuntime {
 		return moduleMap.get(moduleName);
 	}
 	
-	public PLangObject run(String module, String runnable){
+	public PLangObject run(String module, String runnable) throws PLException{
 		PLModule mod = getModule(module);
-		return run(mod.__getkey(runnable), mod);
+		
+		try {
+			return run(mod.__getkey(runnable), mod);
+		} catch (RuntimeException e){
+			throw new PLException(e);
+		}
 	}
 	
 	public void checkRestrictedAccess(){
