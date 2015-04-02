@@ -6,9 +6,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -387,6 +389,7 @@ public class PLCompiler {
 		
 	}
 
+	private List<FinallyBlockProtocol> fbcList;
 	protected void compileFunction(FunctionBodyContext functionBody, boolean restricted) throws Exception {
 		markLine(bc.currentPc(), functionBody.start.getLine());
 		
@@ -395,6 +398,7 @@ public class PLCompiler {
 			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CHECK_RESTRICTED_ACCESS, "()V");
 		}
 		
+		fbcList = new LinkedList<FinallyBlockProtocol>();
 		compileBlock(functionBody.block());	
 		
 		markLine(bc.currentPc(), functionBody.stop.getLine());
@@ -402,10 +406,19 @@ public class PLCompiler {
 		addNil();
 		bc.add(Opcode.ARETURN);
 	}
+	
+	private static interface FinallyBlockProtocol {
+		public void doCompile() throws Exception;
+	}
 
-	private void functionExitProtocol() {
-		if (!compilingInit) 
+	private void functionExitProtocol() throws Exception {
+		if (!compilingInit){
+			List<FinallyBlockProtocol> copy = new ArrayList<FinallyBlockProtocol>(fbcList);
+			Collections.reverse(copy);
+			for (FinallyBlockProtocol fbc : copy)
+				fbc.doCompile();
 			return;
+		}
 		
 		bc.addAload(0);  // load this
 		bc.addIconst(0); // add false
@@ -445,14 +458,23 @@ public class PLCompiler {
 	}
 
 	private Stack<Boolean> isStatementExpression = new Stack<Boolean>();
-	private void compileStatement(StatementContext statement) throws Exception {
+	private void compileStatement(final StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
 		
 		if (statement.getText().startsWith("try")){
 			int endLabel = counter++;
 			boolean hasFinally = statement.finallyBlock() != null;
+			final int store = stacker.acquire();
 			
-			int store = stacker.acquire();
+			if (hasFinally){
+				fbcList.add(new FinallyBlockProtocol() {
+					
+					@Override
+					public void doCompile() throws Exception {
+						compileBlock(statement.finallyBlock().block());
+					}
+				});
+			}
 			
 			int start = bc.currentPc();
 			compileBlock(statement.block());

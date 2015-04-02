@@ -46,13 +46,17 @@ module HelloWorldModule {
 	
 	restricted run(){
 		try {
-			new Test()();
-		} catch (BaseException a){
-			IO.out.println("Caught a!");
-			IO.out.println(a);
-			throw a;
+			try {
+				return new Test();
+			} catch (BaseException a){
+				IO.out.println("Caught a!");
+				IO.out.println(a);
+				throw a;
+			} finally {
+				IO.out.println("Finally done this!");
+			}
 		} finally {
-			IO.out.println("Finally done this!");
+			IO.out.println("Outer layer finally");
 		} 
 	}
 };
