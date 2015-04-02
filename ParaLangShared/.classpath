@@ -15,6 +15,7 @@
 	<classpathentry kind="lib" path="lib/commons-codec-1.10.jar" sourcepath="lib/commons-codec-1.10-sources.jar"/>
 	<classpathentry kind="lib" path="lib/minimal-json-0.9.3-SNAPSHOT.jar" sourcepath="lib/minimal-json-0.9.3-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar" sourcepath="lib/commons-io-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="lib/bcel-5.2.jar" sourcepath="/bcel/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

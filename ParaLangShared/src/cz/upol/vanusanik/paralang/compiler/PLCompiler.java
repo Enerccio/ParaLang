@@ -34,6 +34,12 @@ import javassist.bytecode.SourceFileAttribute;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.Method;
+import org.apache.bcel.verifier.Verifier;
+import org.apache.bcel.verifier.VerifierFactory;
+import org.apache.bcel.verifier.exc.AssertionViolatedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -62,6 +68,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.StatementContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorsContext;
 import cz.upol.vanusanik.paralang.runtime.BaseClass;
+import cz.upol.vanusanik.paralang.runtime.PLModule;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
@@ -140,6 +147,7 @@ public class PLCompiler {
 	}
 
 	private void compileModule(CompilationUnitContext ctx, FileDesignator in) throws Exception{
+		
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
@@ -247,7 +255,25 @@ public class PLCompiler {
 		cls.debugWriteFile();
 		cls.toBytecode(new DataOutputStream(new FileOutputStream(output)));
 		
-		PLRuntime.getRuntime().addModule(moduleName, cls.toClass());
+		Class<?> klazz = cls.toClass();
+		
+		JavaClass jc;
+		try {
+			jc = Repository.lookupClass(klazz);
+		} catch (ClassNotFoundException e) {
+			throw new AssertionViolatedException("Missing class: " + e.toString());
+		}
+		
+		Verifier vf = VerifierFactory.getVerifier(klazz.getName());
+		int it = 0;
+		for (Method mm : jc.getMethods())
+			vf.doPass3b(it++);
+		
+		for (String mm : vf.getMessages()){
+			System.err.println(mm);
+		}
+		
+		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
 	}
 	
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
@@ -614,6 +640,9 @@ public class PLCompiler {
 			
 			setLabelPos(endLabel);
 			bc.add(Opcode.NOP);
+			
+			if (hasFinally)
+				fbcList.remove(fbcList.size() - 1);
 			return;
 		}
 		

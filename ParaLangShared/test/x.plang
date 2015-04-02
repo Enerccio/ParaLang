@@ -47,9 +47,6 @@ module HelloWorldModule {
 	var test;
 	
 	restricted run(){
-		test = new Test();
-		test();
-		/*
 		try {
 			try {
 				test = new Test();
@@ -64,6 +61,5 @@ module HelloWorldModule {
 		} finally {
 			IO.out.println("Outer layer finally");
 		} 
-		*/
 	}
 };
