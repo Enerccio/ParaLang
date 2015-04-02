@@ -146,9 +146,12 @@ public abstract class BaseCompiledStub extends PLangObject{
 					.add("linkId", __getObjectId());
 		} else {
 			runtime.setAsAlreadySerialized(this);
-			metaData.add("link", false)
+			metaData.add("isBaseClass", false)
+					.add("link", false)
 					.add("isInited", __isInited)
 					.add("modifiedFrom", previousTime)
+					.add("thisLink", __getObjectId())
+					.add("className", getClass().getSimpleName())
 					.add("modifiedFromFields", getDeltaFields(previousTime));
 		}
 		return metaData;

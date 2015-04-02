@@ -44,10 +44,16 @@ module HelloWorldModule {
 		}
 	}
 	
+	var test;
+	
 	restricted run(){
+		test = new Test();
+		test();
+		/*
 		try {
 			try {
-				return new Test();
+				test = new Test();
+				test();
 			} catch (BaseException a){
 				IO.out.println("Caught a!");
 				IO.out.println(a);
@@ -58,5 +64,6 @@ module HelloWorldModule {
 		} finally {
 			IO.out.println("Outer layer finally");
 		} 
+		*/
 	}
 };

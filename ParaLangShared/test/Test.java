@@ -28,8 +28,8 @@ public class Test {
 		
 		r.serializeRuntimeContent(test, 0);
 		
-//		String s = test.toString("utf-8");
-//		System.out.println(s);
+		String s = test.toString("utf-8");
+		System.out.println(s);
 	}
 	
 }

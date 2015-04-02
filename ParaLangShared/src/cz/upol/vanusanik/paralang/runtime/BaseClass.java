@@ -2,6 +2,9 @@ package cz.upol.vanusanik.paralang.runtime;
 
 import java.io.Serializable;
 
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
@@ -43,5 +46,13 @@ public class BaseClass extends PLClass implements Serializable {
 	
 	public PLangObject __str_base(PLangObject self){
 		return new Str("BaseClass");
+	}
+	
+	@Override
+	public JsonValue __sys_m_toObject(long previousTime) {
+		JsonObject metaData = new JsonObject().add("metaObjectType", __sys_m_getType().toString());
+		metaData.add("isBaseClass", true)
+				.add("baseClassType", "BASECLASS");
+		return metaData;
 	}
 }
