@@ -25,7 +25,6 @@ import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.Bytecode;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.ConstPool;
-import javassist.bytecode.InstructionPrinter;
 import javassist.bytecode.LineNumberAttribute;
 import javassist.bytecode.Opcode;
 import javassist.bytecode.SourceFileAttribute;
@@ -1437,7 +1436,7 @@ public class PLCompiler {
 			
 			m.getMethodInfo().setCodeAttribute(at);
 			
-			InstructionPrinter.print(m, System.err);
+			//InstructionPrinter.print(m, System.err);
 			
 			cls.addMethod(m);
 		}

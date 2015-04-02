@@ -33,12 +33,12 @@ public class BaseClass extends PLClass implements Serializable {
 		return NoValue.NOVALUE;
 	}
 	
-	public PLangObject __eq__base(PLangObject self, PLangObject me, PLangObject other){
-		return BooleanValue.fromBoolean(me == other);
+	public PLangObject __eq__base(PLangObject self, PLangObject other){
+		return BooleanValue.fromBoolean(self == other);
 	}
 	
-	public PLangObject __neq__base(PLangObject self, PLangObject me, PLangObject other){
-		return BooleanValue.fromBoolean(me != other);
+	public PLangObject __neq__base(PLangObject self, PLangObject other){
+		return BooleanValue.fromBoolean(self != other);
 	}
 	
 	public PLangObject __str_base(PLangObject self){

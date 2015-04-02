@@ -3,10 +3,10 @@ using Collections.List;
 
 module HelloWorldModule {
 
-	class SimpleException > BaseException {
+	class GaspingException > BaseException {
 		
 		get_message(){
-			return "MESSAGE: " + parent.get_message();
+			return "Oh! " + parent.get_message() + "!!!";
 		}
 	
 	} 
@@ -21,8 +21,6 @@ module HelloWorldModule {
 		restricted run(){
 			b = 6;
 			
-			throw new SimpleException("Oh damn! Something went wrong!");
-			
 			a = new Integer(b);
 			IO.out.println(a == b);
 			IO.out.println(b == a);
@@ -36,11 +34,13 @@ module HelloWorldModule {
 			IO.out.println(c + a + b);
 			
 			inst == new Test();
+			
+			throw new GaspingException("Something went wrong");
 		}
 		
-		__eq(me, other){
+		__eq(other){
 			IO.out.println("Test!");
-			return parent.__eq(me, other);
+			return parent.__eq(other);
 		}
 	}
 	

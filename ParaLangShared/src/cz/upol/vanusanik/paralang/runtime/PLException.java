@@ -1,5 +1,8 @@
 package cz.upol.vanusanik.paralang.runtime;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 
 public class PLException extends Exception {
@@ -8,6 +11,15 @@ public class PLException extends Exception {
 	private RuntimeException e;
 	public PLException(RuntimeException e) {
 		this.e = e;
+		
+		List<StackTraceElement> eList = new ArrayList<StackTraceElement>();
+		for (StackTraceElement ee : e.getStackTrace()){
+			String filename = ee.getFileName();
+			if (filename.contains(".plang"))
+				eList.add(ee);
+		}
+		
+		setStackTrace(eList.toArray(new StackTraceElement[eList.size()]));
 	}
 	
 	@Override

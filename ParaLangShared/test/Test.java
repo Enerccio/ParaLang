@@ -10,7 +10,7 @@ public class Test {
 
 	public static void main(String[] xx) throws Exception{
 		
-		File f = new File("bin\\x.plng");
+		File f = new File("bin\\x.plang");
 		PLCompiler c = new PLCompiler();
 		
 		PLRuntime r = new PLRuntime();
