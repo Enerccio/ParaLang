@@ -528,9 +528,9 @@ public class PLCompiler {
 					}, prevKey);
 					
 					varStack.addVariable(ccc.Identifier().getText(), VariableType.LOCAL_VARIABLE, store);
+					int sstart = bc.currentPc();
 					compileBlock(ccc.block());
-					if (hasFinally)
-						compileBlock(statement.finallyBlock().block());
+					int ssend = bc.currentPc();
 					addLabel(new LabelInfo(){
 
 						@Override
@@ -545,26 +545,37 @@ public class PLCompiler {
 						}
 						
 					}, endLabel);
-					setLabelPos(throwLabel);
-					if (hasFinally)
+					
+					if (hasFinally){
+						bc.addExceptionHandler(sstart, ssend, bc.currentPc(), Strings.THROWABLE);
+						int stack = stacker.acquire();
+						bc.addAstore(stack);
 						compileBlock(statement.finallyBlock().block());
-					bc.addAload(store);
-					bc.add(Opcode.ATHROW);
-					addLabel(new LabelInfo(){
-
-						@Override
-						protected void add(Bytecode bc) throws CompilationException {
-							int offset = getValue(poskey) - bcpos;
-							if (Math.abs(offset) > (65535/2)){
-								throw new CompilationException("Too long jump. Please reformate the code!");
-							} else {
-								bc.write(bcpos, Opcode.GOTO);
-								bc.write16bit(bcpos+1, offset);
-							}
-						}
-						
-					}, endLabel);
+						bc.addAload(stack);
+						bc.add(Opcode.ATHROW);
+						stacker.release();
+					}
+					
 				}
+				setLabelPos(throwLabel);
+				if (hasFinally)
+					compileBlock(statement.finallyBlock().block());
+				bc.addAload(store);
+				bc.add(Opcode.ATHROW);
+				addLabel(new LabelInfo(){
+
+					@Override
+					protected void add(Bytecode bc) throws CompilationException {
+						int offset = getValue(poskey) - bcpos;
+						if (Math.abs(offset) > (65535/2)){
+							throw new CompilationException("Too long jump. Please reformate the code!");
+						} else {
+							bc.write(bcpos, Opcode.GOTO);
+							bc.write16bit(bcpos+1, offset);
+						}
+					}
+					
+				}, endLabel);			
 			}
 			
 			if (statement.finallyBlock() != null){
