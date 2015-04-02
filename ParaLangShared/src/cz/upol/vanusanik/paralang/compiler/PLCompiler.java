@@ -34,12 +34,6 @@ import javassist.bytecode.SourceFileAttribute;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.apache.bcel.Repository;
-import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
-import org.apache.bcel.verifier.Verifier;
-import org.apache.bcel.verifier.VerifierFactory;
-import org.apache.bcel.verifier.exc.AssertionViolatedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -257,21 +251,21 @@ public class PLCompiler {
 		
 		Class<?> klazz = cls.toClass();
 		
-		JavaClass jc;
-		try {
-			jc = Repository.lookupClass(klazz);
-		} catch (ClassNotFoundException e) {
-			throw new AssertionViolatedException("Missing class: " + e.toString());
-		}
-		
-		Verifier vf = VerifierFactory.getVerifier(klazz.getName());
-		int it = 0;
-		for (Method mm : jc.getMethods())
-			vf.doPass3b(it++);
-		
-		for (String mm : vf.getMessages()){
-			System.err.println(mm);
-		}
+//		JavaClass jc;
+//		try {
+//			jc = Repository.lookupClass(klazz);
+//		} catch (ClassNotFoundException e) {
+//			throw new AssertionViolatedException("Missing class: " + e.toString());
+//		}
+//		
+//		Verifier vf = VerifierFactory.getVerifier(klazz.getName());
+//		int it = 0;
+//		for (Method mm : jc.getMethods())
+//			vf.doPass3b(it++);
+//		
+//		for (String mm : vf.getMessages()){
+//			System.err.println(mm);
+//		}
 		
 		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
 	}
