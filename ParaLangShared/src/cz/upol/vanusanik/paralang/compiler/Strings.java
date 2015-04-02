@@ -18,6 +18,7 @@ public class Strings {
 	public static final String PL_MODULE_L = "L" + PL_MODULE + ";";
 	public static final String PL_CLASS = "cz/upol/vanusanik/paralang/runtime/PLClass";
 	public static final String PL_CLASS_L = "L" + PL_CLASS + ";";
+	public static final String PL_CLASS__SET_DERIVED_CLASS = "__setDerivedClass";
 	public static final String BASE_CLASS = "cz/upol/vanusanik/paralang/runtime/BaseClass";
 	public static final String BASE_CLASS_L = "L" + BASE_CLASS + ";";
 	
@@ -30,6 +31,7 @@ public class Strings {
 	public static final String RUNTIME__WRAP_JAVA_OBJECT = "wrapJavaObject";
 	public static final String RUNTIME__RUN = "run";
 	public static final String RUNTIME__RUN_JAVA_WRAPPER = "runJavaWrapper";
+	public static final String RUNTIME__CHECK_EXCEPTION_HIERARCHY = "checkExceptionHierarchy";
 	public static final String TYPEOPS__PLUS = "plus";
 	public static final String TYPEOPS__MINUS = "minus";
 	public static final String TYPEOPS__MUL = "mul";
@@ -54,6 +56,7 @@ public class Strings {
 	public static final String PLANGOBJECT = "cz/upol/vanusanik/paralang/plang/PLangObject";
 	public static final String PLANGOBJECT_L = "L" + PLANGOBJECT + ";";
 	public static final String PLANGOBJECT_N = "cz.upol.vanusanik.paralang.plang.PLangObject";
+	public static final String PLANGOBJECT__GET_LOWEST_CLASSDEF = "__getLowestClassdef";
 	public static final String NONETYPE = "cz/upol/vanusanik/paralang/plang/types/NoValue";
 	public static final String NONETYPE_L = "L" + NONETYPE + ";";
 	public static final String INT = "cz/upol/vanusanik/paralang/plang/types/Int";
@@ -74,4 +77,5 @@ public class Strings {
 	
 	public static final String SERIALIZABLE = "java/io/Serializable";
 	public static final String SERIALIZATION_UID = "serialVersionUID";
+	public static final String THROWABLE = "java/lang/Throwable";
 }

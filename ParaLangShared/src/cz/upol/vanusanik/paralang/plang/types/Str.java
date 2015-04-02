@@ -68,12 +68,12 @@ public class Str extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public Float __sys_m_getNumber() {
+	public Float __sys_m_getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject b) {
+	public boolean eq(PLangObject self, PLangObject b) {
 		if (b.__sys_m_getType().equals(__sys_m_getType()))
 			return value.equals(((Str)b).value);
 		else

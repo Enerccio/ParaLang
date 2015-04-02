@@ -2,6 +2,8 @@ package cz.upol.vanusanik.paralang.plang.types;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
@@ -12,6 +14,7 @@ import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
 public class FunctionWrapper extends PLangObject implements Serializable {
+
 	private static final long serialVersionUID = 3998164784189902299L;
 
 	public FunctionWrapper(){
@@ -27,20 +30,53 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	private boolean isMethod;
 	private String methodName;
 	private BaseCompiledStub owner;
+	
+	@Override
+	public BaseCompiledStub __getLowestClassdef() {
+		BaseCompiledStub lowest = owner;
+		BaseCompiledStub nextLowest = null;
+		do {
+			nextLowest = lowest.__getLowestClassInstance();
+			if (nextLowest != null)
+				lowest = nextLowest;
+		} while (nextLowest != null);
+		return lowest;
+	}
+	
+	private class MethodAccessor {
+		public Method m;
+		public BaseCompiledStub o;
+	}
 
-	public PLangObject run(PLangObject... arguments) throws Exception{
-		for (Method m : owner.getClass().getMethods()){
-			if (m.getName().equals(methodName)){
-				return run(m, owner, arguments);
+	public PLangObject run(BaseCompiledStub owner, PLangObject... arguments) throws Exception{
+		for (MethodAccessor ma : getAllMethods(owner)){
+			if (ma.m.getName().equals(methodName)){
+				return run(ma.m, ma.o, owner, arguments);
 			}
 		}
 		throw new RuntimeException("Unknown method: " + methodName);
 	}
 
-	private PLangObject run(Method m, BaseCompiledStub runner, PLangObject[] arguments) throws Exception {
+	private List<MethodAccessor> getAllMethods(BaseCompiledStub owner) {
+		List<MethodAccessor> mList = new ArrayList<MethodAccessor>();
+		
+		do {
+			for (Method m : owner.getClass().getMethods()){
+				MethodAccessor ma = new MethodAccessor();
+				ma.m = m;
+				ma.o = owner;
+				mList.add(ma);
+			}
+			owner = owner.__getParent();
+		} while (owner != null);
+		
+		return mList;
+	}
+
+	private PLangObject run(Method m, BaseCompiledStub runner, BaseCompiledStub self, PLangObject[] arguments) throws Exception {
 		PLangObject[] data = arguments;
 		if (isMethod){
-			data = Utils.pushLeft(runner.__getThis(), arguments);
+			data = Utils.pushLeft(self, arguments);
 		}
 		return (PLangObject) m.invoke(runner, (Object[])data);
 	}
@@ -126,12 +162,12 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public Float __sys_m_getNumber() {
+	public Float __sys_m_getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject b) {
+	public boolean eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
 }

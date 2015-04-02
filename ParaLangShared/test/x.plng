@@ -3,6 +3,14 @@ using Collections.List;
 
 module HelloWorldModule {
 
+	class SimpleException > BaseException {
+		
+		get_message(){
+			return "MESSAGE: " + parent.get_message();
+		}
+	
+	} 
+
 	class Test {
 		var a, b;
 		
@@ -12,6 +20,9 @@ module HelloWorldModule {
 		
 		restricted run(){
 			b = 6;
+			
+			throw new SimpleException("Oh damn! Something went wrong!");
+			
 			a = new Integer(b);
 			IO.out.println(a == b);
 			IO.out.println(b == a);
@@ -34,6 +45,14 @@ module HelloWorldModule {
 	}
 	
 	restricted run(){
-		new Test()();
+		try {
+			new Test()();
+		} catch (BaseException a){
+			IO.out.println("Caught a!");
+			IO.out.println(a);
+			throw a;
+		} finally {
+			IO.out.println("Finally done this!");
+		} 
 	}
 };

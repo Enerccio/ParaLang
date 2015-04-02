@@ -15,6 +15,7 @@ import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
 public abstract class BaseCompiledStub extends PLangObject{
+	private static final long serialVersionUID = -2885702496818908285L;
 	protected Map<String, PLangObject> __fieldsAndMethods;
 	private Map<String, Long> __fieldModificationMap = new HashMap<String, Long>();
 	private Map<PLangObject, Set<String>> __reverseMapLookup = new HashMap<PLangObject, Set<String>>(){
@@ -55,18 +56,18 @@ public abstract class BaseCompiledStub extends PLangObject{
 	
 	public void __init_class(){
 		__fieldsAndMethods = new HashMap<String, PLangObject>();
-		isInited = true;
+		__isInited = true;
 		__restrictedOverride = true;
 		__init_internal_datafields();
 		__restrictedOverride = false;
 	}
 	
-	protected boolean isInited;
+	protected boolean __isInited;
 	
 	protected abstract void __init_internal_datafields();
 	
 	public PLangObject __getkey(String key){
-		if (!isInited){
+		if (!__isInited){
 			__init_class();
 		}
 		
@@ -82,7 +83,7 @@ public abstract class BaseCompiledStub extends PLangObject{
 	}
 	
 	public void __setkey(String key, PLangObject var){
-		if (!isInited)
+		if (!__isInited)
 			__init_class();
 		
 		if (!__restrictedOverride)
@@ -146,7 +147,7 @@ public abstract class BaseCompiledStub extends PLangObject{
 		} else {
 			runtime.setAsAlreadySerialized(this);
 			metaData.add("link", false)
-					.add("isInited", isInited)
+					.add("isInited", __isInited)
 					.add("modifiedFrom", previousTime)
 					.add("modifiedFromFields", getDeltaFields(previousTime));
 		}
@@ -174,13 +175,13 @@ public abstract class BaseCompiledStub extends PLangObject{
 	}
 
 	@Override
-	public Float __sys_m_getNumber() {
+	public Float __sys_m_getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject b) {
-		return this == b;
+	public boolean eq(PLangObject self, PLangObject b) {
+		return self == b;
 	}
 	
 	protected PLangObject __convertBoolean(boolean b){
@@ -192,9 +193,19 @@ public abstract class BaseCompiledStub extends PLangObject{
 		if (__fieldsAndMethods.containsKey("__str")){
 			PLangObject str = __getkey("__str");
 			if (str instanceof FunctionWrapper){
-				return PLRuntime.getRuntime().run(str).toString();
+				return PLRuntime.getRuntime().run(str, (BaseCompiledStub)this.__getThis()).toString();
 			}
 		}
 		return super.toString();
+	}
+
+	public BaseCompiledStub __getLowestClassInstance() {
+		return null;
+	}
+
+	public BaseCompiledStub __getParent() {
+		if (!__isInited)
+			__init_class();
+		return (BaseCompiledStub) __fieldsAndMethods.get(PLClass.__superKey);
 	}
 }

@@ -21,7 +21,7 @@ public class AutoIntStacker {
 		--currentValue;
 	}
 
-	public int getMax() {
+	public synchronized int getMax() {
 		return maxValue;
 	}
 }

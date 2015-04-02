@@ -65,21 +65,23 @@ public class Flt extends PLangObject implements Serializable  {
 	}
 
 	@Override
-	public Float __sys_m_getNumber() {
+	public Float __sys_m_getNumber(PLangObject self) {
 		return value;
 	}
 
 	@Override
-	public boolean eq(PLangObject b) {
+	public boolean eq(PLangObject self, PLangObject b) {
 		if (!b.__sys_m_isNumber()) return false;
-		return value == b.__sys_m_getNumber();
+		return value == b.__sys_m_getNumber(b);
 	}
 	
-	public boolean __sys_m_less(PLangObject other, boolean equals) {
-		return equals ? (value <= other.__sys_m_getNumber()) : (value < other.__sys_m_getNumber());
+	@Override
+	public boolean __sys_m_less(PLangObject self, PLangObject other, boolean equals) {
+		return equals ? (value <= other.__sys_m_getNumber(other)) : (value < other.__sys_m_getNumber(other));
 	}
 	
-	public boolean __sys_m_more(PLangObject other, boolean equals) {
-		return equals ? (value >= other.__sys_m_getNumber()) : (value > other.__sys_m_getNumber());
+	@Override
+	public boolean __sys_m_more(PLangObject self, PLangObject other, boolean equals) {
+		return equals ? (value >= other.__sys_m_getNumber(other)) : (value > other.__sys_m_getNumber(other));
 	}
 }

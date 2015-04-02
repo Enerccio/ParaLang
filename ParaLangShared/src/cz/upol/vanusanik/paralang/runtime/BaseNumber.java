@@ -49,92 +49,94 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	}
 	
 	public PLangObject __str_base(PLangObject self){
-		return new Str(__getkey(__valKey).toString());
+		return new Str(((PLClass)self).__getkey(__valKey).toString());
 	}
 	
 	public abstract PLangObject __init_superclass(PLangObject self, PLangObject iv);
 	
-	public PLangObject __eq_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.eq(__getkey(__valKey), other);
+	public PLangObject __eq_base(PLangObject self, PLangObject other){
+		return TypeOperations.eq(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __neq_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.neq(__getkey(__valKey), other);
+	public PLangObject __neq_base(PLangObject self,  PLangObject other){
+		return TypeOperations.neq(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __bitand_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.bitand(__getkey(__valKey), other);
+	public PLangObject __bitand_base(PLangObject self, PLangObject other){
+		return TypeOperations.bitand(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __bitor_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.bitor(__getkey(__valKey), other);
+	public PLangObject __bitor_base(PLangObject self, PLangObject other){
+		return TypeOperations.bitor(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __bitxor_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.bitxor(__getkey(__valKey), other);
+	public PLangObject __bitxor_base(PLangObject self, PLangObject other){
+		return TypeOperations.bitxor(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __div_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.div(__getkey(__valKey), other);
+	public PLangObject __div_base(PLangObject self, PLangObject other){
+		return TypeOperations.div(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __leq_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.leq(__getkey(__valKey), other);
+	public PLangObject __leq_base(PLangObject self, PLangObject other){
+		return TypeOperations.leq(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __less_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.less(__getkey(__valKey), other);
+	public PLangObject __less_base(PLangObject self, PLangObject other){
+		return TypeOperations.less(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __lshift_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.lshift(__getkey(__valKey), other);
+	public PLangObject __lshift_base(PLangObject self, PLangObject other){
+		return TypeOperations.lshift(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __meq_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.meq(__getkey(__valKey), other);
+	public PLangObject __meq_base(PLangObject self, PLangObject other){
+		return TypeOperations.meq(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __minus_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.minus(__getkey(__valKey), other);
+	public PLangObject __minus_base(PLangObject self, PLangObject other){
+		return TypeOperations.minus(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __mod_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.mod(__getkey(__valKey), other);
+	public PLangObject __mod_base(PLangObject self, PLangObject other){
+		return TypeOperations.mod(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __more_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.more(__getkey(__valKey), other);
+	public PLangObject __more_base(PLangObject self, PLangObject other){
+		return TypeOperations.more(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __mul_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.mul(__getkey(__valKey), other);
+	public PLangObject __mul_base(PLangObject self, PLangObject other){
+		return TypeOperations.mul(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __plus_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.plus(__getkey(__valKey), other);
+	public PLangObject __plus_base(PLangObject self, PLangObject other){
+		return TypeOperations.plus(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __rshift_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.rshift(__getkey(__valKey), other);
+	public PLangObject __rshift_base(PLangObject self, PLangObject other){
+		return TypeOperations.rshift(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public PLangObject __rushift_base(PLangObject self, PLangObject me, PLangObject other){
-		return TypeOperations.rushift(__getkey(__valKey), other);
+	public PLangObject __rushift_base(PLangObject self, PLangObject other){
+		return TypeOperations.rushift(((PLClass)self).__getkey(__valKey), other);
 	}
 	
-	public boolean __sys_m_less(PLangObject other, boolean equals) {
+	@Override
+	public boolean __sys_m_less(PLangObject self, PLangObject other, boolean equals) {
 		if (equals){
-			return BooleanValue.toBoolean(TypeOperations.leq(__getkey(__valKey), other));
+			return BooleanValue.toBoolean(TypeOperations.leq(((PLClass)self).__getkey(__valKey), other));
 		} else {
-			return BooleanValue.toBoolean(TypeOperations.less(__getkey(__valKey), other));
+			return BooleanValue.toBoolean(TypeOperations.less(((PLClass)self).__getkey(__valKey), other));
 		}
 	}
 	
-	public boolean __sys_m_more(PLangObject other, boolean equals) {
+	@Override
+	public boolean __sys_m_more(PLangObject self, PLangObject other, boolean equals) {
 		if (equals){
-			return BooleanValue.toBoolean(TypeOperations.meq(__getkey(__valKey), other));
+			return BooleanValue.toBoolean(TypeOperations.meq(((PLClass)self).__getkey(__valKey), other));
 		} else {
-			return BooleanValue.toBoolean(TypeOperations.more(__getkey(__valKey), other));
+			return BooleanValue.toBoolean(TypeOperations.more(((PLClass)self).__getkey(__valKey), other));
 		}
 	}
 	
@@ -144,7 +146,8 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	}
 	
 	@Override
-	public Float __sys_m_getNumber(){
-		return __getkey(__valKey).__sys_m_getNumber();
+	public Float __sys_m_getNumber(PLangObject self){
+		PLangObject val = __getkey(__valKey);
+		return val.__sys_m_getNumber(val);
 	}
 }

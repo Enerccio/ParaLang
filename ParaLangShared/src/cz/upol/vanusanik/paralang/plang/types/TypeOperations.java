@@ -22,7 +22,7 @@ public class TypeOperations {
 			classMethod = cm;
 		}
 		
-		public String classMethod;
+		public final String classMethod;
 		
 	}
 
@@ -176,7 +176,7 @@ public class TypeOperations {
 			Operator o) {
 		
 		if (a instanceof PLClass){
-			return PLRuntime.getRuntime().run(((PLClass)a).__getkey(o.classMethod), a, b);
+			return PLRuntime.getRuntime().run(((PLClass)a).__getkey(o.classMethod), (PLClass)a, b);
 		}
 		
 		switch (o){
@@ -191,8 +191,8 @@ public class TypeOperations {
 		case BITOR:
 		case BITAND:
 		case BITXOR: {
-			Float va = a.__sys_m_getNumber();
-			Float vb = b.__sys_m_getNumber();
+			Float va = a.__sys_m_getNumber(a);
+			Float vb = b.__sys_m_getNumber(b);
 			Float result = 0f;
 			
 			switch(o){
@@ -244,22 +244,22 @@ public class TypeOperations {
 			
 			switch (o){
 			case EQ:
-				result = a.eq(b);
+				result = a.eq(a, b);
 				break;
 			case LEQ:
-				result = a.__sys_m_less(b, true);
+				result = a.__sys_m_less(a, b, true);
 				break;
 			case LESS:
-				result = a.__sys_m_less(b, false);
+				result = a.__sys_m_less(a, b, false);
 				break;
 			case MEQ:
-				result = a.__sys_m_more(b, true);
+				result = a.__sys_m_more(a, b, true);
 				break;
 			case MORE:
-				result = a.__sys_m_more(b, false);
+				result = a.__sys_m_more(a, b, false);
 				break;
 			case NEQ:
-				result = !a.eq(b);
+				result = !a.eq(a, b);
 				break;
 			}
 			

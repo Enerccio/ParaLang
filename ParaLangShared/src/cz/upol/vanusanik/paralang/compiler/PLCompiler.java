@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import cz.upol.vanusanik.paralang.plang.PLangLexer;
 import cz.upol.vanusanik.paralang.plang.PLangParser;
 import cz.upol.vanusanik.paralang.plang.PLangParser.BlockContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.BlockStatementContext;
+import cz.upol.vanusanik.paralang.plang.PLangParser.CatchClauseContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ClassBodyDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ClassDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.CompilationUnitContext;
@@ -285,7 +287,6 @@ public class PLCompiler {
 		
 		varStack.pushNewStack(); // push class variables
 		varStack.addVariable("init", VariableType.CLASS_VARIABLE);
-		// TODO add super when available
 		
 		// Find all methods
 		final Set<String> methods = new HashSet<String>();
@@ -447,6 +448,143 @@ public class PLCompiler {
 	private Stack<Boolean> isStatementExpression = new Stack<Boolean>();
 	private void compileStatement(StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
+		
+		if (statement.getText().startsWith("try")){
+			int endLabel = counter++;
+			boolean hasFinally = statement.finallyBlock() != null;
+			
+			int store = stacker.acquire();
+			
+			int start = bc.currentPc();
+			compileBlock(statement.block());
+			int end = bc.currentPc();
+			if (hasFinally){
+				compileBlock(statement.finallyBlock().block());
+			}
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					if (Math.abs(offset) > (65535/2)){
+						throw new CompilationException("Too long jump. Please reformate the code!");
+					} else {
+						bc.write(bcpos, Opcode.GOTO);
+						bc.write16bit(bcpos+1, offset);
+					}
+				}
+				
+			}, endLabel);
+			
+			int prevKey = -1;
+			
+			if (statement.catchClause() != null){
+				int throwLabel = counter++;
+				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.PLANGOBJECT);
+				bc.addAstore(store); // save old exception
+				
+				Iterator<CatchClauseContext> ccit = statement.catchClause().iterator();
+				while (ccit.hasNext()){
+					CatchClauseContext ccc = ccit.next();
+					String type = ccc.type().getText();
+					String fqName = type;
+					
+					if (referenceMap.containsKey(type)){
+						Reference r = referenceMap.get(type);
+						if (r.isJava())
+							throw new CompilationException("Only PLang type can be in catch expression!");
+						fqName = r.getFullReference();
+					}
+					
+					if (!fqName.contains(".")){
+						throw new CompilationException("Class type " + type + " is unknown. Have you forgotten using declaration?");
+					}
+					
+					String className = PLRuntime.getRuntime().getClassNameOrGuess(fqName);
+					
+					if (prevKey != -1)
+						setLabelPos(prevKey);
+					addGetRuntime();
+					bc.addAload(store);
+					bc.addLdc(cacheStrings(className));
+					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CHECK_EXCEPTION_HIERARCHY, 
+							"(" + Strings.PLANGOBJECT_L + Strings.STRING_L + ")Z");
+					
+					if (!ccit.hasNext()){
+						// no other catch clauses, else should go to exit
+						prevKey = throwLabel;
+					} else {
+						// else should go to next key pos
+						prevKey = counter++;
+					}
+					addLabel(new LabelInfo(){
+
+						@Override
+						protected void add(Bytecode bc) throws CompilationException {
+							int offset = getValue(poskey) - bcpos;
+							bc.write(bcpos, Opcode.IFEQ);
+							bc.write16bit(bcpos+1, offset);
+						}
+						
+					}, prevKey);
+					
+					varStack.addVariable(ccc.Identifier().getText(), VariableType.LOCAL_VARIABLE, store);
+					compileBlock(ccc.block());
+					if (hasFinally)
+						compileBlock(statement.finallyBlock().block());
+					addLabel(new LabelInfo(){
+
+						@Override
+						protected void add(Bytecode bc) throws CompilationException {
+							int offset = getValue(poskey) - bcpos;
+							if (Math.abs(offset) > (65535/2)){
+								throw new CompilationException("Too long jump. Please reformate the code!");
+							} else {
+								bc.write(bcpos, Opcode.GOTO);
+								bc.write16bit(bcpos+1, offset);
+							}
+						}
+						
+					}, endLabel);
+					setLabelPos(throwLabel);
+					if (hasFinally)
+						compileBlock(statement.finallyBlock().block());
+					bc.addAload(store);
+					bc.add(Opcode.ATHROW);
+					addLabel(new LabelInfo(){
+
+						@Override
+						protected void add(Bytecode bc) throws CompilationException {
+							int offset = getValue(poskey) - bcpos;
+							if (Math.abs(offset) > (65535/2)){
+								throw new CompilationException("Too long jump. Please reformate the code!");
+							} else {
+								bc.write(bcpos, Opcode.GOTO);
+								bc.write16bit(bcpos+1, offset);
+							}
+						}
+						
+					}, endLabel);
+				}
+			}
+			
+			if (statement.finallyBlock() != null){
+				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.THROWABLE);
+				bc.addAstore(store); // save throwable exception on stack
+				
+				compileBlock(statement.finallyBlock().block());
+				
+				bc.addAload(store);
+				bc.add(Opcode.ATHROW);
+			}
+			stacker.release();
+			stacker.release();
+			
+			setLabelPos(endLabel);
+			bc.add(Opcode.NOP);
+			return;
+		}
+		
 		if (statement.block() != null){
 			compileBlock(statement.block());
 			return;
@@ -463,6 +601,15 @@ public class PLCompiler {
 			
 			functionExitProtocol();
 			bc.add(Opcode.ARETURN);
+			return;
+		}
+		
+		if (statement.getText().startsWith("throw")){
+			isStatementExpression.add(false);
+			compileExpression(statement.expression());
+			isStatementExpression.pop();
+			bc.add(Opcode.ATHROW);
+			return;
 		}
 		
 		if (statement.statementExpression() != null){
@@ -535,17 +682,42 @@ public class PLCompiler {
 					if (superClass == null || superClass.equals("BaseClass")){
 						bc.addNew(Strings.BASE_CLASS);
 						bc.add(Opcode.DUP);
+						bc.add(Opcode.DUP);
 						bc.addInvokespecial(Strings.BASE_CLASS, 
-								"<init>", "()V");	
+								"<init>", "()V");
+						bc.addCheckcast(Strings.PL_CLASS);
+						bc.addAload(0);
+						bc.addInvokevirtual(Strings.PL_CLASS, Strings.PL_CLASS__SET_DERIVED_CLASS, 
+								"(" + Strings.PL_CLASS_L + ")V");
 					} else {
 						if (referenceMap.containsKey(superClass)){
 							Reference r = referenceMap.get(superClass);
 							if (r.isJava()){
 								throw new CompilationException("Reference is reference to java class, not PLang class!");
 							}
+							addGetRuntime();
 							bc.addLdc(cacheStrings(r.getFullReference()));
+							bc.addIconst(1);
+							bc.addAnewarray(cp.getCtClass(Strings.PLANGOBJECT_N), 0);
 							bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
-									"(" + Strings.STRING_L + ")" + Strings.PLANGOBJECT_L);
+									"(" + Strings.STRING_L + "Z[" + Strings.PLANGOBJECT_L + ")" + Strings.PL_CLASS_L);
+							bc.add(Opcode.DUP);
+							bc.addCheckcast(Strings.PL_CLASS);
+							bc.addAload(0);
+							bc.addInvokevirtual(Strings.PL_CLASS, Strings.PL_CLASS__SET_DERIVED_CLASS, 
+									"(" + Strings.PL_CLASS_L + ")V");
+						} else if (superClass.contains(".")){
+							addGetRuntime();
+							bc.addLdc(cacheStrings(superClass));
+							bc.addIconst(1);
+							bc.addAnewarray(cp.getCtClass(Strings.PLANGOBJECT_N), 0);
+							bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
+									"(" + Strings.STRING_L + "Z[" + Strings.PLANGOBJECT_L + ")" + Strings.PL_CLASS_L);
+							bc.add(Opcode.DUP);
+							bc.addCheckcast(Strings.PL_CLASS);
+							bc.addAload(0);
+							bc.addInvokevirtual(Strings.PL_CLASS, Strings.PL_CLASS__SET_DERIVED_CLASS, 
+									"(" + Strings.PL_CLASS_L + ")V");
 						}
 					}
 				}
@@ -660,111 +832,119 @@ public class PLCompiler {
 
 	private void compileExpression(ExpressionContext expression) throws Exception {
 		markLine(bc.currentPc(), expression.start.getLine());
-		if (expression.primary() != null){
-			compilePrimaryExpression(expression.primary());
-			return;
-		} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("->")){
-			if (!PLRuntime.getRuntime().isSafeContext())
-				throw new CompilationException("Java method call being compiled under unsafe context.");
-			
-			// java call
-			ParseTree init = expression.getChild(0);
-			String mname = expression.getChild(2).getText();
-			String refName = init.getText();
-			if (!referenceMap.containsKey(refName)){
-				// instance method, grab Pointer value from it, then call it
+		try {
+			if (expression.primary() != null){
+				compilePrimaryExpression(expression.primary());
+				return;
+			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("->")){
+				if (!PLRuntime.getRuntime().isSafeContext())
+					throw new CompilationException("Java method call being compiled under unsafe context.");
 				
-				addGetRuntime();
-				isStatementExpression.add(false);
-				compileExpression((ExpressionContext) init);
-				isStatementExpression.pop();
-				bc.addCheckcast(Strings.POINTER);
-				bc.addLdc(cacheStrings(mname));
-				compileParameters(expression.expressionList());
-				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN_JAVA_WRAPPER, 
-						"(" + Strings.POINTER_L + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
-				
-			} else {
-				// static method or constructor
-				Reference r = referenceMap.get(refName);
-				if (r == null)
-					throw new CompilationException("Unknown type reference: " + refName + " at " + expression.start.getLine());
-				String fqName = r.getFullReference();
-				if (!r.isJava())
-					throw new CompilationException("Type is not java type!");
-				
-				boolean isConstructorCall = refName.equals(mname);
-				String fqNameS = Utils.slashify(fqName);
-				
-				if (isConstructorCall){
-					addGetRuntime();
-					bc.addNew(fqNameS);
-					bc.add(Opcode.DUP);
-					compileParameters(expression.expressionList());
-					bc.addInvokespecial(fqNameS, 
-							"<init>", "([" +  Strings.PLANGOBJECT_L + ")V");
-					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__WRAP_JAVA_OBJECT, 
-							"(" + Strings.OBJECT_L +")" + Strings.PLANGOBJECT_L);
-				} else {
-					// TODO
+				// java call
+				ParseTree init = expression.getChild(0);
+				String mname = expression.getChild(2).getText();
+				String refName = init.getText();
+				if (!referenceMap.containsKey(refName)){
+					// instance method, grab Pointer value from it, then call it
 					
+					addGetRuntime();
+					isStatementExpression.add(false);
+					compileExpression((ExpressionContext) init);
+					isStatementExpression.pop();
+					bc.addCheckcast(Strings.POINTER);
+					bc.addLdc(cacheStrings(mname));
+					compileParameters(expression.expressionList());
+					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN_JAVA_WRAPPER, 
+							"(" + Strings.POINTER_L + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+					
+				} else {
+					// static method or constructor
+					Reference r = referenceMap.get(refName);
+					if (r == null)
+						throw new CompilationException("Unknown type reference: " + refName + " at " + expression.start.getLine());
+					String fqName = r.getFullReference();
+					if (!r.isJava())
+						throw new CompilationException("Type is not java type!");
+					
+					boolean isConstructorCall = refName.equals(mname);
+					String fqNameS = Utils.slashify(fqName);
+					
+					if (isConstructorCall){
+						addGetRuntime();
+						bc.addNew(fqNameS);
+						bc.add(Opcode.DUP);
+						compileParameters(expression.expressionList());
+						bc.addInvokespecial(fqNameS, 
+								"<init>", "([" +  Strings.PLANGOBJECT_L + ")V");
+						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__WRAP_JAVA_OBJECT, 
+								"(" + Strings.OBJECT_L +")" + Strings.PLANGOBJECT_L);
+					} else {
+						// TODO
+						
+					}
 				}
-			}
-		} else if (expression.methodCall() != null){
-			// method call
-			addGetRuntime();
-			isStatementExpression.add(false);
-			compileExpression((ExpressionContext) expression.getChild(0));
-			isStatementExpression.pop();
-			compileParameters(expression.methodCall().expressionList());
-			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, 
-					"(" + Strings.PLANGOBJECT_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
-			
-		} else if (expression.getChild(0) instanceof ExpressionContext){
-			String operator = expression.getChild(1).getText();
-			if (bioperators.contains(operator)){
-				compileBinaryOperator(operator, 
-						(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2));
-			} else if ("||".equals(operator) || "&&".equals(operator)) {
-				compileLogic((ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2),
-						"||".equals(operator));
-			} else {
+			} else if (expression.methodCall() != null){
+				// method call
+				addGetRuntime();
 				isStatementExpression.add(false);
 				compileExpression((ExpressionContext) expression.getChild(0));
 				isStatementExpression.pop();
-				if (expression.getChild(1).getText().equals(".")){
-					// compiling field accessor
-					markLine(bc.currentPc(), expression.stop.getLine());
-					String identifier = expression.getChild(2).getText();
-					bc.addCheckcast(Strings.BASE_COMPILED_STUB);
-					bc.addLdc(cacheStrings(identifier));			// load string from constants
-					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
-							"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
-				}	
+				bc.add(Opcode.DUP);
+				bc.addInvokevirtual(Strings.PLANGOBJECT, Strings.PLANGOBJECT__GET_LOWEST_CLASSDEF, 
+						"()" + Strings.BASE_COMPILED_STUB_L);
+				compileParameters(expression.methodCall().expressionList());
+				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, 
+						"(" + Strings.PLANGOBJECT_L + Strings.BASE_COMPILED_STUB_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+			} else if (expression.getChild(0) instanceof ExpressionContext){
+				String operator = expression.getChild(1).getText();
+				if (bioperators.contains(operator)){
+					compileBinaryOperator(operator, 
+							(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2));
+				} else if ("||".equals(operator) || "&&".equals(operator)) {
+					compileLogic((ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2),
+							"||".equals(operator));
+				} else {
+					isStatementExpression.add(false);
+					compileExpression((ExpressionContext) expression.getChild(0));
+					isStatementExpression.pop();
+					if (expression.getChild(1).getText().equals(".")){
+						// compiling field accessor
+						markLine(bc.currentPc(), expression.stop.getLine());
+						String identifier = expression.getChild(2).getText();
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+						bc.addLdc(cacheStrings(identifier));			// load string from constants
+						bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
+								"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+					}	
+				}
+			} else if (expression.getChild(0).getText().equals("new")){
+				String fqName = null;
+				if (expression.getChildCount() == 4){ // fq
+					 fqName = expression.getChild(1).getText() + "." + expression.constructorCall().getChild(0).getText();
+				} else {
+					String refName = expression.constructorCall().getChild(0).getText();
+					Reference r = referenceMap.get(refName);
+					if (r == null)
+						throw new CompilationException("Unknown type reference: " + refName + " at " + expression.start.getLine());
+					fqName = r.getFullReference();
+				}
+				addGetRuntime();
+				bc.addLdc(cacheStrings(fqName));			// load string from constants
+				compileParameters(expression.constructorCall().expressionList());
+				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
+						"(" + Strings.STRING_L + "["+ Strings.PLANGOBJECT_L +")" + Strings.PL_CLASS_L);
+			} else if (expression.getChildCount() == 3){
+				String operator = expression.getChild(1).getText();
+				
+				if (setOperators.contains(operator)){
+					compileSetOperator(operator, expression);
+				}
 			}
-		} else if (expression.getChild(0).getText().equals("new")){
-			String fqName = null;
-			if (expression.getChildCount() == 4){ // fq
-				 fqName = expression.getChild(1).getText() + "." + expression.constructorCall().getChild(0).getText();
-			} else {
-				String refName = expression.constructorCall().getChild(0).getText();
-				Reference r = referenceMap.get(refName);
-				if (r == null)
-					throw new CompilationException("Unknown type reference: " + refName + " at " + expression.start.getLine());
-				fqName = r.getFullReference();
+		} finally {
+			if (isStatementExpression.peek()){
+				bc.add(Opcode.POP);
 			}
-			addGetRuntime();
-			bc.addLdc(cacheStrings(fqName));			// load string from constants
-			compileParameters(expression.constructorCall().expressionList());
-			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
-					"(" + Strings.STRING_L + "["+ Strings.PLANGOBJECT_L +")" + Strings.PL_CLASS_L);
-		} else if (expression.getChildCount() == 3){
-			String operator = expression.getChild(1).getText();
-			
-			if (setOperators.contains(operator)){
-				compileSetOperator(operator, expression);
-			}
-		} 
+		}
 	}
 
 	private void compileLogic(ExpressionContext left,
@@ -998,6 +1178,8 @@ public class PLCompiler {
 					bc.addLdc(cacheStrings(identifier));			// load string from constants
 					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
 							"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+				} else {
+					addNil();
 				}
 			} else {
 				/* Loads the local varaible on stack, then writes to the same position */
@@ -1007,6 +1189,8 @@ public class PLCompiler {
 				bc.addAstore(ord);
 				if (isStatementExpression.peek() == false){
 					bc.addAload(ord);
+				} else {
+					addNil();
 				}
 			}
 			
@@ -1193,7 +1377,6 @@ public class PLCompiler {
 			at.getAttributes().add(lineNubmerInfo);
 			
 			m.getMethodInfo().setCodeAttribute(at);
-			m.getMethodInfo().rebuildStackMap(cp);
 			
 			InstructionPrinter.print(m, System.err);
 			

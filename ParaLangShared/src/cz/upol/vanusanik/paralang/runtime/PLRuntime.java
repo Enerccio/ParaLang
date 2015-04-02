@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class PLRuntime {
 	
 	static {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
+		__SYSTEM_CLASSES.put("BaseException", BaseException.class);
 		__SYSTEM_CLASSES.put("Function", Function.class);
 		__SYSTEM_CLASSES.put("Integer", BaseInteger.class);
 		__SYSTEM_CLASSES.put("Float", BaseFloat.class);
@@ -58,6 +60,7 @@ public class PLRuntime {
 	
 	private boolean isSafeContext = false;
 	private boolean isRestricted = true;
+	private String packageTarget = "";
 	
 	public PLRuntime(){
 		localRuntime.set(this);
@@ -138,15 +141,20 @@ public class PLRuntime {
 	}
 	
 	public PLClass newInstance(String fqname, PLangObject... inits){
+		return newInstance(fqname, false, inits);
+	}
+	
+	public PLClass newInstance(String fqname, boolean skipInit, PLangObject... inits){
 		String[] components = fqname.split("\\.");
 		if (components.length != 2) throw new RuntimeException("Malformed name of the class!");
 		if (!classMap.containsKey(components[0])) throw new RuntimeException("Unknown module!");
 		if (!classMap.get(components[0]).containsKey(components[1])) throw new RuntimeException("Unknown class!");
 		try {
 			PLClass instance = (PLClass) classMap.get(components[0]).get(components[1]).newInstance();
-			run(instance.__getkey("init"), inits); // run constructor
+			if (!skipInit)
+				run(instance.__getkey("init"), instance, inits); // run constructor
 			return instance;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -164,6 +172,8 @@ public class PLRuntime {
 				moduleMap.put(moduleName, module);
 				run(moduleName, "init");
 			} catch (Exception e) {
+				if (e instanceof RuntimeException)
+					throw (RuntimeException)e;
 				throw new RuntimeException(e);
 			}
 		}
@@ -172,7 +182,7 @@ public class PLRuntime {
 	
 	public PLangObject run(String module, String runnable){
 		PLModule mod = getModule(module);
-		return run(mod.__getkey(runnable));
+		return run(mod.__getkey(runnable), mod);
 	}
 	
 	public void checkRestrictedAccess(){
@@ -188,22 +198,29 @@ public class PLRuntime {
 		isSafeContext = sc;
 	}
 	
-	public PLangObject run(PLangObject runner, PLangObject... args){
+	public PLangObject run(PLangObject runner, BaseCompiledStub currentRunner, PLangObject... args){
 		if (runner == null)
 			throw new NullPointerException("Runner is mepty");
 	
 		if (runner.__sys_m_getType() == PlangObjectType.FUNCTION){
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
 			try {
-				return wrapper.run(args);
+				return wrapper.run(currentRunner, args);
+			} catch (RuntimeException e){
+				throw e;
+			} catch (InvocationTargetException e){
+				if (e.getCause() instanceof RuntimeException){
+					throw (RuntimeException)e.getCause();
+				} 
+				throw new RuntimeException(e);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		} else if (runner.__sys_m_getType() == PlangObjectType.CLASS){
 			PLClass c = (PLClass)runner;
 			PLangObject callableMethod = c.__getkey(Function.__applyMethod);
-			if (c != null){
-				return run(callableMethod, args);
+			if (callableMethod != null){
+				return run(callableMethod, c, args);
 			}
 		}
 		throw new RuntimeException(runner + " cannot be run!");
@@ -236,6 +253,29 @@ public class PLRuntime {
 		return new Pointer(object);
 	}
 	
+	public String getClassNameOrGuess(String fqName) {
+		String[] components = fqName.split("\\.");
+		if (components.length != 2) throw new RuntimeException("Malformed name of the class!");
+		if (!classMap.containsKey(components[0]) || !classMap.get(components[0]).containsKey(components[1])){
+			return getPackageTarget() + components[0] + "$" + components[1];
+		}
+		
+		return classMap.get(components[0]).get(components[1]).getCanonicalName();
+	}
+	
+	public boolean checkExceptionHierarchy(PLangObject o, String className){
+		if (o.getClass().getName().equals(className))
+			return true;
+		
+		if (o instanceof PLClass){
+			PLClass c = (PLClass)o;
+			if (c.__fieldsAndMethods.containsKey(PLClass.__superKey))
+				return checkExceptionHierarchy(c.__getkey(PLClass.__superKey), className);
+		}
+		
+		return false;
+	}
+	
 	/*
 	 * Only serializes the actual content, not class definitions
 	 */
@@ -261,4 +301,13 @@ public class PLRuntime {
 		root.add("modules", modules);
 		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
 	}
+
+	public String getPackageTarget() {
+		return packageTarget;
+	}
+
+	public void setPackageTarget(String packageTarget) {
+		this.packageTarget = packageTarget;
+	}
+
 }

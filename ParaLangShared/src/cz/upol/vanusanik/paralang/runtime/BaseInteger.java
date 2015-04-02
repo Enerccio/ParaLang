@@ -16,7 +16,7 @@ public class BaseInteger extends BaseNumber {
 		if (!iv.__sys_m_isNumber()){
 			throw new RuntimeException("Value " + iv + " is not a number!");
 		}
-		__setkey(__valKey, new Int(iv.__sys_m_getNumber().intValue()));
+		__setkey(__valKey, new Int(iv.__sys_m_getNumber(iv).intValue()));
 		return NoValue.NOVALUE;
 	}
 

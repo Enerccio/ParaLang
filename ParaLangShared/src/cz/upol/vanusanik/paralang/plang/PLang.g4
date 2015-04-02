@@ -20,8 +20,8 @@ moduleDeclarations
 	;
 
 classDeclaration
-    :   'class' Identifier
-        ('parent class' type)?
+    :   'class' Identifier 
+        ('>' type)?
         classBody
     ;
 
@@ -68,11 +68,7 @@ variableInitializer
     ;
 
 type
-    :   classOrInterfaceType
-    ;
-
-classOrInterfaceType
-    :   Identifier ('.' Identifier )*
+    :   Identifier ('.' Identifier)?
     ;
 
 qualifiedNameList
@@ -121,8 +117,6 @@ literal
     |   'NoValue'
     ;
 
-// STATEMENTS / BLOCKS
-
 block
     :   '{' blockStatement* '}'
     ;
@@ -143,6 +137,8 @@ localVariableDeclaration
 statement
     :   block
     |   'if' parExpression statement ('else' statement)?
+    |   'throw' expression ';'
+    |   'try' block (catchClause+ finallyBlock? | finallyBlock)
     |   'for' '(' forControl ')' statement
     |   'while' parExpression statement
     |   'do' statement 'while' parExpression ';'
@@ -150,10 +146,17 @@ statement
     |   'return' expression? ';'
     |   'break' ';'
     |   'continue' ';'
-    |   'module' Identifier ';'
     |   ';'
     |   statementExpression ';'
     ;
+    
+catchClause
+    :   'catch' '(' type Identifier ')' block
+    ;
+    
+finallyBlock
+	:	'finally' block
+	;
 
 forControl
     :   enhancedForControl
@@ -425,8 +428,6 @@ BinaryDigitOrUnderscore
     |   '_'
     ;
 
-// ��3.10.2 Floating-Point Literals
-
 FloatingPointLiteral
     :   DecimalFloatingPointLiteral
     |   HexadecimalFloatingPointLiteral
@@ -501,8 +502,6 @@ SingleCharacter
     :   ~['\\]
     ;
 
-// ��3.10.5 String Literals
-
 StringLiteral
     :   '"' StringCharacters? '"'
     ;
@@ -556,7 +555,6 @@ SEMI            : ';';
 COMMA           : ',';
 DOT             : '.';
 
-// ��3.12 Operators
 
 ASSIGN          : '=';
 GT              : '>';
@@ -594,7 +592,6 @@ LSHIFT_ASSIGN   : '<<=';
 RSHIFT_ASSIGN   : '>>=';
 URSHIFT_ASSIGN  : '>>>=';
 
-// ��3.8 Identifiers (must appear after all keywords in the grammar)
 
 Identifier
     :   JavaLetter JavaLetterOrDigit*
@@ -622,16 +619,10 @@ JavaLetterOrDigit
         {Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
     ;
 
-//
-// Additional symbols not defined in the lexical specification
-//
 
 AT : '@';
 ELLIPSIS : '...';
 
-//
-// Whitespace and comments
-//
 
 WS  :  [ \t\r\n\u000C]+ -> skip
     ;

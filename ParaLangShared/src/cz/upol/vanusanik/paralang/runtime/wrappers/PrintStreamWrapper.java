@@ -30,7 +30,7 @@ public class PrintStreamWrapper extends ObjectBase implements Serializable {
 	}
 	
 	public PLangObject print(PLangObject arg0){
-		this.stream.print(arg0);
+		this.stream.print(arg0.toString(arg0));
 		this.stream.flush();
 		return arg0;
 	}

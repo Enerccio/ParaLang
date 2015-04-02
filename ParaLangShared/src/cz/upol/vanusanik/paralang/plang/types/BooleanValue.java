@@ -41,7 +41,7 @@ public class BooleanValue extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public Float __sys_m_getNumber() {
+	public Float __sys_m_getNumber(PLangObject self) {
 		return null;
 	}
 
@@ -50,7 +50,7 @@ public class BooleanValue extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public boolean eq(PLangObject b) {
+	public boolean eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
 	
