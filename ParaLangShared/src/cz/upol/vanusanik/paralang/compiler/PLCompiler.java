@@ -1341,6 +1341,24 @@ public class PLCompiler {
 				throw new CompilationException("serialVersionUID is reserved keyword used by serialization");
 			} else if (identifier.equals("toString")){
 					throw new CompilationException("toString is reserved keyword used by java itself");
+			} else if (identifier.equals("getMessage")){
+				throw new CompilationException("getMessage is reserved keyword used by java itself");
+			} else if (identifier.equals("getLocalizedMessage")){
+				throw new CompilationException("getLocalizedMessage is reserved keyword used by java itself");
+			} else if (identifier.equals("getCause")){
+				throw new CompilationException("getCause is reserved keyword used by java itself");
+			} else if (identifier.equals("initCause")){
+				throw new CompilationException("initCause is reserved keyword used by java itself");
+			} else if (identifier.equals("printStackTrace")){
+				throw new CompilationException("printStackTrace is reserved keyword used by java itself");
+			} else if (identifier.equals("fillInStackTrace")){
+				throw new CompilationException("fillInStackTrace is reserved keyword used by java itself");
+			} else if (identifier.equals("getStackTrace")){
+				throw new CompilationException("getStackTrace is reserved keyword used by java itself");
+			} else if (identifier.equals("setStackTrace")){
+				throw new CompilationException("setStackTrace is reserved keyword used by java itself");
+			} else if (identifier.equals("addSuppressed")){
+				throw new CompilationException("addSuppressed is reserved keyword used by java itself");
 			}
 			
 			if (referenceMap.containsKey(identifier)){

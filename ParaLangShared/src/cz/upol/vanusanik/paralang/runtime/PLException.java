@@ -15,10 +15,15 @@ public class PLException extends Exception {
 		List<StackTraceElement> eList = new ArrayList<StackTraceElement>();
 		for (StackTraceElement ee : e.getStackTrace()){
 			String filename = ee.getFileName();
-			if (ee.getMethodName().equals("__init_internal_datafields")) continue;
+			if (ee.getMethodName().startsWith("___")) continue;
 			if (filename == null) continue;
-			if (filename.contains(".plang"))
-				eList.add(ee);
+			if (filename.contains(".plang")){
+				String className = ee.getClassName().replace("$", ".");
+				String methodName = ee.getMethodName();
+				int lineno = ee.getLineNumber();
+				StackTraceElement ste = new StackTraceElement(className, methodName, filename, lineno);
+				eList.add(ste);
+			}
 		}
 		
 		setStackTrace(eList.toArray(new StackTraceElement[eList.size()]));
