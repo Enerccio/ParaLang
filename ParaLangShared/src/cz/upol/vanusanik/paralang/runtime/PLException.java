@@ -15,6 +15,8 @@ public class PLException extends Exception {
 		List<StackTraceElement> eList = new ArrayList<StackTraceElement>();
 		for (StackTraceElement ee : e.getStackTrace()){
 			String filename = ee.getFileName();
+			if (ee.getMethodName().equals("__init_internal_datafields")) continue;
+			if (filename == null) continue;
 			if (filename.contains(".plang"))
 				eList.add(ee);
 		}
@@ -30,6 +32,8 @@ public class PLException extends Exception {
 			if (runnable != null){
 				PLangObject str = PLRuntime.getRuntime().run(runnable, c);
 				return str.toString(str);
+			} else {
+				return c.toString(c);
 			}
 		}
 		return e.getMessage();

@@ -33,7 +33,7 @@ classBodyDeclaration
     :   ';'
     |   memberDeclaration
     ;
-    
+
 
 memberDeclaration
     :   functionDeclaration

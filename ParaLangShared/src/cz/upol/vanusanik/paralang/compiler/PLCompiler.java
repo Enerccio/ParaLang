@@ -251,22 +251,6 @@ public class PLCompiler {
 		
 		Class<?> klazz = cls.toClass();
 		
-//		JavaClass jc;
-//		try {
-//			jc = Repository.lookupClass(klazz);
-//		} catch (ClassNotFoundException e) {
-//			throw new AssertionViolatedException("Missing class: " + e.toString());
-//		}
-//		
-//		Verifier vf = VerifierFactory.getVerifier(klazz.getName());
-//		int it = 0;
-//		for (Method mm : jc.getMethods())
-//			vf.doPass3b(it++);
-//		
-//		for (String mm : vf.getMessages()){
-//			System.err.println(mm);
-//		}
-		
 		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
 	}
 	
@@ -484,7 +468,9 @@ public class PLCompiler {
 		if (statement.getText().startsWith("try")){
 			int endLabel = counter++;
 			boolean hasFinally = statement.finallyBlock() != null;
-			final int store = stacker.acquire();
+			
+			final int finallyStack = stacker.acquire();
+			final int throwableStack = stacker.acquire();
 			
 			if (hasFinally){
 				fbcList.add(new FinallyBlockProtocol() {
@@ -522,7 +508,7 @@ public class PLCompiler {
 			if (statement.catchClause() != null){
 				int throwLabel = counter++;
 				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.PLANGOBJECT);
-				bc.addAstore(store); // save old exception
+				bc.addAstore(throwableStack); // save old exception
 				
 				Iterator<CatchClauseContext> ccit = statement.catchClause().iterator();
 				while (ccit.hasNext()){
@@ -546,7 +532,7 @@ public class PLCompiler {
 					if (prevKey != -1)
 						setLabelPos(prevKey);
 					addGetRuntime();
-					bc.addAload(store);
+					bc.addAload(throwableStack);
 					bc.addLdc(cacheStrings(className));
 					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CHECK_EXCEPTION_HIERARCHY, 
 							"(" + Strings.PLANGOBJECT_L + Strings.STRING_L + ")Z");
@@ -569,7 +555,7 @@ public class PLCompiler {
 						
 					}, prevKey);
 					
-					varStack.addVariable(ccc.Identifier().getText(), VariableType.LOCAL_VARIABLE, store);
+					varStack.addVariable(ccc.Identifier().getText(), VariableType.LOCAL_VARIABLE, throwableStack);
 					int sstart = bc.currentPc();
 					compileBlock(ccc.block());
 					int ssend = bc.currentPc();
@@ -590,19 +576,17 @@ public class PLCompiler {
 					
 					if (hasFinally){
 						bc.addExceptionHandler(sstart, ssend, bc.currentPc(), Strings.THROWABLE);
-						int stack = stacker.acquire();
-						bc.addAstore(stack);
+						bc.addAstore(finallyStack);
 						compileBlock(statement.finallyBlock().block());
-						bc.addAload(stack);
+						bc.addAload(finallyStack);
 						bc.add(Opcode.ATHROW);
-						stacker.release();
 					}
 					
 				}
 				setLabelPos(throwLabel);
 				if (hasFinally)
 					compileBlock(statement.finallyBlock().block());
-				bc.addAload(store);
+				bc.addAload(throwableStack);
 				bc.add(Opcode.ATHROW);
 				addLabel(new LabelInfo(){
 
@@ -622,21 +606,23 @@ public class PLCompiler {
 			
 			if (statement.finallyBlock() != null){
 				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.THROWABLE);
-				bc.addAstore(store); // save throwable exception on stack
+				bc.addAstore(finallyStack); // save throwable exception on stack
 				
 				compileBlock(statement.finallyBlock().block());
 				
-				bc.addAload(store);
+				bc.addAload(finallyStack);
 				bc.add(Opcode.ATHROW);
 			}
-			stacker.release();
-			stacker.release();
 			
 			setLabelPos(endLabel);
 			bc.add(Opcode.NOP);
 			
 			if (hasFinally)
 				fbcList.remove(fbcList.size() - 1);
+
+			stacker.release();
+			stacker.release();
+			
 			return;
 		}
 		
