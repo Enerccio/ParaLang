@@ -22,7 +22,7 @@ public class Str extends PLangObject implements Serializable {
 	String value;
 	
 	@Override
-	public PlangObjectType __sys_m_getType() {
+	public PlangObjectType ___getType() {
 		return PlangObjectType.STRING;
 	}
 	
@@ -57,24 +57,24 @@ public class Str extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
-		return new JsonObject().add("metaObjectType", __sys_m_getType().toString())
+	public JsonValue ___toObject(long previousTime) {
+		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}
 	
 	@Override
-	public boolean __sys_m_isNumber() {
+	public boolean ___isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float __sys_m_getNumber(PLangObject self) {
+	public Float ___getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject self, PLangObject b) {
-		if (b.__sys_m_getType().equals(__sys_m_getType()))
+	public boolean ___eq(PLangObject self, PLangObject b) {
+		if (b.___getType().equals(___getType()))
 			return value.equals(((Str)b).value);
 		else
 			return false;

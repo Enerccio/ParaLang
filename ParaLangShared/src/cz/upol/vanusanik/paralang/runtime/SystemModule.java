@@ -10,12 +10,12 @@ public class SystemModule extends PLModule implements Serializable {
 	private static final long serialVersionUID = -499503904346523233L;
 
 	@Override
-	protected void __init_internal_datafields() {
-		this.__restrictedOverride = true;
+	protected void ___init_internal_datafields() {
+		this.___restrictedOverride = true;
 		
-		__setkey("init", new FunctionWrapper("__init", this, false));
+		___setkey("init", new FunctionWrapper("__init", this, false));
 		
-		this.__restrictedOverride = false;
+		this.___restrictedOverride = false;
 	}
 
 	public PLangObject __init(){

@@ -32,11 +32,11 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	private BaseCompiledStub owner;
 	
 	@Override
-	public BaseCompiledStub __getLowestClassdef() {
+	public BaseCompiledStub ___getLowestClassdef() {
 		BaseCompiledStub lowest = owner;
 		BaseCompiledStub nextLowest = null;
 		do {
-			nextLowest = lowest.__getLowestClassInstance();
+			nextLowest = lowest.___getLowestClassInstance();
 			if (nextLowest != null)
 				lowest = nextLowest;
 		} while (nextLowest != null);
@@ -67,7 +67,7 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 				ma.o = owner;
 				mList.add(ma);
 			}
-			owner = owner.__getParent();
+			owner = owner.___getParent();
 		} while (owner != null);
 		
 		return mList;
@@ -106,7 +106,7 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public PlangObjectType __sys_m_getType() {
+	public PlangObjectType ___getType() {
 		return PlangObjectType.FUNCTION;
 	}
 	
@@ -148,26 +148,26 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	}
 	
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
-		return new JsonObject().add("metaObjectType", __sys_m_getType().toString())
+	public JsonValue ___toObject(long previousTime) {
+		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", new JsonObject()
 					.add("methodName", methodName)
-					.add("owner", owner.__sys_m_toObject(previousTime))
+					.add("owner", owner.___toObject(previousTime))
 					.add("isClassMethod", isMethod));
 	}
 	
 	@Override
-	public boolean __sys_m_isNumber() {
+	public boolean ___isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float __sys_m_getNumber(PLangObject self) {
+	public Float ___getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject self, PLangObject b) {
+	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
 }

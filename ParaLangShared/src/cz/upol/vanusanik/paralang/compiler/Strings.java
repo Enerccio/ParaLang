@@ -7,18 +7,18 @@ public class Strings {
 	
 	public static final String BASE_COMPILED_STUB = "cz/upol/vanusanik/paralang/runtime/BaseCompiledStub";
 	public static final String BASE_COMPILED_STUB_L = "L" + BASE_COMPILED_STUB + ";";
-	public static final String BASE_COMPILED_STUB__SETKEY = "__setkey";
-	public static final String BASE_COMPILED_STUB__GETKEY = "__getkey";
-	public static final String BASE_COMPILED_STUB__GET_RUNTIME = "__get_runtime";
-	public static final String BASE_COMPILED_STUB__GET_THIS = "__get_this";
-	public static final String BASE_COMPILED_STUB__RESTRICTED_OVERRIDE = "__restrictedOverride";
-	public static final String BASE_COMPILED_STUB__CONVERT_BOOLEAN = "__convertBoolean";
+	public static final String BASE_COMPILED_STUB__SETKEY = "___setkey";
+	public static final String BASE_COMPILED_STUB__GETKEY = "___getkey";
+	public static final String BASE_COMPILED_STUB__GET_RUNTIME = "___get_runtime";
+	public static final String BASE_COMPILED_STUB__GET_THIS = "___get_this";
+	public static final String BASE_COMPILED_STUB__RESTRICTED_OVERRIDE = "___restrictedOverride";
+	public static final String BASE_COMPILED_STUB__CONVERT_BOOLEAN = "___convertBoolean";
 	
 	public static final String PL_MODULE = "cz/upol/vanusanik/paralang/runtime/PLModule";
 	public static final String PL_MODULE_L = "L" + PL_MODULE + ";";
 	public static final String PL_CLASS = "cz/upol/vanusanik/paralang/runtime/PLClass";
 	public static final String PL_CLASS_L = "L" + PL_CLASS + ";";
-	public static final String PL_CLASS__SET_DERIVED_CLASS = "__setDerivedClass";
+	public static final String PL_CLASS__SET_DERIVED_CLASS = "___setDerivedClass";
 	public static final String BASE_CLASS = "cz/upol/vanusanik/paralang/runtime/BaseClass";
 	public static final String BASE_CLASS_L = "L" + BASE_CLASS + ";";
 	

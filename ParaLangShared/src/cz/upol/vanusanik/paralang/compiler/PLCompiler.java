@@ -225,7 +225,7 @@ public class PLCompiler {
 		}
 		
 		// Compile system init method
-		final CtMethod m = CtNewMethod.make("protected void __init_internal_datafields() { return null; }", cls);
+		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields() { return null; }", cls);
 		new MethodCompiler(m){
 
 			@Override
@@ -307,7 +307,7 @@ public class PLCompiler {
 		}
 		
 		// Compile system init method
-		final CtMethod m = CtNewMethod.make("protected void __init_internal_datafields() { return null; }", cls);
+		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields() { return null; }", cls);
 		new MethodCompiler(m){
 
 			@Override
@@ -933,8 +933,6 @@ public class PLCompiler {
 				isStatementExpression.pop();
 				bc.addAload(stack);
 				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
-//				bc.addInvokevirtual(Strings.PLANGOBJECT, Strings.PLANGOBJECT__GET_LOWEST_CLASSDEF, 
-//						"()" + Strings.BASE_COMPILED_STUB_L);
 				compileParameters(expression.methodCall().expressionList());
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, 
 						"(" + Strings.PLANGOBJECT_L + Strings.BASE_COMPILED_STUB_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
@@ -1334,6 +1332,16 @@ public class PLCompiler {
 			
 			if (identifier.equals("parent"))
 				identifier = BaseClass.__superKey;
+			
+			if (identifier.startsWith("__")){
+				throw new CompilationException("Identifier cannot start with ___, ___ is disabled due to nameclashing with internal methods and fields");
+			} else if (identifier.equals("readResolve")){
+				throw new CompilationException("readResolve is reserved keyword used by serialization");
+			} else if (identifier.equals("serialVersionUID")){
+				throw new CompilationException("serialVersionUID is reserved keyword used by serialization");
+			} else if (identifier.equals("toString")){
+					throw new CompilationException("toString is reserved keyword used by java itself");
+			}
 			
 			if (referenceMap.containsKey(identifier)){
 				// is a module identifier, use it as key to the module map

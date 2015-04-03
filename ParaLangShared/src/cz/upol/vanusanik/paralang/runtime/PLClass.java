@@ -12,63 +12,63 @@ public abstract class PLClass extends BaseCompiledStub{
 	public static final String __derivedKey = "$$__derived__$$";
 
 	@Override
-	public PlangObjectType __sys_m_getType() {
+	public PlangObjectType ___getType() {
 		return PlangObjectType.CLASS;
 	}
 	
 	@Override
-	public void __init_class(){
-		super.__init_class();
-		__fieldsAndMethods.put("inst", this);
+	public void ___init_class(){
+		super.___init_class();
+		___fieldsAndMethods.put("inst", this);
 	}
 
-	public PLangObject __getkey(String key){
-		if (!__isInited){
-			__init_class();
+	public PLangObject ___getkey(String key){
+		if (!___isInited){
+			___init_class();
 		}
 		
 		PLClass parent = null;
-		if (!__fieldsAndMethods.containsKey(key) && ((parent = __getSuper())!=null))
-			return parent.__getkey(key);
-		else if (!__fieldsAndMethods.containsKey(key)){
+		if (!___fieldsAndMethods.containsKey(key) && ((parent = __getSuper())!=null))
+			return parent.___getkey(key);
+		else if (!___fieldsAndMethods.containsKey(key)){
 			return null;
 		}
 		
-		PLangObject data = __fieldsAndMethods.get(key);
+		PLangObject data = ___fieldsAndMethods.get(key);
 		return data;
 	}
 
 	public PLClass __getSuper() {
-		if (!__isInited){
-			__init_class();
+		if (!___isInited){
+			___init_class();
 		}
 		
-		if (!__fieldsAndMethods.containsKey(__superKey))
+		if (!___fieldsAndMethods.containsKey(__superKey))
 			return null;
 		
-		return (PLClass) __getkey(__superKey);
+		return (PLClass) ___getkey(__superKey);
 	}
 	
-	public void __setDerivedClass(PLClass derived){
-		__setkey(__derivedKey, derived);
-	}
-	
-	@Override
-	public boolean eq(PLangObject self, PLangObject b) {
-		return BooleanValue.toBoolean(PLRuntime.getRuntime().run(__getkey(Operator.EQ.classMethod), (BaseCompiledStub)self, b));
+	public void ___setDerivedClass(PLClass derived){
+		___setkey(__derivedKey, derived);
 	}
 	
 	@Override
-	public BaseCompiledStub __getLowestClassInstance() {
-		if (__fieldsAndMethods.containsKey(__derivedKey))
-			return (BaseCompiledStub) __fieldsAndMethods.get(__derivedKey);
+	public boolean ___eq(PLangObject self, PLangObject b) {
+		return BooleanValue.toBoolean(PLRuntime.getRuntime().run(___getkey(Operator.EQ.classMethod), (BaseCompiledStub)self, b));
+	}
+	
+	@Override
+	public BaseCompiledStub ___getLowestClassInstance() {
+		if (___fieldsAndMethods.containsKey(__derivedKey))
+			return (BaseCompiledStub) ___fieldsAndMethods.get(__derivedKey);
 		return null;
 	}
 	
 	@Override
 	public String toString(PLangObject self) {
-		if (__fieldsAndMethods.containsKey("__str")){
-			PLangObject str = __getkey("__str");
+		if (___fieldsAndMethods.containsKey("__str")){
+			PLangObject str = ___getkey("__str");
 			if (str instanceof FunctionWrapper){
 				PLangObject o = PLRuntime.getRuntime().run(str, (BaseCompiledStub)self);
 				return o.toString(o);

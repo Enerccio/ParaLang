@@ -152,7 +152,7 @@ public class PLRuntime {
 		try {
 			PLClass instance = (PLClass) classMap.get(components[0]).get(components[1]).newInstance();
 			if (!skipInit)
-				run(instance.__getkey("init"), instance, inits); // run constructor
+				run(instance.___getkey("init"), instance, inits); // run constructor
 			return instance;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
@@ -184,7 +184,7 @@ public class PLRuntime {
 		PLModule mod = getModule(module);
 		
 		try {
-			return run(mod.__getkey(runnable), mod);
+			return run(mod.___getkey(runnable), mod);
 		} catch (RuntimeException e){
 			throw new PLException(e);
 		}
@@ -207,7 +207,7 @@ public class PLRuntime {
 		if (runner == null)
 			throw new NullPointerException("Runner is mepty");
 	
-		if (runner.__sys_m_getType() == PlangObjectType.FUNCTION){
+		if (runner.___getType() == PlangObjectType.FUNCTION){
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
 			try {
 				return wrapper.run(currentRunner, args);
@@ -221,9 +221,9 @@ public class PLRuntime {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		} else if (runner.__sys_m_getType() == PlangObjectType.CLASS){
+		} else if (runner.___getType() == PlangObjectType.CLASS){
 			PLClass c = (PLClass)runner;
-			PLangObject callableMethod = c.__getkey(Function.__applyMethod);
+			PLangObject callableMethod = c.___getkey(Function.__applyMethod);
 			if (callableMethod != null){
 				return run(callableMethod, c, args);
 			}
@@ -274,8 +274,8 @@ public class PLRuntime {
 		
 		if (o instanceof PLClass){
 			PLClass c = (PLClass)o;
-			if (c.__fieldsAndMethods.containsKey(PLClass.__superKey))
-				return checkExceptionHierarchy(c.__getkey(PLClass.__superKey), className);
+			if (c.___fieldsAndMethods.containsKey(PLClass.__superKey))
+				return checkExceptionHierarchy(c.___getkey(PLClass.__superKey), className);
 		}
 		
 		return false;
@@ -300,7 +300,7 @@ public class PLRuntime {
 		
 		for (String moduleName : moduleMap.keySet()){
 			modules.add(new JsonObject().add("moduleName", moduleName)
-					.add("module", moduleMap.get(moduleName).__sys_m_toObject(previousSerialization)));
+					.add("module", moduleMap.get(moduleName).___toObject(previousSerialization)));
 		}
 		
 		root.add("modules", modules);

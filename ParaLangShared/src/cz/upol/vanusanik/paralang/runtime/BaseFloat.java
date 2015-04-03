@@ -16,19 +16,19 @@ public class BaseFloat extends BaseNumber {
 
 	@Override
 	public PLangObject __init_superclass(PLangObject self, PLangObject iv){
-		if (!iv.__sys_m_isNumber()){
+		if (!iv.___isNumber()){
 			throw new RuntimeException("Value " + iv + " is not a number!");
 		}
-		__setkey(__valKey, new Flt(iv.__sys_m_getNumber(iv).floatValue()));
+		___setkey(__valKey, new Flt(iv.___getNumber(iv).floatValue()));
 		return NoValue.NOVALUE;
 	}
 	
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
-		JsonObject metaData = new JsonObject().add("metaObjectType", __sys_m_getType().toString());
+	public JsonValue ___toObject(long previousTime) {
+		JsonObject metaData = new JsonObject().add("metaObjectType", ___getType().toString());
 		metaData.add("isBaseClass", true)
 				.add("baseClassType", "FLOAT")
-				.add("value", __sys_m_getNumber(this));
+				.add("value", ___getNumber(this));
 		return metaData;
 	}
 }

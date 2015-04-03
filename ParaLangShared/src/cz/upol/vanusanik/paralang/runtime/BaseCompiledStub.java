@@ -16,9 +16,9 @@ import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
 public abstract class BaseCompiledStub extends PLangObject{
 	private static final long serialVersionUID = -2885702496818908285L;
-	protected Map<String, PLangObject> __fieldsAndMethods;
-	private Map<String, Long> __fieldModificationMap = new HashMap<String, Long>();
-	private Map<PLangObject, Set<String>> __reverseMapLookup = new HashMap<PLangObject, Set<String>>(){
+	protected Map<String, PLangObject> ___fieldsAndMethods;
+	private Map<String, Long> ___fieldModificationMap = new HashMap<String, Long>();
+	private Map<PLangObject, Set<String>> ___reverseMapLookup = new HashMap<PLangObject, Set<String>>(){
 
 		private static final long serialVersionUID = 455190760365806731L;
 
@@ -30,93 +30,93 @@ public abstract class BaseCompiledStub extends PLangObject{
 		}
 		
 	};
-	private Set<BaseCompiledStub> __containers = new HashSet<BaseCompiledStub>();
-	private final long objectId;
-	protected boolean __restrictedOverride = false;
+	private Set<BaseCompiledStub> ___containers = new HashSet<BaseCompiledStub>();
+	private final long __objectId;
+	protected boolean ___restrictedOverride = false;
 	
 	protected BaseCompiledStub(){
-		objectId = PLRuntime.getRuntime().registerObject(this);
+		__objectId = PLRuntime.getRuntime().registerObject(this);
 	}
 	
-	public long __getObjectId(){
-		return objectId;
+	public long ___getObjectId(){
+		return __objectId;
 	}
 	
-	public void __decouple(BaseCompiledStub coupler){
-		__containers.remove(coupler);
+	public void ___decouple(BaseCompiledStub coupler){
+		___containers.remove(coupler);
 	}
 	
 	public void __couple(BaseCompiledStub coupler){
-		__containers.add(coupler);
+		___containers.add(coupler);
 	}
 	
-	protected PLRuntime __get_runtime(){
+	protected PLRuntime ___get_runtime(){
 		return PLRuntime.getRuntime();
 	}
 	
-	public void __init_class(){
-		__fieldsAndMethods = new HashMap<String, PLangObject>();
-		__isInited = true;
-		__restrictedOverride = true;
-		__init_internal_datafields();
-		__restrictedOverride = false;
+	public void ___init_class(){
+		___fieldsAndMethods = new HashMap<String, PLangObject>();
+		___isInited = true;
+		___restrictedOverride = true;
+		___init_internal_datafields();
+		___restrictedOverride = false;
 	}
 	
-	protected boolean __isInited;
+	protected boolean ___isInited;
 	
-	protected abstract void __init_internal_datafields();
+	protected abstract void ___init_internal_datafields();
 	
-	public PLangObject __getkey(String key){
-		if (!__isInited){
-			__init_class();
+	public PLangObject ___getkey(String key){
+		if (!___isInited){
+			___init_class();
 		}
 		
-		if (!__fieldsAndMethods.containsKey(key))
+		if (!___fieldsAndMethods.containsKey(key))
 			throw new RuntimeException("Unknown field or method");
 		
-		PLangObject data = __fieldsAndMethods.get(key);
+		PLangObject data = ___fieldsAndMethods.get(key);
 		return data;
 	}
 	
-	public PLangObject __getThis(){
+	public PLangObject ___getThis(){
 		return this;
 	}
 	
-	public void __setkey(String key, PLangObject var){
-		if (!__isInited)
-			__init_class();
+	public void ___setkey(String key, PLangObject var){
+		if (!___isInited)
+			___init_class();
 		
-		if (!__restrictedOverride)
+		if (!___restrictedOverride)
 			PLRuntime.getRuntime().checkRestrictedAccess();
 		
-		if (__fieldsAndMethods.containsKey(key)){
-			PLangObject oldValue = __fieldsAndMethods.remove(key);
+		if (___fieldsAndMethods.containsKey(key)){
+			PLangObject oldValue = ___fieldsAndMethods.remove(key);
 			if (oldValue instanceof BaseCompiledStub)
-				((BaseCompiledStub) oldValue).__decouple(this);
-			__reverseMapLookup.get(oldValue).remove(key);
-			if (__reverseMapLookup.get(oldValue).size() == 0)
-				__reverseMapLookup.remove(oldValue);
+				((BaseCompiledStub) oldValue).___decouple(this);
+			___reverseMapLookup.get(oldValue).remove(key);
+			if (___reverseMapLookup.get(oldValue).size() == 0)
+				___reverseMapLookup.remove(oldValue);
 		}
-		__fieldsAndMethods.put(key, var);
+		___fieldsAndMethods.put(key, var);
 		if (var instanceof BaseCompiledStub)
 			((BaseCompiledStub) var).__couple(this);
-		__reverseMapLookup.get(var).add(key);
+		___reverseMapLookup.get(var).add(key);
 		
-		__markModified(key);
-		__propagateChanges();
+		___markModified(key);
+		___propagateChanges();
 	}
 
-	private void __markModified(String key) {
-		if (__fieldModificationMap.containsKey(key))
-			__fieldModificationMap.remove(key);
-		__fieldModificationMap.put(key, new Long(new Date().getTime()));
+	private void ___markModified(String key) {
+		if (___fieldModificationMap.containsKey(key))
+			___fieldModificationMap.remove(key);
+		___fieldModificationMap.put(key, new Long(new Date().getTime()));
 	}
 
 	private void __update(PLangObject changed) {
-		for (String key : __reverseMapLookup.get(changed)){
-			__markModified(key);
+		for (String key : ___reverseMapLookup.get(changed)){
+			___markModified(key);
 		}
-		__propagateChanges();
+		___propagateChanges();
 	}
 
 	private static final ThreadLocal<Set<Object>> traversalChainSet = new ThreadLocal<Set<Object>>(){
@@ -128,43 +128,43 @@ public abstract class BaseCompiledStub extends PLangObject{
 		
 	};
 	
-	private void __propagateChanges() {
+	private void ___propagateChanges() {
 		if (traversalChainSet.get().contains(this))
 			return;
 		traversalChainSet.get().add(this);
-		for (BaseCompiledStub owner : __containers)
+		for (BaseCompiledStub owner : ___containers)
 			owner.__update(this);
 		traversalChainSet.get().remove(this);
 	}
 	
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
+	public JsonValue ___toObject(long previousTime) {
 		PLRuntime runtime = PLRuntime.getRuntime();
-		JsonObject metaData = new JsonObject().add("metaObjectType", __sys_m_getType().toString());
+		JsonObject metaData = new JsonObject().add("metaObjectType", ___getType().toString());
 		if (runtime.isAlreadySerialized(this)){
 			metaData.add("link", true)
-					.add("linkId", __getObjectId());
+					.add("linkId", ___getObjectId());
 		} else {
 			runtime.setAsAlreadySerialized(this);
 			metaData.add("isBaseClass", false)
 					.add("link", false)
-					.add("isInited", __isInited)
+					.add("isInited", ___isInited)
 					.add("modifiedFrom", previousTime)
-					.add("thisLink", __getObjectId())
+					.add("thisLink", ___getObjectId())
 					.add("className", getClass().getSimpleName())
-					.add("modifiedFromFields", getDeltaFields(previousTime));
+					.add("modifiedFromFields", ___getDeltaFields(previousTime));
 		}
 		return metaData;
 	}
 
-	private JsonArray getDeltaFields(long previousTime) {
+	private JsonArray ___getDeltaFields(long previousTime) {
 		JsonArray array = new JsonArray();
-		for (String field : __fieldModificationMap.keySet()){
-			if (__fieldModificationMap.get(field) > previousTime){
+		for (String field : ___fieldModificationMap.keySet()){
+			if (___fieldModificationMap.get(field) > previousTime){
 				JsonObject f = new JsonObject();
 				
 				f.add("fieldName", field);
-				f.add("fieldValue", __fieldsAndMethods.get(field).__sys_m_toObject(previousTime));
+				f.add("fieldValue", ___fieldsAndMethods.get(field).___toObject(previousTime));
 				
 				array.add(f);
 			}
@@ -173,42 +173,42 @@ public abstract class BaseCompiledStub extends PLangObject{
 	}
 	
 	@Override
-	public boolean __sys_m_isNumber() {
+	public boolean ___isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float __sys_m_getNumber(PLangObject self) {
+	public Float ___getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject self, PLangObject b) {
+	public boolean ___eq(PLangObject self, PLangObject b) {
 		return self == b;
 	}
 	
-	protected PLangObject __convertBoolean(boolean b){
+	protected PLangObject ___convertBoolean(boolean b){
 		return BooleanValue.fromBoolean(b);
 	}
 	
 	@Override
 	public String toString(){
-		if (__fieldsAndMethods.containsKey("__str")){
-			PLangObject str = __getkey("__str");
+		if (___fieldsAndMethods.containsKey("__str")){
+			PLangObject str = ___getkey("__str");
 			if (str instanceof FunctionWrapper){
-				return PLRuntime.getRuntime().run(str, (BaseCompiledStub)this.__getThis()).toString();
+				return PLRuntime.getRuntime().run(str, (BaseCompiledStub)this.___getThis()).toString();
 			}
 		}
 		return super.toString();
 	}
 
-	public BaseCompiledStub __getLowestClassInstance() {
+	public BaseCompiledStub ___getLowestClassInstance() {
 		return null;
 	}
 
-	public BaseCompiledStub __getParent() {
-		if (!__isInited)
-			__init_class();
-		return (BaseCompiledStub) __fieldsAndMethods.get(PLClass.__superKey);
+	public BaseCompiledStub ___getParent() {
+		if (!___isInited)
+			___init_class();
+		return (BaseCompiledStub) ___fieldsAndMethods.get(PLClass.__superKey);
 	}
 }

@@ -15,13 +15,13 @@ public class Function  extends PLClass implements Serializable {
 	}
 	
 	@Override
-	protected void __init_internal_datafields() {
-		this.__restrictedOverride = true;
+	protected void ___init_internal_datafields() {
+		this.___restrictedOverride = true;
 		
-		__setkey(BaseClass.__superKey, new BaseClass());
-		__setkey(__applyMethod, new FunctionWrapper("__apply__base", this, true));
+		___setkey(BaseClass.__superKey, new BaseClass());
+		___setkey(__applyMethod, new FunctionWrapper("__apply__base", this, true));
 		
-		this.__restrictedOverride = false;
+		this.___restrictedOverride = false;
 	}
 
 	

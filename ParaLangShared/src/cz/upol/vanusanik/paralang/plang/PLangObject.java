@@ -9,32 +9,32 @@ import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 public abstract class PLangObject extends RuntimeException {
 	private static final long serialVersionUID = -4777704860769051988L;
 
-	public abstract PlangObjectType __sys_m_getType();
+	public abstract PlangObjectType ___getType();
 	
-	public abstract JsonValue __sys_m_toObject(long previousTime);
+	public abstract JsonValue ___toObject(long previousTime);
 	
-	public abstract boolean __sys_m_isNumber();
+	public abstract boolean ___isNumber();
 	
-	public abstract Float __sys_m_getNumber(PLangObject self);
+	public abstract Float ___getNumber(PLangObject self);
 	
-	public static PLangObject __sys_m_autocast(Float number, PLangObject a, PLangObject b){
-		if (a.__sys_m_getType() == PlangObjectType.FLOAT || b.__sys_m_getType() == PlangObjectType.FLOAT)
+	public static PLangObject ___autocast(Float number, PLangObject a, PLangObject b){
+		if (a.___getType() == PlangObjectType.FLOAT || b.___getType() == PlangObjectType.FLOAT)
 			return new Flt(number);
 		else
 			return new Int(number.intValue());
 	}
 
-	public abstract boolean eq(PLangObject self, PLangObject b);
+	public abstract boolean ___eq(PLangObject self, PLangObject b);
 
-	public boolean __sys_m_less(PLangObject self, PLangObject other, boolean equals) {
+	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {
 		throw new RuntimeException("Undefined method for this type!");
 	}
 	
-	public boolean __sys_m_more(PLangObject self, PLangObject other, boolean equals) {
+	public boolean ___more(PLangObject self, PLangObject other, boolean equals) {
 		throw new RuntimeException("Undefined method for this type!");
 	}
 	
-	public BaseCompiledStub __getLowestClassdef(){
+	public BaseCompiledStub ___getLowestClassdef(){
 		return null;
 	}
 

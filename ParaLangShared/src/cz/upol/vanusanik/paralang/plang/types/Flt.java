@@ -22,7 +22,7 @@ public class Flt extends PLangObject implements Serializable  {
 	float value;
 	
 	@Override
-	public PlangObjectType __sys_m_getType() {
+	public PlangObjectType ___getType() {
 		return PlangObjectType.FLOAT;
 	}
 	
@@ -54,34 +54,34 @@ public class Flt extends PLangObject implements Serializable  {
 	}
 
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
-		return new JsonObject().add("metaObjectType", __sys_m_getType().toString())
+	public JsonValue ___toObject(long previousTime) {
+		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}
 	
 	@Override
-	public boolean __sys_m_isNumber() {
+	public boolean ___isNumber() {
 		return true;
 	}
 
 	@Override
-	public Float __sys_m_getNumber(PLangObject self) {
+	public Float ___getNumber(PLangObject self) {
 		return value;
 	}
 
 	@Override
-	public boolean eq(PLangObject self, PLangObject b) {
-		if (!b.__sys_m_isNumber()) return false;
-		return value == b.__sys_m_getNumber(b);
+	public boolean ___eq(PLangObject self, PLangObject b) {
+		if (!b.___isNumber()) return false;
+		return value == b.___getNumber(b);
 	}
 	
 	@Override
-	public boolean __sys_m_less(PLangObject self, PLangObject other, boolean equals) {
-		return equals ? (value <= other.__sys_m_getNumber(other)) : (value < other.__sys_m_getNumber(other));
+	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {
+		return equals ? (value <= other.___getNumber(other)) : (value < other.___getNumber(other));
 	}
 	
 	@Override
-	public boolean __sys_m_more(PLangObject self, PLangObject other, boolean equals) {
-		return equals ? (value >= other.__sys_m_getNumber(other)) : (value > other.__sys_m_getNumber(other));
+	public boolean ___more(PLangObject self, PLangObject other, boolean equals) {
+		return equals ? (value >= other.___getNumber(other)) : (value > other.___getNumber(other));
 	}
 }

@@ -18,7 +18,7 @@ public class NoValue extends PLangObject implements Serializable {
 	public static final NoValue NOVALUE = new NoValue();
 
 	@Override
-	public PlangObjectType __sys_m_getType() {
+	public PlangObjectType ___getType() {
 		return PlangObjectType.NOVALUE;
 	}
 
@@ -28,22 +28,22 @@ public class NoValue extends PLangObject implements Serializable {
 	}
 	
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
-		return new JsonObject().add("metaObjectType", __sys_m_getType().toString());
+	public JsonValue ___toObject(long previousTime) {
+		return new JsonObject().add("metaObjectType", ___getType().toString());
 	}
 	
 	@Override
-	public boolean __sys_m_isNumber() {
+	public boolean ___isNumber() {
 		return false;
 	}
 
 	@Override
-	public Float __sys_m_getNumber(PLangObject self) {
+	public Float ___getNumber(PLangObject self) {
 		return null;
 	}
 	
 	@Override
-	public boolean eq(PLangObject self, PLangObject b) {
+	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
 	

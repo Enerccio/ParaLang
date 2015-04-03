@@ -17,35 +17,35 @@ public class BaseException extends PLClass implements Serializable {
 	}
 
 	@Override
-	protected void __init_internal_datafields() {
-		this.__restrictedOverride = true;
+	protected void ___init_internal_datafields() {
+		this.___restrictedOverride = true;
 		
-		__setkey(BaseClass.__superKey, new BaseClass());
-		__setkey("init", new FunctionWrapper("__init__base", this, true));
-		__setkey(__messageGetter, new FunctionWrapper(__messageGetter, this, true));
-		__setkey("__str", new FunctionWrapper("__str", this, true));
+		___setkey(BaseClass.__superKey, new BaseClass());
+		___setkey("init", new FunctionWrapper("__init__base", this, true));
+		___setkey(__messageGetter, new FunctionWrapper(__messageGetter, this, true));
+		___setkey("__str", new FunctionWrapper("__str", this, true));
 		
-		__setkey(__messageField, NoValue.NOVALUE);
+		___setkey(__messageField, NoValue.NOVALUE);
 		
 		
-		this.__restrictedOverride = false;
+		this.___restrictedOverride = false;
 	}
 
 	public PLangObject __init__base(PLangObject self, PLangObject message){
 		// run super init
-		BaseClass bc = (BaseClass)__getkey(BaseClass.__superKey);
-		PLRuntime.getRuntime().run(bc.__getkey("init"), bc);
+		BaseClass bc = (BaseClass)___getkey(BaseClass.__superKey);
+		PLRuntime.getRuntime().run(bc.___getkey("init"), bc);
 		
-		__setkey(__messageField, message);
+		___setkey(__messageField, message);
 		return NoValue.NOVALUE;
 	}
 	
 	public PLangObject get_message(BaseCompiledStub self){
-		return self.__getkey(__messageField);
+		return self.___getkey(__messageField);
 	}
 	
 	public PLangObject __str(BaseCompiledStub self){
-		return new Str(PLRuntime.getRuntime().run(self.__getkey(__messageGetter), self).toString());
+		return new Str(PLRuntime.getRuntime().run(self.___getkey(__messageGetter), self).toString());
 	}
 
 	@Override

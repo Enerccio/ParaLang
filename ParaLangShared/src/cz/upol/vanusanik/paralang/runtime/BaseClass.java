@@ -14,22 +14,21 @@ import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
 public class BaseClass extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523232L;
-	public static final String __hasKey = "__has";
 	
 	public BaseClass(){
 		
 	}
 
 	@Override
-	protected void __init_internal_datafields() {
-		this.__restrictedOverride = true;
+	protected void ___init_internal_datafields() {
+		this.___restrictedOverride = true;
 		
-		__setkey("init", new FunctionWrapper("__init", this, true));
-		__setkey("__str", new FunctionWrapper("__str_base", this, true));
-		__setkey(Operator.EQ.classMethod, new FunctionWrapper("__eq__base", this, true));
-		__setkey(Operator.NEQ.classMethod, new FunctionWrapper("__neq__base", this, true));
+		___setkey("init", new FunctionWrapper("__init", this, true));
+		___setkey("__str", new FunctionWrapper("__str_base", this, true));
+		___setkey(Operator.EQ.classMethod, new FunctionWrapper("__eq__base", this, true));
+		___setkey(Operator.NEQ.classMethod, new FunctionWrapper("__neq__base", this, true));
 		
-		this.__restrictedOverride = false;
+		this.___restrictedOverride = false;
 	}
 
 	public PLangObject __init(PLangObject self){
@@ -44,13 +43,13 @@ public class BaseClass extends PLClass implements Serializable {
 		return BooleanValue.fromBoolean(self != other);
 	}
 	
-	public PLangObject __str_base(PLangObject self){
+	public PLangObject ___str_base(PLangObject self){
 		return new Str("BaseClass");
 	}
 	
 	@Override
-	public JsonValue __sys_m_toObject(long previousTime) {
-		JsonObject metaData = new JsonObject().add("metaObjectType", __sys_m_getType().toString());
+	public JsonValue ___toObject(long previousTime) {
+		JsonObject metaData = new JsonObject().add("metaObjectType", ___getType().toString());
 		metaData.add("isBaseClass", true)
 				.add("baseClassType", "BASECLASS");
 		return metaData;
