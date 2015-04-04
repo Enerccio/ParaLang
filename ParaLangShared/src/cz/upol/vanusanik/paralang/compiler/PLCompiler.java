@@ -836,6 +836,8 @@ public class PLCompiler {
 	
 	private Set<String> setOperators = new HashSet<String>();
 	private Set<String> bioperators = new HashSet<String>();
+	private Set<String> leftOperators = new HashSet<String>();
+	private Set<String> rightOperators = new HashSet<String>();
 	{
 		setOperators.add("=");
 		setOperators.add("+=");
@@ -869,6 +871,16 @@ public class PLCompiler {
 		bioperators.add("&");
 		bioperators.add("|");
 		bioperators.add("^");
+		
+		leftOperators.add("+");
+		leftOperators.add("-");
+		leftOperators.add("++");
+		leftOperators.add("--");
+		leftOperators.add("!");
+		leftOperators.add("~");
+		
+		rightOperators.add("++");
+		rightOperators.add("--");
 	}
 
 	private void compileExpression(ExpressionContext expression, boolean compilingMethodCall, int storeVar) throws Exception {
@@ -1068,10 +1080,12 @@ public class PLCompiler {
 			ExpressionContext expression1, ExpressionContext expression2, 
 			boolean compilingMethod, int storeVar) throws Exception {
 		
-		isStatementExpression.add(false);
-		compileExpression(expression1, false, -1);
-		compileExpression(expression2, false, -1);
-		isStatementExpression.pop();
+		if (expression1 != null && expression2 != null){
+			isStatementExpression.add(false);
+			compileExpression(expression1, false, -1);
+			compileExpression(expression2, false, -1);
+			isStatementExpression.pop();
+		}
 		
 		String method = null;
 		
@@ -1144,11 +1158,12 @@ public class PLCompiler {
 				compileExpression(second, false, -1);
 				isStatementExpression.pop();
 				
-				if (!operator.equals("=")){
+				if (operator.equals("=")){
 					// Simple assignment
 				} else {
 					// Operation assignment
 					// TODO
+					compileBinaryOperator(operator.replace("=", ""),	null, null, false, -1);
 				}
 			}
 			
