@@ -40,6 +40,9 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 		___setkey(Operator.RSHIFT.classMethod, new FunctionWrapper("__rshift_base", this, true));
 		___setkey(Operator.RUSHIFT.classMethod, new FunctionWrapper("__rushift_base", this, true));
 		
+		___setkey(Operator.LPLUSPLUS.classMethod, new FunctionWrapper("__lpp_base", this, true));
+		___setkey(Operator.LMINUSMINUS.classMethod, new FunctionWrapper("__lmm_base", this, true));
+		
 		___setkey(__valKey, new Int(0));
 		this.___restrictedOverride = false;
 	}
@@ -121,6 +124,16 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	public PLangObject __rushift_base(PLangObject self, PLangObject other){
 		return TypeOperations.rushift(((PLClass)self).___getkey(__valKey), other);
 	}
+	
+	public PLangObject __lpp_base(PLangObject self){
+		return asObject(TypeOperations.lplusplus(((PLClass)self).___getkey(__valKey)));
+	}
+	
+	public PLangObject __lmm_base(PLangObject self){
+		return asObject(TypeOperations.lminusminus(((PLClass)self).___getkey(__valKey)));
+	}
+	
+	protected abstract PLangObject asObject(PLangObject o);
 	
 	@Override
 	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {

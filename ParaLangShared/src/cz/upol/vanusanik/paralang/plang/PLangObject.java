@@ -23,6 +23,13 @@ public abstract class PLangObject extends RuntimeException {
 		else
 			return new Int(number.intValue());
 	}
+	
+	public static PLangObject ___autocast(Float number, PLangObject a){
+		if (a.___getType() == PlangObjectType.FLOAT)
+			return new Flt(number);
+		else
+			return new Int(number.intValue());
+	}
 
 	public abstract boolean ___eq(PLangObject self, PLangObject b);
 

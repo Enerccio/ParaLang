@@ -49,6 +49,8 @@ public class Strings {
 	public static final String TYPEOPS__LESS = "less";
 	public static final String TYPEOPS__LEQ = "leq";
 	public static final String TYPEOPS__MEQ = "meq";
+	public static final String TYPEOPS__LEFTPLUSPLUS = "lplusplus";
+	public static final String TYPEOPS__LEFTMINUSMINUS = "lminusminus";
 	
 	public static final String TYPEOPS = "cz/upol/vanusanik/paralang/plang/types/TypeOperations";
 	public static final String TYPEOPS__CONVERT_TO_BOOLEAN = "convertToBoolean";

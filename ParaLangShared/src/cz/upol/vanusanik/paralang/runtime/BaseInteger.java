@@ -31,5 +31,10 @@ public class BaseInteger extends BaseNumber {
 				.add("value", ___getNumber(this).intValue());
 		return metaData;
 	}
+	
+	@Override
+	protected PLangObject asObject(PLangObject o) {
+		return PLRuntime.getRuntime().newInstance("System.Integer", o);
+	}
 
 }

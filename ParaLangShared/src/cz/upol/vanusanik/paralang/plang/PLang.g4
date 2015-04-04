@@ -200,8 +200,9 @@ expression
     |   expression methodCall
     |   'new' constructorCall
     |   'new' Identifier '.' constructorCall
-    |   expression ('++' | '--')
-    |   ('+'|'-'|'++'|'--') expression
+    |   extended ('++' | '--')
+    |   ('+'|'-') expression
+    |   ('++'|'--') extended
     |   ('~'|'!') expression
     |   expression ('*'|'/'|'%') expression
     |   expression ('+'|'-') expression

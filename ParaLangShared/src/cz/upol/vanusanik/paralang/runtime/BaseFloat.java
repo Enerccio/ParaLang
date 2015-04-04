@@ -31,4 +31,9 @@ public class BaseFloat extends BaseNumber {
 				.add("value", ___getNumber(this));
 		return metaData;
 	}
+
+	@Override
+	protected PLangObject asObject(PLangObject o) {
+		return PLRuntime.getRuntime().newInstance("System.Float", o);
+	}
 }

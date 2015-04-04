@@ -16,7 +16,9 @@ public class TypeOperations {
 		BITOR("__bit_or"), BITAND("__bit_and"), BITXOR("__bit_xor"),
 		
 		EQ("__eq"), NEQ("__neq"), LESS("__less"), MORE("__more"), 
-		LEQ("__less_eq"), MEQ("__more_eq");
+		LEQ("__less_eq"), MEQ("__more_eq"), 
+		
+		LPLUSPLUS("__lplusplus"), LMINUSMINUS("__lminusminus");
 		
 		Operator(String cm){
 			classMethod = cm;
@@ -272,5 +274,36 @@ public class TypeOperations {
 		}
 		
 		return null;
+	}
+	
+	public static PLangObject lplusplus(PLangObject a){
+		return operator(a, Operator.LPLUSPLUS);
+	}
+	
+	public static PLangObject lminusminus(PLangObject a){
+		return operator(a, Operator.LMINUSMINUS);
+	}
+
+	private static PLangObject operator(PLangObject a, Operator o) {
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(o.classMethod), (PLClass)a);
+		}
+		
+		Float v = a.___getNumber(a);
+		Float add = 1.0f;
+		Float res;
+		
+		switch (o){
+		case LPLUSPLUS:
+			res = v + add;
+			break;
+		case LMINUSMINUS:
+			res = v - add;
+			break;
+		default:
+			res = -1f;
+		}
+		
+		return PLangObject.___autocast(res, a);
 	}
 }

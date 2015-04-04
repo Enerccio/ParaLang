@@ -12,30 +12,18 @@ module HelloWorldModule {
 	} 
 
 	class Test {
-		var a, b;
-		
+		var a;
+				
 		restricted __apply(){
+			a = 0;
 			run();
 		}
 		
 		restricted run(){
-			b = 6;
-			
-			a = new Integer(b);
-			IO.out.println(a == b);
-			IO.out.println(b == a);
-			
-			var c = 5;
-			var d = 8;
-			
-			IO.out.println(c > new Integer(a));
-			IO.out.println(d < a);
-			
-			d += (c + a + c);
-			IO.out.println(d);
-			
-			inst == new Test();
-			
+			++a;
+			IO.out.println(a);
+			if (a < 1000)
+				run();
 			throw new GaspingException("Something went wrong");
 		}
 		

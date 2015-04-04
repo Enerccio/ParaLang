@@ -949,6 +949,22 @@ public class PLCompiler {
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, 
 						"(" + Strings.PLANGOBJECT_L + Strings.BASE_COMPILED_STUB_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
 				stacker.release();
+			} else if (leftOperators.contains(expression.getChild(0).getText())){
+				final String operator = expression.getChild(0).getText();
+				
+				if ("++".equals(operator) || "--".equals(operator)){
+					new CompileSetOperator(expression.extended(),  false, compilingMethodCall, storeVar){
+
+						@Override
+						public void compileRight() throws Exception {
+							bc.addInvokestatic(Strings.TYPEOPS, operator.equals("++") ? Strings.TYPEOPS__LEFTPLUSPLUS : Strings.TYPEOPS__LEFTMINUSMINUS, 
+									"("+ Strings.PLANGOBJECT_L + ")" + Strings.PLANGOBJECT_L);
+						}
+						
+					}.compileSetOperator();
+				} else {
+					
+				}
 			} else if (expression.getChild(0) instanceof ExpressionContext){
 				String operator = expression.getChild(1).getText();
 				if (bioperators.contains(operator)){
@@ -1162,7 +1178,6 @@ public class PLCompiler {
 					// Simple assignment
 				} else {
 					// Operation assignment
-					// TODO
 					compileBinaryOperator(operator.replace("=", ""),	null, null, false, -1);
 				}
 			}
@@ -1269,7 +1284,7 @@ public class PLCompiler {
 					bc.addAstore(storeVar);
 				}
 			} else {
-				/* Loads the local varaible on stack, then writes to the same position */
+				/* Loads the local variable on stack, then writes to the same position */
 				if (!simpleSet)
 					bc.addAload(ord);
 				compileRight();
