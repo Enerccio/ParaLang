@@ -715,7 +715,7 @@ public class PLCompiler {
 
 	private void compileInitMethod(List<FieldDeclarationContext> fields, Set<String> methods, final String superClass) throws Exception{
 		if (compilingClass)
-			new StoreToField(BaseClass.__superKey){
+			new StoreToField(BaseClass.___superKey){
 	
 				@Override
 				protected void provideSourceValue() throws Exception {
@@ -1361,7 +1361,7 @@ public class PLCompiler {
 			String identifier = primary.constExpr().id() != null ? primary.constExpr().id().getText() : primary.getText();
 			
 			if (identifier.equals("parent"))
-				identifier = BaseClass.__superKey;
+				identifier = BaseClass.___superKey;
 			
 			if (identifier.startsWith("__")){
 				throw new CompilationException("Identifier cannot start with ___, ___ is disabled due to nameclashing with internal methods and fields");

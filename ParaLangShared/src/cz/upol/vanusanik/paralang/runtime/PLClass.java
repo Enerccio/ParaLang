@@ -8,8 +8,8 @@ import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
 public abstract class PLClass extends BaseCompiledStub{
 	private static final long serialVersionUID = 715934816813529044L;
-	public static final String __superKey = "$$__parent__$$";
-	public static final String __derivedKey = "$$__derived__$$";
+	public static final String ___superKey = "$$__parent__$$";
+	public static final String ___derivedKey = "$$__derived__$$";
 
 	@Override
 	public PlangObjectType ___getType() {
@@ -43,14 +43,14 @@ public abstract class PLClass extends BaseCompiledStub{
 			___init_class();
 		}
 		
-		if (!___fieldsAndMethods.containsKey(__superKey))
+		if (!___fieldsAndMethods.containsKey(___superKey))
 			return null;
 		
-		return (PLClass) ___getkey(__superKey);
+		return (PLClass) ___getkey(___superKey);
 	}
 	
 	public void ___setDerivedClass(PLClass derived){
-		___setkey(__derivedKey, derived);
+		___setkey(___derivedKey, derived);
 	}
 	
 	@Override
@@ -60,8 +60,8 @@ public abstract class PLClass extends BaseCompiledStub{
 	
 	@Override
 	public BaseCompiledStub ___getLowestClassInstance() {
-		if (___fieldsAndMethods.containsKey(__derivedKey))
-			return (BaseCompiledStub) ___fieldsAndMethods.get(__derivedKey);
+		if (___fieldsAndMethods.containsKey(___derivedKey))
+			return (BaseCompiledStub) ___fieldsAndMethods.get(___derivedKey);
 		return null;
 	}
 	

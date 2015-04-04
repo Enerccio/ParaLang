@@ -18,7 +18,7 @@ public class Function  extends PLClass implements Serializable {
 	protected void ___init_internal_datafields() {
 		this.___restrictedOverride = true;
 		
-		___setkey(BaseClass.__superKey, new BaseClass());
+		___setkey(BaseClass.___superKey, new BaseClass());
 		___setkey(__applyMethod, new FunctionWrapper("__apply__base", this, true));
 		
 		this.___restrictedOverride = false;

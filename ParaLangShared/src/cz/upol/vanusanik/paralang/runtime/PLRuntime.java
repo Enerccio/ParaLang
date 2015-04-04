@@ -274,8 +274,8 @@ public class PLRuntime {
 		
 		if (o instanceof PLClass){
 			PLClass c = (PLClass)o;
-			if (c.___fieldsAndMethods.containsKey(PLClass.__superKey))
-				return checkExceptionHierarchy(c.___getkey(PLClass.__superKey), className);
+			if (c.___fieldsAndMethods.containsKey(PLClass.___superKey))
+				return checkExceptionHierarchy(c.___getkey(PLClass.___superKey), className);
 		}
 		
 		return false;

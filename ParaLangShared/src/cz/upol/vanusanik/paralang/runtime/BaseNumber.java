@@ -18,7 +18,7 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	protected void ___init_internal_datafields() {
 		this.___restrictedOverride = true;
 		
-		___setkey(BaseClass.__superKey, new BaseClass());
+		___setkey(BaseClass.___superKey, new BaseClass());
 		___setkey("init", new FunctionWrapper("__init", this, true));
 		___setkey("__str", new FunctionWrapper("__str_base", this, true));
 		

@@ -209,6 +209,6 @@ public abstract class BaseCompiledStub extends PLangObject{
 	public BaseCompiledStub ___getParent() {
 		if (!___isInited)
 			___init_class();
-		return (BaseCompiledStub) ___fieldsAndMethods.get(PLClass.__superKey);
+		return (BaseCompiledStub) ___fieldsAndMethods.get(PLClass.___superKey);
 	}
 }
