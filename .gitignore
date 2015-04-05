@@ -1,4 +1,6 @@
 .metadata
 RemoteSystemsTempFiles
 findbugs*
-/bcel/
+/bcel/*
+/cz.edu.vanusanik.e.*/
+/ParalangPlugin/

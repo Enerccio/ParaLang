@@ -16,7 +16,7 @@ moduleDeclaration
 moduleDeclarations 
 	: functionDeclaration
 	| fieldDeclaration
-	| classDeclaration
+	| classDeclaration 
 	;
 
 classDeclaration
