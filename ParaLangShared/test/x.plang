@@ -21,7 +21,9 @@ module HelloWorldModule {
 		
 		restricted run(){
 			++a;
-			IO.out.println(a);
+			IO.out.println(-a);
+			IO.out.println(~a);
+			IO.out.println(!a);
 			if (a < 1000)
 				run();
 			throw new GaspingException("Something went wrong");

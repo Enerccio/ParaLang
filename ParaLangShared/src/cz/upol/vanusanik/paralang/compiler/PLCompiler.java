@@ -963,7 +963,7 @@ public class PLCompiler {
 						
 					}.compileSetOperator();
 				} else {
-					
+					compileUnaryOperator(operator, (ExpressionContext)expression.getChild(1), compilingMethodCall, storeVar);
 				}
 			} else if (expression.getChild(0) instanceof ExpressionContext){
 				String operator = expression.getChild(1).getText();
@@ -1086,6 +1086,30 @@ public class PLCompiler {
 		setLabelPos(reminder);
 		bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__CONVERT_BOOLEAN, 
 				"(Z)" + Strings.PLANGOBJECT_L);
+		if (compilingMethod){
+			bc.add(Opcode.DUP);
+			bc.addAstore(storeVar);
+		}
+	}
+	
+	private void compileUnaryOperator(String operator, ExpressionContext expression, boolean compilingMethod, int storeVar) throws Exception {
+		if (expression != null){
+			isStatementExpression.add(false);
+			compileExpression(expression, false, -1);
+			isStatementExpression.pop();
+		}
+		
+		String method = "";
+		switch (operator){
+		case "+": method = Strings.TYPEOPS__UNARY_PLUS; break;
+		case "-": method = Strings.TYPEOPS__UNARY_MINUS; break;
+		case "!": method = Strings.TYPEOPS__UNARY_LNEG; break;
+		case "~": method = Strings.TYPEOPS__UNARY_BNEG; break;
+		}
+		
+		bc.addInvokestatic(Strings.TYPEOPS, method, 
+				"("+ Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+		
 		if (compilingMethod){
 			bc.add(Opcode.DUP);
 			bc.addAstore(storeVar);

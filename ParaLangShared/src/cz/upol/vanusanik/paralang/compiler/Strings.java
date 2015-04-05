@@ -51,6 +51,10 @@ public class Strings {
 	public static final String TYPEOPS__MEQ = "meq";
 	public static final String TYPEOPS__LEFTPLUSPLUS = "lplusplus";
 	public static final String TYPEOPS__LEFTMINUSMINUS = "lminusminus";
+	public static final String TYPEOPS__UNARY_PLUS = "uplus";
+	public static final String TYPEOPS__UNARY_MINUS = "uminus";
+	public static final String TYPEOPS__UNARY_LNEG = "ulneg";
+	public static final String TYPEOPS__UNARY_BNEG = "ubneg";
 	
 	public static final String TYPEOPS = "cz/upol/vanusanik/paralang/plang/types/TypeOperations";
 	public static final String TYPEOPS__CONVERT_TO_BOOLEAN = "convertToBoolean";

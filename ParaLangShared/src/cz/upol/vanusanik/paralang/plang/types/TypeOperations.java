@@ -18,7 +18,8 @@ public class TypeOperations {
 		EQ("__eq"), NEQ("__neq"), LESS("__less"), MORE("__more"), 
 		LEQ("__less_eq"), MEQ("__more_eq"), 
 		
-		LPLUSPLUS("__lplusplus"), LMINUSMINUS("__lminusminus");
+		LPLUSPLUS("__lplusplus"), LMINUSMINUS("__lminusminus"), 
+		UPLUS("__uplus"), UMINUS("__uminus"), ULOGNEG("__ulogneg"), UBINNEG("__ubinneg");
 		
 		Operator(String cm){
 			classMethod = cm;
@@ -283,10 +284,30 @@ public class TypeOperations {
 	public static PLangObject lminusminus(PLangObject a){
 		return operator(a, Operator.LMINUSMINUS);
 	}
+	
+	public static PLangObject uplus(PLangObject a){
+		return operator(a, Operator.UPLUS);
+	}
+	
+	public static PLangObject uminus(PLangObject a){
+		return operator(a, Operator.UMINUS);
+	}
+	
+	public static PLangObject ulneg(PLangObject a){
+		return operator(a, Operator.ULOGNEG);
+	}
+	
+	public static PLangObject ubneg(PLangObject a){
+		return operator(a, Operator.UBINNEG);
+	}
 
 	private static PLangObject operator(PLangObject a, Operator o) {
 		if (a instanceof PLClass){
 			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(o.classMethod), (PLClass)a);
+		}
+		
+		if (o == Operator.ULOGNEG){
+			return BooleanValue.fromBoolean(!BooleanValue.toBoolean(a));
 		}
 		
 		Float v = a.___getNumber(a);
@@ -300,10 +321,21 @@ public class TypeOperations {
 		case LMINUSMINUS:
 			res = v - add;
 			break;
+		case UMINUS:
+			res = -v;
+			break;
+		case UPLUS:
+			res = +v;
+			break;
+		case UBINNEG:
+			res = (float) ~v.intValue();
+			break;
 		default:
 			res = -1f;
 		}
 		
 		return PLangObject.___autocast(res, a);
 	}
+	
+	
 }
