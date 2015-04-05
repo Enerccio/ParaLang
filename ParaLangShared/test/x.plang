@@ -15,12 +15,15 @@ module HelloWorldModule {
 		var a;
 				
 		restricted __apply(){
-			a = 0;
+			a = NoValue;
 			run();
 		}
 		
 		restricted run(){
-			++a;
+			a = a ? 
+				a + 1 : 
+				0; 
+		
 			IO.out.println(-a);
 			IO.out.println(~a);
 			IO.out.println(!a);

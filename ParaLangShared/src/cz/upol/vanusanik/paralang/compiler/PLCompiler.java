@@ -889,7 +889,13 @@ public class PLCompiler {
 			if (expression.primary() != null){
 				compilePrimaryExpression(expression.primary(), compilingMethodCall, storeVar);
 				return;
+			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("?")){
+				compileTernaryOperator((ExpressionContext)expression.getChild(0), 
+						(ExpressionContext)expression.getChild(2), (ExpressionContext)expression.getChild(4), compilingMethodCall, storeVar);
+				return;
 			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("->")){
+				
+				
 				if (!PLRuntime.getRuntime().isSafeContext())
 					throw new CompilationException("Java method call being compiled under unsafe context.");
 				
@@ -1025,6 +1031,57 @@ public class PLCompiler {
 			if (isStatementExpression.peek()){
 				bc.add(Opcode.POP);
 			}
+		}
+	}
+
+	private void compileTernaryOperator(ExpressionContext e,
+			ExpressionContext et, ExpressionContext ef,
+			boolean compilingMethod, int storeVar) throws Exception {
+		isStatementExpression.add(false);
+		compileExpression(e, false, -1);
+		isStatementExpression.pop();
+		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+		int key = counter++;
+		addLabel(new LabelInfo(){
+
+			@Override
+			protected void add(Bytecode bc) throws CompilationException {
+				int offset = getValue(poskey) - bcpos;
+				bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
+				bc.write16bit(bcpos+1, offset);
+			}
+			
+		}, key);
+		int key2 = -1;
+		
+		compileExpression(et, false, -1);
+		
+		key2 = counter++;
+		addLabel(new LabelInfo(){
+
+			@Override
+			protected void add(Bytecode bc) throws CompilationException {
+				int offset = getValue(poskey) - bcpos;
+				if (Math.abs(offset) > (65535/2)){
+					throw new CompilationException("Too long jump. Please reformate the code!");
+				} else {
+					bc.write(bcpos, Opcode.GOTO);
+					bc.write16bit(bcpos+1, offset);
+				}
+			}
+			
+		}, key2);
+		
+		setLabelPos(key);	
+		
+		compileExpression(ef, false, -1);
+		setLabelPos(key2);
+		
+		bc.add(Opcode.NOP);
+		if (compilingMethod){
+			bc.add(Opcode.DUP);
+			bc.addAstore(storeVar);
 		}
 	}
 
