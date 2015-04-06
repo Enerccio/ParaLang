@@ -678,6 +678,106 @@ public class PLCompiler {
 			
 			return;
 		}
+		if (statement.getText().startsWith("while")){
+			
+			int loopStart = counter++;
+			int loopEnd = counter++;
+			
+			setLabelPos(loopStart);
+			isStatementExpression.add(false);
+			compileExpression(statement.parExpression().expression(), false, -1);
+			isStatementExpression.pop();
+			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
+					bc.write16bit(bcpos+1, offset);
+				}
+				
+			}, loopEnd);
+			
+			
+			continueStack.add(loopStart);
+			breakStack.add(loopEnd);
+			
+			compileStatement(statement.statement(0));
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					if (Math.abs(offset) > (65535/2)){
+						throw new CompilationException("Too long jump. Please reformate the code!");
+					} else {
+						bc.write(bcpos, Opcode.GOTO);
+						bc.write16bit(bcpos+1, offset);
+					}
+				}
+				
+			}, loopStart);
+			
+			continueStack.pop();
+			breakStack.pop();
+			
+			setLabelPos(loopEnd);
+			bc.add(Opcode.NOP);
+			return;
+		}
+		if (statement.getText().startsWith("do")){
+			
+			int loopStart = counter++;
+			int loopEnd = counter++;
+			int loopBegin = counter++;
+			
+			setLabelPos(loopBegin);
+			
+			continueStack.add(loopStart);
+			breakStack.add(loopEnd);
+			
+			compileStatement(statement.statement(0));
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					if (Math.abs(offset) > (65535/2)){
+						throw new CompilationException("Too long jump. Please reformate the code!");
+					} else {
+						bc.write(bcpos, Opcode.GOTO);
+						bc.write16bit(bcpos+1, offset);
+					}
+				}
+				
+			}, loopStart);
+			
+			continueStack.pop();
+			breakStack.pop();
+			
+			setLabelPos(loopStart);
+			isStatementExpression.add(false);
+			compileExpression(statement.parExpression().expression(), false, -1);
+			isStatementExpression.pop();
+			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					bc.write(bcpos, Opcode.IFNE); // jump to else if true or to the next bytecode if not 
+					bc.write16bit(bcpos+1, offset);
+				}
+				
+			}, loopBegin);
+			
+			setLabelPos(loopEnd);
+			bc.add(Opcode.NOP);
+			return;
+		}
 		if (statement.getText().startsWith("try")){
 			int endLabel = counter++;
 			boolean hasFinally = statement.finallyBlock() != null;

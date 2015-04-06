@@ -4,11 +4,11 @@ using Collections.List;
 module HelloWorldModule {
 	
 	restricted run(){
-		for (var x=0; x<1000000; x++){
-			if (x == 101) break;
-			if (x % 10 != 0) continue;
-			
-			IO.out.println(x);
-		}
+		var x = 0;
+		while (x < 100) 
+			IO.out.println(x++);
+		do {
+			IO.out.println(x--);
+		} while (x > 0);
 	}
 };
