@@ -71,7 +71,7 @@ public class Int extends PLangObject implements Serializable {
 	@Override
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		if (!b.___isNumber()) return false;
-		return value == b.___getNumber(b);
+		return value == b.___getNumber(b).intValue();
 	}
 
 	public int getValue() {

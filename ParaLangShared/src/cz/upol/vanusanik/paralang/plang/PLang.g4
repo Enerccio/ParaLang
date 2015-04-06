@@ -158,17 +158,12 @@ finallyBlock
 	;
 
 forControl
-    :   enhancedForControl
-    |   forInit? ';' expression? ';' forUpdate?
+    :   forInit? ';' expression? ';' forUpdate?
     ;
 
 forInit
-    :   localVariableDeclaration
+    :   'var' localVariableDeclaration
     |   expressionList
-    ;
-
-enhancedForControl
-    :   variableDeclaratorId ':' expression
     ;
 
 forUpdate

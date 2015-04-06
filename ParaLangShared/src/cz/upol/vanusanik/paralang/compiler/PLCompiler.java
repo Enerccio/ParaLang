@@ -50,6 +50,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.ExpressionContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ExpressionListContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ExtendedContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FieldDeclarationContext;
+import cz.upol.vanusanik.paralang.plang.PLangParser.ForControlContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FormalParameterContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FormalParametersContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FunctionBodyContext;
@@ -533,9 +534,150 @@ public class PLCompiler {
 	}
 
 	private Stack<Boolean> isStatementExpression = new Stack<Boolean>();
+	private Stack<Integer> continueStack = new Stack<Integer>();
+	private Stack<Integer> breakStack = new Stack<Integer>();
 	private void compileStatement(final StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
 		
+		if (statement.getText().startsWith("continue")){
+			if (continueStack.empty())
+				throw new CompilationException("Continue not inside any loop");
+			
+			int label = continueStack.peek();
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					if (Math.abs(offset) > (65535/2)){
+						throw new CompilationException("Too long jump. Please reformate the code!");
+					} else {
+						bc.write(bcpos, Opcode.GOTO);
+						bc.write16bit(bcpos+1, offset);
+					}
+				}
+				
+			}, label);
+			
+			return;
+		}
+		if (statement.getText().startsWith("break")){
+			if (breakStack.empty())
+				throw new CompilationException("Break not inside any loop");
+			
+			int label = breakStack.peek();
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					if (Math.abs(offset) > (65535/2)){
+						throw new CompilationException("Too long jump. Please reformate the code!");
+					} else {
+						bc.write(bcpos, Opcode.GOTO);
+						bc.write16bit(bcpos+1, offset);
+					}
+				}
+				
+			}, label);
+			
+			return;
+		}
+		if (statement.getText().startsWith("for")){
+			ForControlContext fcc = statement.forControl();
+			
+			int loopStart = counter++;
+			int loopEnd = counter++;
+			int continueLoop = counter++;
+			
+			varStack.pushNewStack();
+			int pushCount = 0;
+			
+			List<VariableDeclaratorContext> decls;
+			
+			if (fcc.forInit() != null)
+				decls = fcc.forInit().localVariableDeclaration().variableDeclarators().variableDeclarator();
+			else
+				decls = new ArrayList<VariableDeclaratorContext>();
+			for (VariableDeclaratorContext vd : decls){
+				markLine(bc.currentPc(), vd.start.getLine());
+				String varId = vd.variableDeclaratorId().getText();
+				int localId = stacker.acquire();
+				++pushCount;
+				
+				if (vd.variableInitializer() != null){
+					isStatementExpression.add(false);
+					compileExpression(vd.variableInitializer().expression(), false, -1);
+					isStatementExpression.pop();
+				} else {
+					addNil();
+				}
+				bc.addAstore(localId);
+				
+				varStack.addVariable(varId, VariableType.LOCAL_VARIABLE, localId);
+			}
+			
+			
+			setLabelPos(loopStart);
+			
+			if (fcc.expression() != null){
+				isStatementExpression.add(false);
+				compileExpression(fcc.expression(), false, -1);
+				isStatementExpression.pop();
+				bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
+						"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
+				addLabel(new LabelInfo(){
+
+					@Override
+					protected void add(Bytecode bc) throws CompilationException {
+						int offset = getValue(poskey) - bcpos;
+						bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
+						bc.write16bit(bcpos+1, offset);
+					}
+					
+				}, loopEnd);
+			}
+			
+			breakStack.add(loopEnd);
+			continueStack.add(continueLoop);
+			compileStatement(statement.statement(0));
+			breakStack.pop();
+			continueStack.pop();
+			
+			setLabelPos(continueLoop);
+			
+			if (fcc.forUpdate() != null){
+				for (ExpressionContext ex : fcc.forUpdate().expressionList().expression()){
+					isStatementExpression.add(true);
+					compileExpression(ex, false, -1);
+					isStatementExpression.pop();
+				}
+			}
+			
+			addLabel(new LabelInfo(){
+
+				@Override
+				protected void add(Bytecode bc) throws CompilationException {
+					int offset = getValue(poskey) - bcpos;
+					if (Math.abs(offset) > (65535/2)){
+						throw new CompilationException("Too long jump. Please reformate the code!");
+					} else {
+						bc.write(bcpos, Opcode.GOTO);
+						bc.write16bit(bcpos+1, offset);
+					}
+				}
+				
+			}, loopStart);
+			
+			while (pushCount-- != 0)
+				stacker.release();
+			varStack.popStack();
+
+			setLabelPos(loopEnd);
+			bc.add(Opcode.NOP);
+			
+			return;
+		}
 		if (statement.getText().startsWith("try")){
 			int endLabel = counter++;
 			boolean hasFinally = statement.finallyBlock() != null;

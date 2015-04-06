@@ -2,63 +2,13 @@ using IO;
 using Collections.List;
 
 module HelloWorldModule {
-
-	class GaspingException > BaseException {
-		
-		get_message(){
-			return "Oh! " + parent.get_message() + "!!!";
-		}
-	
-	} 
-	
-	var a = 0;
-
-	class Test {
-		var x;
-				
-		restricted __apply(){
-			a += 4;
-			work();
-		}
-		
-		restricted work(){
-			x = 0;
-			IO.out.println((dist (10) { 
-				return run_internal_method(run_id);
-			}));	
-			run();
-		}
-		
-		restricted run(){
-			x++;
-			if (x < 2)
-				run();
-			throw new GaspingException("Something went wrong");
-		}
-		
-		__eq(other){
-			IO.out.println("Test!");
-			return parent.__eq(other);
-		}
-	}
-	
-	run_internal_method(id){
-		return -(id * 10 + id - 50 * id) % 6;
-	}
-	
-	var test;
 	
 	restricted run(){
-		try {
-			try {
-				new Test()();
-			} catch (BaseException a){
-				throw a;
-			} finally {
-				IO.out.println("Finally done this!");
-			}
-		} finally {
-			IO.out.println("Outer layer finally");
-		} 
+		for (var x=0; x<1000000; x++){
+			if (x == 101) break;
+			if (x % 10 != 0) continue;
+			
+			IO.out.println(x);
+		}
 	}
 };

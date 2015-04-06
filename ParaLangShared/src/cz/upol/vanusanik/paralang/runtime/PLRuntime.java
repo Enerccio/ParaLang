@@ -310,7 +310,7 @@ public class PLRuntime {
 			for (int i=0; i<tcount; i++){
 				setRestricted(true);
 				PLangObject res = run(runner.___getkey(methodName), runner, new Int(i));
-				setRestricted(wasRestricted);
+				setRestricted(false);
 				run(c.___getkey("add"), c, res);
 			}
 			ret = c;
