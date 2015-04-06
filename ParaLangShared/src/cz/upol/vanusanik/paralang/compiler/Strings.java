@@ -33,6 +33,7 @@ public class Strings {
 	public static final String RUNTIME__RUN_JAVA_WRAPPER = "runJavaWrapper";
 	public static final String RUNTIME__CHECK_EXCEPTION_HIERARCHY = "checkExceptionHierarchy";
 	public static final String RUNTIME__CHECK_INSTANCEOF = "checkInstanceOf";
+	public static final String RUNTIME__RUN_DISTRIBUTED = "runDistributed";
 	public static final String TYPEOPS__PLUS = "plus";
 	public static final String TYPEOPS__MINUS = "minus";
 	public static final String TYPEOPS__MUL = "mul";

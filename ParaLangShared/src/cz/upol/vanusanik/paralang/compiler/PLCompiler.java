@@ -168,10 +168,17 @@ public class PLCompiler {
 	private enum RestrictedTo { CLASS, MODULE };
 	private RestrictedTo isRestrictedMethodQualifier;
 	
+	private static class BlockDescription {
+		public BlockContext b;
+		public String mn;
+	}
+	private List<BlockDescription> distributed = new ArrayList<BlockDescription>();
+	
 	@SuppressWarnings("unchecked")
 	private void compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
 		String moduleName = ctx.moduleDeclaration().children.get(1).getText();
 		compilingClass = false;
+		distributed.clear();
 		
 		cp = ClassPool.getDefault();
 
@@ -224,6 +231,25 @@ public class PLCompiler {
 			methods.add("init");
 		}
 		
+		for (FieldDeclarationContext fdc : fields){
+			for (final VariableDeclaratorContext vd : fdc.variableDeclarators().variableDeclarator()){
+				String varId = vd.variableDeclaratorId().getText();
+				varStack.addVariable(varId, VariableType.CLASS_VARIABLE);
+			}
+		}
+		
+		// Compile all methods
+		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
+			if (mdc.functionDeclaration() != null){
+				FunctionDeclarationContext fcx = mdc.functionDeclaration();
+				compileFunction(fcx);
+			}
+		}
+		
+		for (BlockDescription bd : distributed){
+			methods.add(compileFunction(bd));
+		}
+		
 		// Compile system init method
 		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields() { return null; }", cls);
 		new MethodCompiler(m){
@@ -235,14 +261,6 @@ public class PLCompiler {
 			}
 			
 		}.compileMethod();
-		
-		// Compile all methods
-		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
-			if (mdc.functionDeclaration() != null){
-				FunctionDeclarationContext fcx = mdc.functionDeclaration();
-				compileFunction(fcx);
-			}
-		}
 		
 		varStack.popStack(); // pop class variables
 		
@@ -256,6 +274,7 @@ public class PLCompiler {
 	
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
 		compilingClass = true;
+		distributed.clear();
 		
 		cp = ClassPool.getDefault();
 		
@@ -306,6 +325,25 @@ public class PLCompiler {
 			}
 		}
 		
+		for (FieldDeclarationContext fdc : fields){
+			for (final VariableDeclaratorContext vd : fdc.variableDeclarators().variableDeclarator()){
+				String varId = vd.variableDeclaratorId().getText();
+				varStack.addVariable(varId, VariableType.CLASS_VARIABLE);
+			}
+		}
+		
+		// Compile all methods
+		for (ClassBodyDeclarationContext cbd : cbdList){
+			if (cbd.memberDeclaration().functionDeclaration() != null){
+				FunctionDeclarationContext fcx = cbd.memberDeclaration().functionDeclaration();
+				compileFunction(fcx);
+			}
+		}
+		
+		for (BlockDescription bd : distributed){
+			methods.add(compileFunction(bd));
+		}
+
 		// Compile system init method
 		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields() { return null; }", cls);
 		new MethodCompiler(m){
@@ -316,15 +354,7 @@ public class PLCompiler {
 				compileInitMethod(fields, methods, sc);
 			}
 			
-		}.compileMethod();
-		
-		// Compile all methods
-		for (ClassBodyDeclarationContext cbd : cbdList){
-			if (cbd.memberDeclaration().functionDeclaration() != null){
-				FunctionDeclarationContext fcx = cbd.memberDeclaration().functionDeclaration();
-				compileFunction(fcx);
-			}
-		}
+		}.compileMethod();		
 		
 		varStack.popStack(); // pop class variables
 		
@@ -392,10 +422,51 @@ public class PLCompiler {
 		return name;
 		
 	}
+	
+	private String compileFunction(final BlockDescription bd) throws Exception{
+		final boolean restricted = false;
+		String name = bd.mn;
+		
+		isRestrictedMethodQualifier = restricted ? RestrictedTo.MODULE : null;
+		if (name.equals("init")){
+			isRestrictedMethodQualifier = compilingClass ? RestrictedTo.CLASS : RestrictedTo.MODULE;
+			compilingInit = true;
+		} else
+			compilingInit = false;
+		String methArgsSign;
+		if (compilingClass)
+			methArgsSign = Strings.PLANGOBJECT_N + " inst, " + Strings.PLANGOBJECT_N + " run_id";
+		else
+			methArgsSign = Strings.PLANGOBJECT_N + " run_id";
+		methArgsSign = StringUtils.removeEnd(methArgsSign, ", ");
+		String methodSignature = "public " + Strings.PLANGOBJECT_N + " " + name + "(" + methArgsSign + "){ return null; }";
+		
+		final CtMethod m = CtNewMethod.make(methodSignature, cls);
+		new MethodCompiler(m){
+
+			@Override
+			protected void compileDataSources() throws Exception {
+				varStack.pushNewStack();
+				if (compilingClass){
+					varStack.addVariable("inst", VariableType.LOCAL_VARIABLE, stacker.acquire());
+				}
+				varStack.addVariable("run_id", VariableType.LOCAL_VARIABLE, stacker.acquire());
+				compileFunction(bd.b, restricted);
+				varStack.popStack();
+			}
+			
+		}.compileMethod();
+		
+		return name;
+	}
 
 	private List<FinallyBlockProtocol> fbcList;
 	protected void compileFunction(FunctionBodyContext functionBody, boolean restricted) throws Exception {
-		markLine(bc.currentPc(), functionBody.start.getLine());
+		compileFunction(functionBody.block(), restricted);
+	}
+	
+	protected void compileFunction(BlockContext b, boolean restricted) throws Exception {
+		markLine(bc.currentPc(), b.start.getLine());
 		
 		if (restricted){
 			addGetRuntime();
@@ -403,9 +474,9 @@ public class PLCompiler {
 		}
 		
 		fbcList = new LinkedList<FinallyBlockProtocol>();
-		compileBlock(functionBody.block());	
+		compileBlock(b);	
 		
-		markLine(bc.currentPc(), functionBody.stop.getLine());
+		markLine(bc.currentPc(), b.stop.getLine());
 		functionExitProtocol();
 		addNil();
 		bc.add(Opcode.ARETURN);
@@ -830,9 +901,6 @@ public class PLCompiler {
 			bc.addCheckcast(Strings.PLANGOBJECT);	// cast obj to PLangObject
 			bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__SETKEY, 
 					"(" + Strings.STRING_L + Strings.PLANGOBJECT_L + ")V");
-			
-
-			varStack.addVariable(varId, VariableType.CLASS_VARIABLE);
 		}
 	}
 	
@@ -890,6 +958,22 @@ public class PLCompiler {
 		try {
 			if (expression.primary() != null){
 				compilePrimaryExpression(expression.primary(), compilingMethodCall, storeVar);
+				return;
+			} else if (expression.block() != null){
+				String methodName = "___internalMethod" + distributed.size();
+				BlockContext block = expression.block();
+				
+				BlockDescription bd = new BlockDescription();
+				bd.mn = methodName;
+				bd.b = block;
+				
+				distributed.add(bd);
+				addGetRuntime();
+				bc.addIconst(NumberUtils.toInt(expression.IntegerLiteral().getText()));
+				bc.addLdc(cacheStrings(methodName));
+				bc.addAload(0);
+				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN_DISTRIBUTED, 
+						"(I" + Strings.STRING_L + Strings.BASE_COMPILED_STUB_L + ")" + Strings.PLANGOBJECT_L);
 				return;
 			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("?")){
 				compileTernaryOperator((ExpressionContext)expression.getChild(0), 
@@ -1378,6 +1462,7 @@ public class PLCompiler {
 						bc.addAload(0); 								// load this
 					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
 						addGetRuntime();
+						bc.addLdc(cacheStrings(moduleName));
 						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__GET_MODULE, 
 								"(" + Strings.STRING_L + ")" + Strings.PL_MODULE_L); // get module on stack or fail
 						bc.addCheckcast(Strings.BASE_COMPILED_STUB);

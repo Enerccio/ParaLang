@@ -142,7 +142,6 @@ statement
     |   'for' '(' forControl ')' statement
     |   'while' parExpression statement
     |   'do' statement 'while' parExpression ';'
-	|   'parallel' block
     |   'return' expression? ';'
     |   'break' ';'
     |   'continue' ';'
@@ -193,7 +192,8 @@ constantExpression
     ;
 
 expression
-    :   primary
+    :   primary 
+    |   '(' 'dist' '(' IntegerLiteral ')' block ')'
     |   expression '.' Identifier
     |   expression '->' Identifier '(' expressionList? ')'
     |   Identifier '->' Identifier '(' expressionList? ')'
@@ -288,7 +288,7 @@ DO            : 'do';
 ELSE          : 'else';
 VAR       	  : 'var';
 RESTRICTED    : 'restricted';
-PARALLEL      : 'parallel';
+DIST      	  : 'dist';
 FOR           : 'for';
 IF            : 'if';
 IMPORT        : 'import';

@@ -10,19 +10,28 @@ module HelloWorldModule {
 		}
 	
 	} 
+	
+	var a = 0;
 
 	class Test {
-		var a;
+		var x;
 				
 		restricted __apply(){
-			a = 0;
-			IO.out.println(inst instanceof Test);
+			a += 4;
+			work();
+		}
+		
+		restricted work(){
+			x = 0;
+			IO.out.println((dist (10) { 
+				return run_internal_method(run_id);
+			}));	
 			run();
 		}
 		
 		restricted run(){
-			a++;
-			if (a < 1000)
+			x++;
+			if (x < 2)
 				run();
 			throw new GaspingException("Something went wrong");
 		}
@@ -31,6 +40,10 @@ module HelloWorldModule {
 			IO.out.println("Test!");
 			return parent.__eq(other);
 		}
+	}
+	
+	run_internal_method(id){
+		return -(id * 10 + id - 50 * id) % 6;
 	}
 	
 	var test;

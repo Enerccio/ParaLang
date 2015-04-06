@@ -29,7 +29,10 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
+import cz.upol.vanusanik.paralang.plang.types.Int;
+import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
+import cz.upol.vanusanik.paralang.plang.types.Str;
 
 public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
@@ -206,7 +209,7 @@ public class PLRuntime {
 	
 	public PLangObject run(PLangObject runner, BaseCompiledStub currentRunner, PLangObject... args){
 		if (runner == null)
-			throw new NullPointerException("Runner is mepty");
+			throw new NullPointerException("Runner is empty");
 	
 		if (runner.___getType() == PlangObjectType.FUNCTION){
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
@@ -295,6 +298,27 @@ public class PLRuntime {
 		return BooleanValue.FALSE;
 	}
 	
+	// TODO :)
+	public PLangObject runDistributed(int tcount, String methodName, BaseCompiledStub runner) {
+		if (tcount<=0)
+			throw newInstance("System.BaseException", new Str("Incorrect number of run count, expected positive integer"));
+		
+		PLangObject ret = NoValue.NOVALUE;
+		boolean wasRestricted = isRestricted;
+		try {
+			PLClass c = newInstance("Collections.List");
+			for (int i=0; i<tcount; i++){
+				setRestricted(true);
+				PLangObject res = run(runner.___getkey(methodName), runner, new Int(i));
+				setRestricted(wasRestricted);
+				run(c.___getkey("add"), c, res);
+			}
+			ret = c;
+		} finally {
+			setRestricted(wasRestricted);
+		}
+		return ret;
+	}
 	/*
 	 * Only serializes the actual content, not class definitions
 	 */
