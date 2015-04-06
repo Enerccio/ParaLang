@@ -27,6 +27,7 @@ import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
 import cz.upol.vanusanik.paralang.compiler.PLCompiler;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
 
@@ -279,6 +280,19 @@ public class PLRuntime {
 		}
 		
 		return false;
+	}
+	
+	public PLangObject checkInstanceOf(PLangObject o, String className){
+		if (o.getClass().getName().equals(className))
+			return BooleanValue.TRUE;
+		
+		if (o instanceof PLClass){
+			PLClass c = (PLClass)o;
+			if (c.___fieldsAndMethods.containsKey(PLClass.___superKey))
+				return checkInstanceOf(c.___getkey(PLClass.___superKey), className);
+		}
+		
+		return BooleanValue.FALSE;
 	}
 	
 	/*

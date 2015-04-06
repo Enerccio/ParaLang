@@ -516,6 +516,8 @@ public class PLCompiler {
 					String type = ccc.type().getText();
 					String fqName = type;
 					
+					markLine(bc.currentPc(), ccc.start.getLine());
+					
 					if (referenceMap.containsKey(type)){
 						Reference r = referenceMap.get(type);
 						if (r.isJava())
@@ -977,6 +979,32 @@ public class PLCompiler {
 					compileBinaryOperator(operator, 
 							(ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2), 
 							compilingMethodCall, storeVar);
+				} else if ("instanceof".equals(operator)){
+					String fqName = "";
+					String type = expression.type().getText();
+					if (referenceMap.containsKey(type)){
+						Reference r = referenceMap.get(type);
+						if (r.isJava())
+							throw new CompilationException("Only PLang type can be in catch expression!");
+						fqName = r.getFullReference();
+					}
+					
+					if (!fqName.contains(".")){
+						throw new CompilationException("Class type " + type + " is unknown. Have you forgotten using declaration?");
+					}
+					
+					String className = PLRuntime.getRuntime().getClassNameOrGuess(fqName);
+					
+					addGetRuntime();
+
+					isStatementExpression.add(false);
+					compileExpression((ExpressionContext) expression.getChild(0), false, -1);
+					isStatementExpression.pop();
+					
+					bc.addLdc(cacheStrings(className));
+					bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CHECK_INSTANCEOF, 
+							"(" + Strings.PLANGOBJECT_L + Strings.STRING_L + ")" + Strings.PLANGOBJECT_L);
+					
 				} else if ("||".equals(operator) || "&&".equals(operator)) {
 					compileLogic((ExpressionContext)expression.getChild(0), (ExpressionContext)expression.getChild(2),
 							"||".equals(operator), compilingMethodCall, storeVar);
@@ -999,6 +1027,34 @@ public class PLCompiler {
 								"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 					}	
 				}
+			} else if (expression.getChild(0) instanceof ExtendedContext && rightOperators.contains(expression.getChild(1).getText())){
+				ExtendedContext lvalue = expression.extended();
+				final int st = stacker.acquire();
+				final boolean add = expression.getChild(1).getText().equals("++");
+				
+				new CompileSetOperator(lvalue, false, false, -1){
+					
+					@Override
+					public void compileRight() throws Exception {
+						bc.add(Opcode.DUP);
+						bc.addAstore(st);
+						
+						bc.addNew(Strings.INT);
+						bc.add(Opcode.DUP);
+						bc.addIconst(1);
+						bc.addInvokespecial(Strings.INT, 
+								"<init>", "(I)V");
+						
+						compileBinaryOperator(add ? "+" : "-", null, null, false, -1);
+					}
+					
+				}.compileSetOperator();
+				
+				if (compilingMethodCall){
+					bc.addAload(st);
+					bc.addAstore(storeVar);
+				} 
+				stacker.release();
 			} else if (expression.getChild(0).getText().equals("new")){
 				String fqName = null;
 				if (expression.getChildCount() == 4){ // fq
