@@ -24,13 +24,14 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.WriterConfig;
 
 import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
+import cz.upol.vanusanik.paralang.compiler.FileDesignator;
 import cz.upol.vanusanik.paralang.compiler.PLCompiler;
+import cz.upol.vanusanik.paralang.connector.NetworkProvider;
+import cz.upol.vanusanik.paralang.connector.NetworkResult;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
-import cz.upol.vanusanik.paralang.plang.types.Int;
-import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
 import cz.upol.vanusanik.paralang.plang.types.Str;
 
@@ -42,6 +43,7 @@ public class PLRuntime {
 	static {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
 		__SYSTEM_CLASSES.put("BaseException", BaseException.class);
+		__SYSTEM_CLASSES.put("NetworkException", NetworkException.class);
 		__SYSTEM_CLASSES.put("Function", Function.class);
 		__SYSTEM_CLASSES.put("Integer", BaseInteger.class);
 		__SYSTEM_CLASSES.put("Float", BaseFloat.class);
@@ -57,19 +59,45 @@ public class PLRuntime {
 		return objectIdCounter++;
 	}
 
+	private ParalangClassLoader classLoader = new ParalangClassLoader();
 	private Map<String, Class<? extends PLModule>> preloadedModuleMap = new HashMap<String, Class<? extends PLModule>>();
 	private Map<String, PLModule> moduleMap = new HashMap<String, PLModule>();
 	private Map<String, Map<String, Class<?>>> classMap = new HashMap<String, Map<String,Class<?>>>();
 	private Map<String, Long> uuidMap = new HashMap<String, Long>();
+	private Map<String, String> moduleSourceMap = new HashMap<String, String>();
 	
 	private boolean isSafeContext = false;
 	private boolean isRestricted = true;
 	private String packageTarget = "";
+	private NetworkProvider np;
+	private PLCompiler compiler = new PLCompiler();
 	
-	public PLRuntime(){
-		localRuntime.set(this);
-		
-		initialize();
+	public PLRuntime(){		
+		initialize(false);
+		compiler.setClassLoader(classLoader);
+	}
+	
+	PLRuntime(boolean miniinit){		
+		initialize(miniinit);
+		compiler.setClassLoader(classLoader);
+	}
+	
+	public static PLRuntime createEmptyRuntime(){
+		return new PLRuntime(true);
+	}
+	
+	public void compileSource(FileDesignator fd) throws Exception{
+		setAsCurrent();
+		String moduleName = compiler.compile(fd);
+		moduleSourceMap.put(moduleName, fd.getSourceContent());
+	}
+	
+	public ClassLoader getClassLoader(){
+		return classLoader;
+	}
+	
+	public void setNetworkProvider(NetworkProvider np){
+		this.np = np;
 	}
 	
 	public void addUuidMap(String fqName, Long uuid){
@@ -96,24 +124,7 @@ public class PLRuntime {
 		return uuidMap.get(fqName);
 	}
 	
-	public void initialize(){
-		final List<File> fList = new ArrayList<File>();
-		final File f = new File("plang//");
-		new DirectoryWalker<File>(){
-			public void doIt(){
-				try {
-					walk(f, fList);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			protected boolean handleDirectory(File directory, int depth, Collection<File> results) {
-				results.add(directory);
-			    return true;
-			}
-		}.doIt();
-
+	public void initialize(boolean miniinit){
 		setSafeContext(true);
 		setRestricted(false);
 		
@@ -123,19 +134,43 @@ public class PLRuntime {
 			registerClass("System", cn, SYSTEM_CLASSES.get(cn));	
 		}
 		
-		for (File ffd : fList){
-			for (File ff : ffd.listFiles(new FileFilter(){
-
-				@Override
-				public boolean accept(File pathname) {
-					return pathname.getName().endsWith(".plang");
+		if (!miniinit){
+			final List<File> fList = new ArrayList<File>();
+			final File f = new File("plang//");
+			new DirectoryWalker<File>(){
+				public void doIt(){
+					try {
+						walk(f, fList);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 				
-			})){
-				PLCompiler c = new PLCompiler();
-				c.compile(new DiskFileDesignator(ff));
-			}
+				protected boolean handleDirectory(File directory, int depth, Collection<File> results) {
+					results.add(directory);
+				    return true;
+				}
+			}.doIt();
+			
+			for (File ffd : fList){
+				for (File ff : ffd.listFiles(new FileFilter(){
+
+					@Override
+					public boolean accept(File pathname) {
+						return pathname.getName().endsWith(".plang");
+					}
+					
+				})){
+					try {
+						compileSource(new DiskFileDesignator(ff));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}	
 		}
+		
+		setSafeContext(false);
 	}
 	
 	public void registerClass(String module, String className, Class<?> cls){
@@ -234,7 +269,6 @@ public class PLRuntime {
 		}
 		throw new RuntimeException(runner + " cannot be run!");
 	}
-	
 
 	public PLangObject runJavaWrapper(Pointer runner, String mname, PLangObject... args){
 		try {
@@ -298,26 +332,22 @@ public class PLRuntime {
 		return BooleanValue.FALSE;
 	}
 	
-	// TODO :)
 	public PLangObject runDistributed(int tcount, String methodName, BaseCompiledStub runner) {
 		if (tcount<=0)
 			throw newInstance("System.BaseException", new Str("Incorrect number of run count, expected positive integer"));
 		
-		PLangObject ret = NoValue.NOVALUE;
-		boolean wasRestricted = isRestricted;
-		try {
-			PLClass c = newInstance("Collections.List");
-			for (int i=0; i<tcount; i++){
-				setRestricted(true);
-				PLangObject res = run(runner.___getkey(methodName), runner, new Int(i));
-				setRestricted(false);
-				run(c.___getkey("add"), c, res);
-			}
-			ret = c;
-		} finally {
-			setRestricted(wasRestricted);
+		PLClass c = newInstance("Collections.List");
+		
+		NetworkResult r = np.getConnector().executeDistributed(runner.___getObjectId(), methodName, tcount);
+		if (!r.success)
+			throw r.exception;
+		else {
+			List<PLangObject> data = ((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer();
+			for (PLangObject o : r.results)
+				data.add(o);
 		}
-		return ret;
+		
+		return c;
 	}
 	/*
 	 * Only serializes the actual content, not class definitions
@@ -352,5 +382,8 @@ public class PLRuntime {
 	public void setPackageTarget(String packageTarget) {
 		this.packageTarget = packageTarget;
 	}
-
+	
+	public void setAsCurrent(){
+		localRuntime.set(this);
+	}
 }

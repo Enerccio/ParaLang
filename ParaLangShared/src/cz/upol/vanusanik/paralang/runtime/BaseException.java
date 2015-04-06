@@ -9,7 +9,7 @@ import cz.upol.vanusanik.paralang.plang.types.Str;
 
 public class BaseException extends PLClass implements Serializable {
 	private static final long serialVersionUID = 8923942805591451790L;
-	private static final String __messageField = "__message";
+	static final String __messageField = "__message";
 	static final String __messageGetter = "get_message";
 
 	public BaseException(){

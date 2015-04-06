@@ -75,15 +75,16 @@ public class PLCompiler {
 	private String source;
 	private String moduleName;
 	
-	public void compile(FileDesignator in){
+	public String compile(FileDesignator in){
 		try {
-			compileFile(in);
+			return compileFile(in);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 	}
 	
-	private void compileFile(FileDesignator in) throws Exception {
+	private String compileFile(FileDesignator in) throws Exception {
 		CompilationUnitContext ctx = parse(in);
 		
 		buildReferenced(ctx);
@@ -91,6 +92,7 @@ public class PLCompiler {
 		source = in.getSource();
 		
 		compileModule(ctx, in);
+		return moduleName;
 	}
 
 	private void buildReferenced(CompilationUnitContext ctx) {
@@ -264,11 +266,10 @@ public class PLCompiler {
 		}.compileMethod();
 		
 		varStack.popStack(); // pop class variables
-		
-		cls.debugWriteFile();
+
 		cls.toBytecode(new DataOutputStream(new FileOutputStream(output)));
 		
-		Class<?> klazz = cls.toClass();
+		Class<?> klazz = cls.toClass(getClassLoader(), null);
 		
 		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
 	}
@@ -359,7 +360,6 @@ public class PLCompiler {
 		
 		varStack.popStack(); // pop class variables
 		
-		cls.debugWriteFile();
 		cls.toBytecode(new DataOutputStream(new FileOutputStream(output)));
 		return cls.toClass(getClassLoader(), null);
 	}
