@@ -5,12 +5,10 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.WriterConfig;
 
 import cz.upol.vanusanik.paralang.connector.Protocol;
 
@@ -35,13 +33,15 @@ public class NodeController {
 		
 		while (true){
 			final Socket s = server.accept();
+			s.setKeepAlive(true);
 			service.execute(new Runnable(){
 
 				@Override
 				public void run() {
 					try {
 						while (!s.isClosed())
-							resolveRequest(s);
+							if (resolveRequest(s)) 
+								break;
 					} catch (Exception e) {
 						log.error(e);
 						log.debug(e, e);
@@ -52,12 +52,17 @@ public class NodeController {
 		}
 	}
 
-	protected void resolveRequest(Socket s) throws Exception {
-		JsonObject m = Protocol.load(s.getInputStream());
+	protected boolean resolveRequest(Socket s) throws Exception {
+		s.setSoTimeout(1000 * 120);
+		JsonObject m = Protocol.receive(s.getInputStream());
+		
+		if (m == null) return true;
+		
 		log.info("Request " + m.get("header") + " from " + s.getLocalAddress());
 		
 		if (m.getString("header", "").equals(Protocol.GET_STATUS_REQUEST))
 			resolveStatusRequest(s, m);
+		return false;
 	}
 
 	private void resolveStatusRequest(Socket s, JsonObject m) throws Exception {
@@ -65,7 +70,7 @@ public class NodeController {
 			.add("header", Protocol.GET_STATUS_RESPONSE)
 			.add("payload", new JsonObject()
 				.add("workerThreads", options.threadCount));
-		IOUtils.write(payload.toString(WriterConfig.PRETTY_PRINT), s.getOutputStream());
+		Protocol.send(s.getOutputStream(), payload);
 	}
 	
 	private NodeOptions options;

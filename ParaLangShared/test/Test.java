@@ -14,11 +14,14 @@ public class Test {
 		
 		Socket s = new Socket("localhost", 12345);
 		
+		byte[] arr = { 0x1e, 0x00, 0x00, 0x00, 0x02, '{' };
+		IOUtils.write(arr, s.getOutputStream());
+		
 		JsonObject o = new JsonObject();
 		o.add("header", Protocol.GET_STATUS_REQUEST);
-		IOUtils.write(o.toString(WriterConfig.PRETTY_PRINT), s.getOutputStream());
+		Protocol.send(s.getOutputStream(), o);
 		
-		System.out.println(Protocol.load(s.getInputStream()).toString(WriterConfig.PRETTY_PRINT));
+		System.out.println(Protocol.receive(s.getInputStream()).toString(WriterConfig.PRETTY_PRINT));
 		s.close();
 		
 //		File f = new File("bin\\x.plang");
