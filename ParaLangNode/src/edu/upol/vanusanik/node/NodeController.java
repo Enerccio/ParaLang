@@ -67,9 +67,19 @@ public class NodeController {
 		/** Actual runtime handle is stored here */
 		public PLRuntime runtime;
 		
+		private boolean invalidated = false;
 		@Override
-		public void wasAccessed() {
+		public synchronized void wasAccessed() {
+			if (invalidated) return;
 			lastAccessTime = System.currentTimeMillis();
+		}
+		
+		/**
+		 * Sets the lastAccessTime to 0 which in turn will make this available for reclamation in memory cleaning thread
+		 */
+		public synchronized void invalidate(){
+			invalidated = true;
+			lastAccessTime = 0;
 		}
 	}
 	
