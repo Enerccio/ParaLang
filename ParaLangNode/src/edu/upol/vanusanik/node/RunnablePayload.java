@@ -1,14 +1,26 @@
 package edu.upol.vanusanik.node;
 
+/**
+ * Base runnable payload class. Will give access to returned value and whether runnable has finished or not
+ * @author Enerccio
+ *
+ * @param <T> value that executePayload should return
+ */
 public abstract class RunnablePayload<T> implements Runnable {
 
 	private volatile boolean finished = false;
 	private T result;
 	
+	/**
+	 * @return whether this RunnablePayload has finished executing or not
+	 */
 	public boolean hasFinished(){
 		return finished;
 	}
 	
+	/**
+	 * @return null or result of running this RunnablePayload
+	 */
 	public T getResult(){
 		return result;
 	}
@@ -19,6 +31,10 @@ public abstract class RunnablePayload<T> implements Runnable {
 		finished = true;
 	}
 
+	/**
+	 * executes this RunnablePayload
+	 * @return result of this execution
+	 */
 	protected abstract T executePayload();
 	
 }

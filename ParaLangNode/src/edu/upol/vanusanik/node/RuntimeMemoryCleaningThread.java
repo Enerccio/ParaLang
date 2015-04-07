@@ -7,6 +7,11 @@ import org.apache.log4j.Logger;
 
 import edu.upol.vanusanik.node.NodeController.RuntimeStoreContainer;
 
+/**
+ * RuntimeMemoryCleaningThread is thread that periodically checks runtime caches and removes them if necessary
+ * @author Enerccio
+ *
+ */
 public class RuntimeMemoryCleaningThread extends Thread {
 	private static final Logger log = Logger.getLogger(RuntimeMemoryCleaningThread.class);
 	

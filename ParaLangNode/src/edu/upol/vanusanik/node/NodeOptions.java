@@ -2,6 +2,11 @@ package edu.upol.vanusanik.node;
 
 import com.beust.jcommander.Parameter;
 
+/**
+ * Options this console server application accepts.
+ * @author Enerccio
+ *
+ */
 public class NodeOptions {
 
 	@Parameter(required = true, names = {"-p", "--port"}, description="Port on which this node will listen")

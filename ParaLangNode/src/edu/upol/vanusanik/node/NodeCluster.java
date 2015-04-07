@@ -1,5 +1,11 @@
 package edu.upol.vanusanik.node;
 
+/**
+ * NodeCluster class contains all the nodes for this Node Controller. 
+ * You can get free nodes via getFreeNode() method, which will also reserve such a node.
+ * @author Enerccio
+ *
+ */
 public class NodeCluster {
 
 	private Node[] nodes;
@@ -12,11 +18,22 @@ public class NodeCluster {
 		}
 	}
 	
+	/**
+	 * Returns all nodes.
+	 * @return all nodes
+	 */
 	public Node[] getNodes(){
 		return nodes;
 	}
 	
 	int rrindex = 0;
+
+	/**
+	 * Returns free node via round robin queue mechanism. 
+	 * May return null if no free nodes exists. 
+	 * After 4 * maxAmountOfNodes it will switch to linear queue algorithm for finding free node.
+	 * @return free, reserved node or null
+	 */
 	public synchronized Node getFreeNode(){
 		Node n;
 		int it = 0;
@@ -31,6 +48,10 @@ public class NodeCluster {
         return n;
 	}
 
+	/**
+	 * Linearly finds a first free node or fails and returns null
+	 * @return free, reserved node or null
+	 */
 	private Node getFreeNodeOrFail() {
 		for (Node n : nodes){
 			if (!n.isBusy()){

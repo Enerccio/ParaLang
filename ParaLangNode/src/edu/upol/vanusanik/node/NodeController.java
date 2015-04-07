@@ -1,6 +1,5 @@
 package edu.upol.vanusanik.node;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,6 +21,15 @@ import cz.upol.vanusanik.paralang.connector.Protocol;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime.RuntimeAccessListener;
 
+/**
+ * NodeController is main class of the ParaLang Node. 
+ * 
+ * NodeController controls the runtime of ParaLang Node, providing services to whomever connects to it.
+ * The communication is handled by extended json protocol, which is 0x1e <4 bytes> <json message>. 
+ * NodeController can be modified via settings in NodeOptions. 
+ * @author Enerccio
+ *
+ */
 public class NodeController {
 	private static final Logger log = Logger.getLogger(NodeController.class);
 
@@ -32,14 +40,31 @@ public class NodeController {
 		new NodeController().start(no);
 	}
 	
+	/**
+	 * service is thread pool that handles incoming requests.
+	 */
 	private ExecutorService service;
+	/**
+	 * cluster contains para lang nodes. You can retrieve free nodes from it.
+	 */
 	private NodeCluster cluster;
 
+	/**
+	 * RuntimeStoreContainer is simple data class containing the sole reference point to 
+	 * particular client runtime this node was running previously. If this instance is gc'ed, 
+	 * runtime will disappear.
+	 * @author Enerccio
+	 *
+	 */
 	public class RuntimeStoreContainer implements RuntimeAccessListener {
+		/** Last access time. Used by RuntimeMemoryCleaningThread to determine whether the cache should be purged or not */
 		public volatile long lastAccessTime;
+		/** This runtime's last modification time, as per client's specifications. Used to send over when requesting delta of the runtime changes.*/
 		public volatile long lastModificationTime;
 		
+		/** Source files before compilation are stored here */
 		public List<StringDesignator> sources = new ArrayList<StringDesignator>();
+		/** Actual runtime handle is stored here */
 		public PLRuntime runtime;
 		
 		@Override
@@ -48,9 +73,22 @@ public class NodeController {
 		}
 	}
 	
+	
+	/**
+	 * Contains weak references to RuntimeStoreContainer for particular uuid hash. Might disappear when gc'ed.
+	 */
 	private HashMap<String, WeakReference<RuntimeStoreContainer>> cache = new HashMap<String, WeakReference<RuntimeStoreContainer>>();
+	/**
+	 * Hard reference points to the RuntimeStoreContainers, they will not be stored anywhere else but here and in locals.
+	 * RuntimeMemoryCleaningThread will purge this set periodically, if you need to access this set, use this NodeController instance in sync block.  
+	 */
 	private Set<RuntimeStoreContainer> containerSet = new HashSet<RuntimeStoreContainer>();
 
+	/**
+	 * Starts this node controller instance server, will start to accept the incoming requests.
+	 * @param no
+	 * @throws Exception
+	 */
 	private void start(NodeOptions no) throws Exception {
 		log.info("Starting ParaLang Node Controller at port " + no.portNumber + ", number of working threads: " + no.threadCount);
 		
@@ -85,12 +123,26 @@ public class NodeController {
 		}
 	}
 	
+	/**
+	 * Request Data storage class. Every client that has open request stream will have one assigned. 
+	 * Used to store intermediate data for client on this server.
+	 * @author Enerccio
+	 *
+	 */
 	private class NodeLocalStorage {
+		/** Node that this client has reserved, if any */
 		public Node reservedNode;
 	}
 	
+	/** NodeLocalStorage is stored in this thread local */
 	private ThreadLocal<NodeLocalStorage> localStorage = new ThreadLocal<NodeLocalStorage>();
 
+	/**
+	 * Resolves request from client. Will not close connection (only client can do that or timeout).
+	 * @param s communication bound socket
+	 * @return whether the communication was closed or not
+	 * @throws Exception if communication fails
+	 */
 	protected boolean resolveRequest(Socket s) throws Exception {
 		s.setSoTimeout(1000 * 120);
 		JsonObject m = Protocol.receive(s.getInputStream());
@@ -106,6 +158,13 @@ public class NodeController {
 		return false;
 	}
 
+	/**
+	 * Resolve reserve spot request. Will reserve a node for this client or fails, and reports back the success or failure
+	 * via Protocol.RESERVE_SPOT_RESPONSE message.
+	 * @param s communication bound socket
+	 * @param m original message
+	 * @throws Exception on any failure
+	 */
 	private void resolveReserveSpotRequest(Socket s, JsonObject m) throws Exception {
 		JsonObject payload = new JsonObject();
 		payload.add("header", Protocol.RESERVE_SPOT_RESPONSE);
@@ -121,6 +180,13 @@ public class NodeController {
 		Protocol.send(s.getOutputStream(), payload);
 	}
 
+	/**
+	 * Sends information about this node to the client
+	 * via Protocol.GET_STATUS_RESPONSE message.
+	 * @param s communication bound socket
+	 * @param m original message
+	 * @throws Exception on any failure
+	 */
 	private void resolveStatusRequest(Socket s, JsonObject m) throws Exception {
 		JsonObject payload = new JsonObject()
 			.add("header", Protocol.GET_STATUS_RESPONSE)
@@ -130,6 +196,7 @@ public class NodeController {
 		Protocol.send(s.getOutputStream(), payload);
 	}
 	
+	/** Helper method to compute worker thread usage message */
 	private JsonObject generateWorkerThreadUsage() {
 		JsonObject o = new JsonObject();
 		
@@ -141,6 +208,13 @@ public class NodeController {
 	}
 
 	private NodeOptions options;
+	
+	/**
+	 * Initializes this NodeController via NodeOptions. Also creates the handling thread pools and 
+	 * RuntimeMemoryCleaningThread cleaning thread that is immediatelly started.
+	 * @param no initialization values.
+	 * @throws Exception
+	 */
 	private void initialize(NodeOptions no) throws Exception {
 		service = Executors.newCachedThreadPool();
 		options = no;

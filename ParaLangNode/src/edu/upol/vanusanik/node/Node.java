@@ -2,10 +2,17 @@ package edu.upol.vanusanik.node;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Node is running thread that handles the execution of ParaLang code.
+ * @author Enerccio
+ *
+ */
 public class Node implements Runnable {
 	private static final Logger log = Logger.getLogger(Node.class);
 	
+	/** Id of this Node */
 	private int id;
+	/** Whether this node is reserved for some client or not */
 	private boolean reserved = false;
 	
 	public Node(NodeCluster nodeCluster, int id) {
@@ -24,6 +31,7 @@ public class Node implements Runnable {
 		this.id = id;
 	}
 	
+	/** Payload that will be run asap */
 	private volatile Runnable payload = null;
 
 	@Override
@@ -41,11 +49,18 @@ public class Node implements Runnable {
 		}
 	}
 	
+	/** Sets the new payload. This method does not check whether there is payload already running and 
+	 * setting new payload while payload is running results in indefinite behavior.
+	 * @param payload to be run
+	 */
 	public synchronized void setNewPayload(Runnable payload){
 		this.payload = payload;
 	}
 
-	public void reserve() {
+	/**
+	 * Reserves this node
+	 */
+	public synchronized void reserve() {
 		reserved = true;
 	}
 
