@@ -261,20 +261,6 @@ id
 	: Identifier
 	;
 
-superSuffix
-    :   arguments
-    |   '.' Identifier arguments?
-    ;
-
-explicitGenericInvocationSuffix
-    :   'super' superSuffix
-    |   Identifier arguments
-    ;
-
-arguments
-    :   '(' expressionList? ')'
-    ;
-
 BREAK         : 'break';
 CLASS         : 'class';
 PARENTCLASS   : 'parent class';
@@ -614,10 +600,6 @@ JavaLetterOrDigit
         [\uD800-\uDBFF] [\uDC00-\uDFFF]
         {Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
     ;
-
-
-AT : '@';
-ELLIPSIS : '...';
 
 
 WS  :  [ \t\r\n\u000C]+ -> skip

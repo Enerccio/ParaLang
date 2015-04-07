@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
@@ -16,11 +17,19 @@ import com.eclipsesource.json.WriterConfig;
 
 public class Protocol {
 
-	public static final String GET_STATUS_REQUEST  = "StatusRequest";
-	public static final String GET_STATUS_RESPONSE = "StatusResponse";
+	public static final String GET_STATUS_REQUEST    = "StatusRequest";
+	public static final String GET_STATUS_RESPONSE   = "StatusResponse";
+	public static final String RESERVE_SPOT_REQUEST  = "ReserveSpotRequest";
+	public static final String RESERVE_SPOT_RESPONSE = "ReserveSpotResponse";
 	
 	private static byte clearBit = 0x1e;
-	private static ExecutorService executor = Executors.newCachedThreadPool();
+	private static ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setDaemon(true);
+            return t;
+        }
+	});
 	
 	public static JsonObject receive(final InputStream inputStream) throws Exception {
 		int cb = -1;

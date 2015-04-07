@@ -50,7 +50,9 @@ public class PLRuntime {
 	}
 	
 	public static final PLRuntime getRuntime(){
-		return localRuntime.get();
+		PLRuntime r = localRuntime.get();
+		r.wasAccessed();
+		return r;
 	}
 	
 	private long objectIdCounter = 0;
@@ -349,6 +351,20 @@ public class PLRuntime {
 		
 		return c;
 	}
+
+	public interface RuntimeAccessListener {
+		public void wasAccessed();
+	}
+	
+	private RuntimeAccessListener runtimeAccessListener;
+	
+	private void wasAccessed() {
+		if (runtimeAccessListener != null){
+			runtimeAccessListener.wasAccessed();
+		}
+	}
+
+	
 	/*
 	 * Only serializes the actual content, not class definitions
 	 */
@@ -385,5 +401,13 @@ public class PLRuntime {
 	
 	public void setAsCurrent(){
 		localRuntime.set(this);
+	}
+
+	public RuntimeAccessListener getRuntimeAccessListener() {
+		return runtimeAccessListener;
+	}
+
+	public void setRuntimeAccessListener(RuntimeAccessListener runtimeAccessListener) {
+		this.runtimeAccessListener = runtimeAccessListener;
 	}
 }

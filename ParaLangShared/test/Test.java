@@ -1,7 +1,5 @@
 import java.net.Socket;
 
-import org.apache.commons.io.IOUtils;
-
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.WriterConfig;
 
@@ -14,16 +12,26 @@ public class Test {
 		
 		Socket s = new Socket("localhost", 12345);
 		
-		byte[] arr = { 0x1e, 0x00, 0x00, 0x00, 0x02, '{' };
-		IOUtils.write(arr, s.getOutputStream());
-		
 		JsonObject o = new JsonObject();
 		o.add("header", Protocol.GET_STATUS_REQUEST);
 		Protocol.send(s.getOutputStream(), o);
 		
 		System.out.println(Protocol.receive(s.getInputStream()).toString(WriterConfig.PRETTY_PRINT));
-		s.close();
 		
+		o = new JsonObject();
+		o.add("header", Protocol.RESERVE_SPOT_REQUEST);
+		Protocol.send(s.getOutputStream(), o);
+		
+		System.out.println(Protocol.receive(s.getInputStream()).toString(WriterConfig.PRETTY_PRINT));
+		
+		o = new JsonObject();
+		o.add("header", Protocol.GET_STATUS_REQUEST);
+		Protocol.send(s.getOutputStream(), o);
+		
+		System.out.println(Protocol.receive(s.getInputStream()).toString(WriterConfig.PRETTY_PRINT));
+		
+		
+		s.close();
 //		File f = new File("bin\\x.plang");
 //		PLCompiler c = new PLCompiler();
 //		

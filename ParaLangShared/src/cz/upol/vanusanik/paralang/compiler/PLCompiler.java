@@ -2,8 +2,6 @@ package cz.upol.vanusanik.paralang.compiler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -187,7 +185,6 @@ public class PLCompiler {
 
 		cache = new HashMap<String, Integer>();
 		String className = moduleName;
-		File output = new File(in.getOutputDir(), className + ".class");
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.MODULE_BASE_CLASS));
@@ -265,9 +262,7 @@ public class PLCompiler {
 			
 		}.compileMethod();
 		
-		varStack.popStack(); // pop class variables
-
-		cls.toBytecode(new DataOutputStream(new FileOutputStream(output)));
+		varStack.popStack(); // pop class variable
 		
 		Class<?> klazz = cls.toClass(getClassLoader(), null);
 		
@@ -282,7 +277,6 @@ public class PLCompiler {
 		
 		cache = new HashMap<String, Integer>();
 		String className = moduleName + "$" + classDeclaration.children.get(1).getText();
-		File output = new File(in.getOutputDir(), className + ".class");
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.CLASS_BASE_CLASS));
@@ -359,8 +353,6 @@ public class PLCompiler {
 		}.compileMethod();		
 		
 		varStack.popStack(); // pop class variables
-		
-		cls.toBytecode(new DataOutputStream(new FileOutputStream(output)));
 		return cls.toClass(getClassLoader(), null);
 	}
 
