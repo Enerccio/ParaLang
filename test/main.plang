@@ -3,7 +3,10 @@ using IO;
 module Main {
     
     restricted calculate(a, b){
-        IO.out.println(a + b);
+        if (a < b)
+            IO.out.println(a + b);
+        else
+            IO.out.println(a - b);
     }
     
 };

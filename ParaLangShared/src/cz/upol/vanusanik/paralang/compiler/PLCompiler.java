@@ -141,17 +141,28 @@ public class PLCompiler {
 		return parser.compilationUnit();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void compileModule(CompilationUnitContext ctx, FileDesignator in) throws Exception{
+		
+//		ClassVisitor cl =new ClassVisitor(Opcodes.ASM4) {
+//			@Override
+//            public MethodVisitor visitMethod(int access, String name,
+//                    String desc, String signature, String[] exceptions) {
+//                System.out.println("Method: "+name+" "+desc);
+//                return super.visitMethod(access, name, desc, signature, exceptions);
+//            }
+//		};
 		
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
-				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 				
+				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 			}
 		}
 		
-		compileModuleClass(ctx, in);
+		Class<?> klazz = compileModuleClass(ctx, in);
+		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
 	}
 	
 	private int counter;
@@ -175,8 +186,7 @@ public class PLCompiler {
 	}
 	private List<BlockDescription> distributed = new ArrayList<BlockDescription>();
 	
-	@SuppressWarnings("unchecked")
-	private void compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
+	private Class<?> compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
 		String moduleName = ctx.moduleDeclaration().children.get(1).getText();
 		compilingClass = false;
 		distributed.clear();
@@ -265,8 +275,8 @@ public class PLCompiler {
 		varStack.popStack(); // pop class variable
 		
 		Class<?> klazz = cls.toClass(getClassLoader(), null);
-		
-		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
+
+		return klazz;
 	}
 	
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
@@ -1989,6 +1999,7 @@ public class PLCompiler {
 			at.getAttributes().add(lineNubmerInfo);
 			
 			m.getMethodInfo().setCodeAttribute(at);
+			m.getMethodInfo().rebuildStackMap(cp);
 			
 			//InstructionPrinter.print(m, System.err);
 			

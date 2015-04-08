@@ -1,0 +1,100 @@
+import cz.upol.vanusanik.paralang.runtime.wrappers.PLangHashSet;
+import cz.upol.vanusanik.paralang.runtime.wrappers.PLangList;
+
+module Collections {
+
+	class HashSet {
+		var wrappedSet;
+	
+		init(){
+			inst.wrappedSet = PLangHashSet->PLangHashSet();
+		}
+		
+		restricted insert(o){
+			wrappedSet->insert(o);
+		}
+		
+		push(o){
+			var set = new HashSet();
+			wrappedSet->push(o, set.wrappedSet);
+			return set;
+		}
+		
+		contains(o){
+			return wrappedSet->contains(o);
+		}
+		
+		restricted remove(o){
+			return wrappedSet->remove(o);
+		}
+		
+		restricted clear(){
+			wrappedSet->clear();
+		}
+		
+		size(){
+			return wrappedSet->size();
+		}
+		
+		__str(){
+			return wrappedSet;
+		}
+	}
+	
+	class List {
+		var wrappedList;
+		
+		init(){
+			wrappedList = PLangList->PLangList();
+		}
+		
+		restricted add(o){
+			return wrappedList->add(o);
+		}
+		
+		append(o){
+			var list = new List();
+			wrappedList->append(o, list.wrappedList);
+			return list;
+		}
+		
+		restricted insert(o, index){
+			return wrappedList->insert(o);
+		}
+		
+		appendAt(o, index){
+			var list = new List();
+			wrappedList->appendAt(o, index, list.innerList);
+			return list;
+		}
+		
+		restricted remove(o){
+			return wrappedList->remove(o);
+		}
+		
+		restricted removeAt(o){
+			return wrappedList->removeAt(o);
+		}
+		
+		get(index){
+			return wrappedList->get(index);
+		}
+		
+		find(o){
+			return wrappedList->find(o);
+		}
+		
+		restricted clear(){
+			wrappedList->clear();
+		}
+		
+		size(){
+			return wrappedList->size();
+		}
+	
+		__str(){
+			return wrappedList;
+		}
+	}
+
+};
