@@ -1,23 +1,28 @@
 package cz.upol.vanusanik.paralang.runtime;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.Collection;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
-import org.apache.commons.io.DirectoryWalker;
+import org.apache.commons.io.IOUtils;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -26,6 +31,7 @@ import com.eclipsesource.json.WriterConfig;
 import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
 import cz.upol.vanusanik.paralang.compiler.FileDesignator;
 import cz.upol.vanusanik.paralang.compiler.PLCompiler;
+import cz.upol.vanusanik.paralang.compiler.StringDesignator;
 import cz.upol.vanusanik.paralang.connector.NetworkProvider;
 import cz.upol.vanusanik.paralang.connector.NetworkResult;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
@@ -39,6 +45,7 @@ public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
 	private static final HashMap<String, Class<? extends PLClass>> __SYSTEM_CLASSES = new HashMap<String, Class<? extends PLClass>>();
 	public static final Map<String, Class<? extends PLClass>> SYSTEM_CLASSES = Collections.synchronizedMap(Collections.unmodifiableMap(__SYSTEM_CLASSES));
+	private final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 	
 	static {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
@@ -126,6 +133,7 @@ public class PLRuntime {
 		return uuidMap.get(fqName);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void initialize(boolean miniinit){
 		setSafeContext(true);
 		setRestricted(false);
@@ -137,39 +145,57 @@ public class PLRuntime {
 		}
 		
 		if (!miniinit){
-			final List<File> fList = new ArrayList<File>();
-			final File f = new File("plang//");
-			new DirectoryWalker<File>(){
-				public void doIt(){
-					try {
-						walk(f, fList);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+			String path = "plang";
+			if(jarFile.isFile()) {  
+			    JarFile jar = null;
+				try {
+					jar = new JarFile(jarFile);
+				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
-				
-				protected boolean handleDirectory(File directory, int depth, Collection<File> results) {
-					results.add(directory);
-				    return true;
+			    final Enumeration<JarEntry> entries = jar.entries(); 
+			    while(entries.hasMoreElements()) {
+			    	JarEntry e = entries.nextElement();
+			        String name = e.getName();
+			        if (name.startsWith(path + "/")) { //filter according to the path
+			            try {
+							InputStream is = jar.getInputStream(jar.getEntry(name));
+							StringDesignator sd = new StringDesignator();
+							sd.setSource(name.replace(path + "/", ""));
+							sd.setClassDef(IOUtils.toString(is, "utf-8"));
+							compileSource(sd);
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+			        }
+			    }
+			    try {
+					jar.close();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-			}.doIt();
-			
-			for (File ffd : fList){
-				for (File ff : ffd.listFiles(new FileFilter(){
-
-					@Override
-					public boolean accept(File pathname) {
-						return pathname.getName().endsWith(".plang");
-					}
-					
-				})){
-					try {
-						compileSource(new DiskFileDesignator(ff));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+			} else { // Run with IDE
+			    URL url = null;
+				try {
+					url = new File(Paths.get("").toFile().getAbsolutePath(), "plang").toURL();
+				} catch (MalformedURLException e1) {
+					e1.printStackTrace();
 				}
-			}	
+			    if (url != null) {
+			        try {
+			            final File ffs = new File(url.toURI());
+			            for (File ff : ffs.listFiles()) {
+			            	try {
+								compileSource(new DiskFileDesignator(ff));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+			            }
+			        } catch (URISyntaxException ex) {
+			            // never happens
+			        }
+			    }
+			}
 		}
 		
 		setSafeContext(false);

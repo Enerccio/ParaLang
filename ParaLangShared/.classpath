@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="src" path="plang/core"/>
+	<classpathentry kind="src" path="plang"/>
 	<classpathentry kind="lib" path="lib/antlr-4.5-complete.jar"/>
 	<classpathentry kind="lib" path="lib/javassist.jar" sourcepath="/javassist/src/main"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.3.2.jar">
