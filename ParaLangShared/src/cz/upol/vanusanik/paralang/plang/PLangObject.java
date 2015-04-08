@@ -11,7 +11,7 @@ public abstract class PLangObject extends RuntimeException {
 
 	public abstract PlangObjectType ___getType();
 	
-	public abstract JsonValue ___toObject(long previousTime);
+	public abstract JsonValue ___toObject();
 	
 	public abstract boolean ___isNumber();
 	

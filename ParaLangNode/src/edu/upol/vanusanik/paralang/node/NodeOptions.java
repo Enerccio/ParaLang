@@ -1,5 +1,7 @@
 package edu.upol.vanusanik.paralang.node;
 
+import java.io.File;
+
 import com.beust.jcommander.Parameter;
 
 /**
@@ -17,4 +19,10 @@ public class NodeOptions {
 
 	@Parameter(names = {"-cst", "--cache-store-duration"}, description="Amount of time the cache is kept. Default 3600000 (in ms)")
 	public Long cacheStoreTime = 3600L;
+	
+	@Parameter(names = {"-n", "--nodes"}, description = "List of nodes in <address>:<port>; format in single \"\" string")
+	public String nodes = "";
+	
+	@Parameter(names = {"-nl", "--node-list"}, description = "File containing node list")
+	public File nodeListFile;
 }

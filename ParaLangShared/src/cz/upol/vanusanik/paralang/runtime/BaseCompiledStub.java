@@ -1,10 +1,7 @@
 package cz.upol.vanusanik.paralang.runtime;
 
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -14,42 +11,18 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
-public abstract class BaseCompiledStub extends PLangObject implements ContainerChangeAware {
+public abstract class BaseCompiledStub extends PLangObject {
 	private static final long serialVersionUID = -2885702496818908285L;
 	protected Map<String, PLangObject> ___fieldsAndMethods;
-	private Map<String, Long> ___fieldModificationMap = new HashMap<String, Long>();
-	private Map<PLangObject, Set<String>> ___reverseMapLookup = new HashMap<PLangObject, Set<String>>(){
-
-		private static final long serialVersionUID = 455190760365806731L;
-
-		@Override
-		public synchronized Set<String> get(Object key) {
-			if (!containsKey(key))
-				put((PLangObject) key, new HashSet<String>());
-			return super.get(key);
-		}
-		
-	};
-	private Set<ContainerChangeAware> ___containers = new HashSet<ContainerChangeAware>();
-	private final long __objectId;
+	public long ___objectId;
 	protected boolean ___restrictedOverride = false;
 	
 	protected BaseCompiledStub(){
-		__objectId = PLRuntime.getRuntime().registerObject(this);
+		___objectId = PLRuntime.getRuntime().registerObject(this);
 	}
 	
 	public long ___getObjectId(){
-		return __objectId;
-	}
-	
-	@Override
-	public void ___decouple(ContainerChangeAware coupler){
-		___containers.remove(coupler);
-	}
-	
-	@Override
-	public void ___couple(ContainerChangeAware coupler){
-		___containers.add(coupler);
+		return ___objectId;
 	}
 	
 	protected PLRuntime ___get_runtime(){
@@ -90,57 +63,13 @@ public abstract class BaseCompiledStub extends PLangObject implements ContainerC
 		
 		if (!___restrictedOverride)
 			PLRuntime.getRuntime().checkRestrictedAccess();
-		
-		if (___fieldsAndMethods.containsKey(key)){
-			PLangObject oldValue = ___fieldsAndMethods.remove(key);
-			if (oldValue instanceof ContainerChangeAware)
-				((ContainerChangeAware) oldValue).___decouple(this);
-			___reverseMapLookup.get(oldValue).remove(key);
-			if (___reverseMapLookup.get(oldValue).size() == 0)
-				___reverseMapLookup.remove(oldValue);
-		}
+
 		___fieldsAndMethods.put(key, var);
-		if (var instanceof ContainerChangeAware)
-			((ContainerChangeAware) var).___couple(this);
-		___reverseMapLookup.get(var).add(key);
 		
-		___markModified(key);
-		___propagateChanges();
-	}
-
-	private void ___markModified(String key) {
-		if (___fieldModificationMap.containsKey(key))
-			___fieldModificationMap.remove(key);
-		___fieldModificationMap.put(key, new Long(new Date().getTime()));
-	}
-
-	public void __update(ContainerChangeAware changed) {
-		for (String key : ___reverseMapLookup.get(changed)){
-			___markModified(key);
-		}
-		___propagateChanges();
-	}
-
-	private static final ThreadLocal<Set<Object>> traversalChainSet = new ThreadLocal<Set<Object>>(){
-
-		@Override
-		protected Set<Object> initialValue() {
-			return new HashSet<Object>();
-		}
-		
-	};
-	
-	private void ___propagateChanges() {
-		if (traversalChainSet.get().contains(this))
-			return;
-		traversalChainSet.get().add(this);
-		for (ContainerChangeAware owner : ___containers)
-			owner.__update(this);
-		traversalChainSet.get().remove(this);
 	}
 	
 	@Override
-	public JsonValue ___toObject(long previousTime) {
+	public JsonValue ___toObject() {
 		PLRuntime runtime = PLRuntime.getRuntime();
 		JsonObject metaData = new JsonObject().add("metaObjectType", ___getType().toString());
 		if (runtime.isAlreadySerialized(this)){
@@ -151,25 +80,22 @@ public abstract class BaseCompiledStub extends PLangObject implements ContainerC
 			metaData.add("isBaseClass", false)
 					.add("link", false)
 					.add("isInited", ___isInited)
-					.add("modifiedFrom", previousTime)
 					.add("thisLink", ___getObjectId())
 					.add("className", getClass().getSimpleName())
-					.add("modifiedFromFields", ___getDeltaFields(previousTime));
+					.add("fields", ___getFields());
 		}
 		return metaData;
 	}
 
-	private JsonArray ___getDeltaFields(long previousTime) {
+	private JsonArray ___getFields() {
 		JsonArray array = new JsonArray();
-		for (String field : ___fieldModificationMap.keySet()){
-			if (___fieldModificationMap.get(field) > previousTime){
-				JsonObject f = new JsonObject();
-				
-				f.add("fieldName", field);
-				f.add("fieldValue", ___fieldsAndMethods.get(field).___toObject(previousTime));
-				
-				array.add(f);
-			}
+		for (String field : ___fieldsAndMethods.keySet()){
+			JsonObject f = new JsonObject();
+			
+			f.add("fieldName", field);
+			f.add("fieldValue", ___fieldsAndMethods.get(field).___toObject());
+			
+			array.add(f);
 		}
 		return array;
 	}

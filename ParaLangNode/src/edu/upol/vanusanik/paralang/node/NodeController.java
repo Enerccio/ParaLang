@@ -1,13 +1,10 @@
 package edu.upol.vanusanik.paralang.node;
 
-import java.lang.ref.SoftReference;
+import java.io.FileInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,9 +14,11 @@ import com.beust.jcommander.JCommander;
 import com.eclipsesource.json.JsonObject;
 
 import cz.upol.vanusanik.paralang.compiler.StringDesignator;
+import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.connector.Protocol;
+import cz.upol.vanusanik.paralang.plang.PLangObject;
+import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
-import cz.upol.vanusanik.paralang.runtime.PLRuntime.RuntimeAccessListener;
 
 /**
  * NodeController is main class of the ParaLang Node. 
@@ -37,7 +36,12 @@ public class NodeController {
 		NodeOptions no = new NodeOptions();
 		new JCommander(no, args);
 		
-		new NodeController().start(no);
+		NodeController nc = new NodeController();
+		try {
+			nc.start(no);
+		} finally {
+			nc.service.shutdown();
+		}
 	}
 	
 	/**
@@ -56,38 +60,12 @@ public class NodeController {
 	 * @author Enerccio
 	 *
 	 */
-	public class RuntimeStoreContainer implements RuntimeAccessListener {
-		/** Last access time. Used by RuntimeMemoryCleaningThread to determine whether the cache should be purged or not */
-		public volatile long lastAccessTime;
-		/** This runtime's last modification time, as per client's specifications. Used to send over when requesting delta of the runtime changes.*/
-		public volatile long lastModificationTime;
-		
+	public static class RuntimeStoreContainer {
 		/** Source files before compilation are stored here */
 		public List<StringDesignator> sources = new ArrayList<StringDesignator>();
 		/** Actual runtime handle is stored here */
 		public PLRuntime runtime;
-		
-		private boolean invalidated = false;
-		@Override
-		public synchronized void wasAccessed() {
-			if (invalidated) return;
-			lastAccessTime = System.currentTimeMillis();
-		}
-		
-		/**
-		 * Sets the lastAccessTime to 0 which in turn will make this available for reclamation in memory cleaning thread
-		 */
-		public synchronized void invalidate(){
-			invalidated = true;
-			lastAccessTime = 0;
-		}
 	}
-	
-	
-	/**
-	 * Contains soft references to RuntimeStoreContainer for particular uuid hash. Might disappear when gc'ed.
-	 */
-	private HashMap<String, SoftReference<RuntimeStoreContainer>> cache = new HashMap<String, SoftReference<RuntimeStoreContainer>>();
 
 	/**
 	 * Starts this node controller instance server, will start to accept the incoming requests.
@@ -119,7 +97,7 @@ public class NodeController {
 					} finally {
 						NodeLocalStorage local = localStorage.get();
 						localStorage.set(null);
-						if (local.reservedNode != null)
+						if (local != null && local.reservedNode != null)
 							local.reservedNode.release();
 					}
 				}
@@ -137,6 +115,8 @@ public class NodeController {
 	private class NodeLocalStorage {
 		/** Node that this client has reserved, if any */
 		public Node reservedNode;
+		public RuntimeStoreContainer runtime;
+		public PLangObject exception;
 	}
 	
 	/** NodeLocalStorage is stored in this thread local */
@@ -160,7 +140,98 @@ public class NodeController {
 			resolveStatusRequest(s, m);
 		if (m.getString("header", "").equals(Protocol.RESERVE_SPOT_REQUEST))
 			resolveReserveSpotRequest(s, m);
+		if (m.getString("header", "").equals(Protocol.RUN_CODE))
+			resolveRunCode(s, m);
 		return false;
+	}
+
+	private void resolveRunCode(Socket s, JsonObject m) throws Exception {
+		JsonObject payload = new JsonObject();
+		payload.add("header", Protocol.RETURNED_EXECUTION);
+		
+		final NodeLocalStorage storage = localStorage.get();
+		if (storage.reservedNode == null) {
+			sendError(s, payload, Protocol.ERROR_NO_RESERVED_NODE, "No reserved node for this client");
+			return;
+		}
+		
+		final JsonObject input = m.get("payload").asObject();
+		
+		storage.runtime = new RuntimeStoreContainer();
+		JsonObject sources = input.get("runtimeFiles").asObject();
+		for (String name : sources.names()){
+			StringDesignator sd = new StringDesignator();
+			sd.setSource(name);
+			sd.setClassDef(sources.getString(name, ""));
+			storage.runtime.sources.add(sd);
+		}
+		storage.runtime.runtime = new PLRuntime();
+		storage.runtime.runtime.prepareForDeserialization(input.get("runtimeData").asObject().get("serialVersionUIDs").asArray());
+		for (StringDesignator sd : storage.runtime.sources){
+			try {
+				storage.runtime.runtime.compileSource(sd);
+			} catch (Exception e){
+				sendError(s, payload, Protocol.ERROR_COMPILATION_FAILURE, sd.getSource());
+				storage.runtime = null;
+				return;
+			}
+		}
+		try {
+			storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray());
+		} catch (Exception e){
+			sendError(s, payload, Protocol.ERROR_DESERIALIZATION_FAILURE, e.getMessage());
+			storage.runtime = null;
+			return;
+		}
+		
+		storage.runtime.runtime.setRestricted(true);
+		storage.exception = null;
+		
+		RunnablePayload<PLangObject> run = new RunnablePayload<PLangObject>(){
+
+			@Override
+			protected PLangObject executePayload() {
+
+				try {
+					storage.runtime.runtime.setAsCurrent();
+					return storage.runtime.runtime.runByObjectId(input.getLong("runnerId", 0), input.getString("methodName", ""), new Int(input.getInt("id", 0)));	
+				} catch (PLangObject e){
+					storage.exception = e;
+					return null;
+				}
+			}
+			
+		};
+		
+		storage.reservedNode.setNewPayload(run);
+		
+		while (!run.hasFinished()){
+			Thread.sleep(10);
+		}
+		
+		PLangObject result = run.getResult();
+		
+		JsonObject p = new JsonObject();
+		if (result != null){
+			p.add("hasResult", true);
+			p.add("result", result.___toObject());
+		} else {
+			p.add("hasResult", false);
+			p.add("exception", storage.exception.___toObject());
+		}
+		
+		payload.add("payload", p);
+		
+		localStorage.set(null);
+		
+		Protocol.send(s.getOutputStream(), payload);
+	}
+
+	private void sendError(Socket s, JsonObject payload, long ecode, String dmesg) throws Exception {
+		payload.add("error", true);
+		payload.add("errorCode", ecode);
+		payload.add("errorDetails", dmesg);
+		Protocol.send(s.getOutputStream(), payload);
 	}
 
 	/**
@@ -224,6 +295,21 @@ public class NodeController {
 		service = Executors.newCachedThreadPool();
 		options = no;
 		cluster = new NodeCluster(no.threadCount);
+		
+
+		if (no.nodeListFile != null){
+			FileInputStream fis = new FileInputStream(no.nodeListFile);
+			NodeList.loadFile(fis);
+			fis.close();
+		}
+		
+		String[] parsedNodes = no.nodes.split(";");
+		for (String s : parsedNodes){
+			if (!s.equals("")){
+				String[] datum = s.split(":");
+				NodeList.addNode(datum[0], Integer.parseInt(datum[1]));
+			}
+		}
 	}
 	
 }

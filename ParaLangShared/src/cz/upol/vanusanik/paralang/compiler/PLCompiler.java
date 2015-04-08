@@ -69,7 +69,6 @@ public class PLCompiler {
 	
 	private Map<String, Reference> referenceMap = new HashMap<String, Reference>();
 	private boolean restrictions = true;
-	private ClassLoader classLoader;
 	private String source;
 	private String moduleName;
 	
@@ -191,7 +190,8 @@ public class PLCompiler {
 		compilingClass = false;
 		distributed.clear();
 		
-		cp = ClassPool.getDefault();
+		cp = new ClassPool();
+		cp.appendSystemPath();
 
 		cache = new HashMap<String, Integer>();
 		String className = moduleName;
@@ -283,7 +283,8 @@ public class PLCompiler {
 		compilingClass = true;
 		distributed.clear();
 		
-		cp = ClassPool.getDefault();
+		cp = new ClassPool();
+		cp.appendSystemPath();
 		
 		cache = new HashMap<String, Integer>();
 		String className = moduleName + "$" + classDeclaration.children.get(1).getText();
@@ -2018,13 +2019,7 @@ public class PLCompiler {
 	}
 
 	public ClassLoader getClassLoader() {
-		if (classLoader == null)
-			setClassLoader(Thread.currentThread().getContextClassLoader());
-		return classLoader;
-	}
-
-	public void setClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+		return PLRuntime.getRuntime().getClassLoader();
 	}
 
 	private void markLine(int pc, int line) throws Exception{

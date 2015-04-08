@@ -44,7 +44,9 @@ public class Node implements Runnable {
 				reserved = false;
 				payload = null;
 			} catch (Exception e){
-				log.error(e.getMessage());
+				payload = null;
+				reserved = false;
+				log.error(e, e);
 			}
 		}
 	}

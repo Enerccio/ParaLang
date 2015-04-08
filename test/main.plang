@@ -1,12 +1,23 @@
 using IO;
 
 module Main {
-    
+    var aa, bb, cc, d;
     restricted calculate(a, b){
-        if (a < b)
-            IO.out.println(a + b);
-        else
-            IO.out.println(a - b);
+        aa = a;
+        bb = b;
+        cc = new Integer(4);
+        d = 4.8;
+        var result = (dist (6) { 
+            return doCalculate(run_id, aa, bb, cc); 
+        });
+        IO.out.println(result);
+    }
+    
+    doCalculate(x, a, b, c){
+        return new Float(x + 
+            a + b + 
+                     c  
+                  +  d);
     }
     
 };

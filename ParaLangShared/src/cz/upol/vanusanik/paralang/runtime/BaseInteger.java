@@ -1,8 +1,5 @@
 package cz.upol.vanusanik.paralang.runtime;
 
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
-
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
@@ -22,23 +19,16 @@ public class BaseInteger extends BaseNumber {
 		if (!iv.___isNumber()){
 			throw new RuntimeException("Value " + iv + " is not a number!");
 		}
+		this.___restrictedOverride = true;
 		___setkey(__valKey, new Int(iv.___getNumber(iv).intValue()));
 		___setkey(Operator.UBINNEG.classMethod, new FunctionWrapper("__ubn_base", this, true));
+		this.___restrictedOverride = false;
 		
 		return NoValue.NOVALUE;
 	}
 	
 	public PLangObject __ubn_base(PLangObject self){
 		return asObject(TypeOperations.ubneg(((PLClass)self).___getkey(__valKey)));
-	}
-	
-	@Override
-	public JsonValue ___toObject(long previousTime) {
-		JsonObject metaData = new JsonObject().add("metaObjectType", ___getType().toString());
-		metaData.add("isBaseClass", true)
-				.add("baseClassType", "INTEGER")
-				.add("value", ___getNumber(this).intValue());
-		return metaData;
 	}
 	
 	@Override

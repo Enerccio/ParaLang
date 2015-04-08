@@ -53,7 +53,7 @@ public class Int extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public JsonValue ___toObject(long previousTime) {
+	public JsonValue ___toObject() {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}

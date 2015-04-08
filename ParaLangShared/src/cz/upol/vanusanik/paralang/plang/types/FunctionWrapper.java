@@ -148,11 +148,11 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	}
 	
 	@Override
-	public JsonValue ___toObject(long previousTime) {
+	public JsonValue ___toObject() {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", new JsonObject()
 					.add("methodName", methodName)
-					.add("owner", owner.___toObject(previousTime))
+					.add("owner", owner.___toObject())
 					.add("isClassMethod", isMethod));
 	}
 	

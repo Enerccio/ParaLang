@@ -1,11 +1,14 @@
 package cz.upol.vanusanik.paralang.runtime;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -23,10 +26,12 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.eclipsesource.json.WriterConfig;
 
 import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
@@ -36,26 +41,38 @@ import cz.upol.vanusanik.paralang.compiler.StringDesignator;
 import cz.upol.vanusanik.paralang.connector.NetworkExecutionResult;
 import cz.upol.vanusanik.paralang.connector.Node;
 import cz.upol.vanusanik.paralang.connector.NodeList;
+import cz.upol.vanusanik.paralang.connector.Protocol;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
+import cz.upol.vanusanik.paralang.plang.types.Flt;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
+import cz.upol.vanusanik.paralang.plang.types.Int;
+import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
 import cz.upol.vanusanik.paralang.plang.types.Str;
+import cz.upol.vanusanik.paralang.runtime.wrappers.PLangList;
 
 public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
 	private static final HashMap<String, Class<? extends PLClass>> __SYSTEM_CLASSES = new HashMap<String, Class<? extends PLClass>>();
+	private static final HashMap<String, String> __SYSTEM_CLASSES_N = new HashMap<String, String>();
 	public static final Map<String, Class<? extends PLClass>> SYSTEM_CLASSES = Collections.synchronizedMap(Collections.unmodifiableMap(__SYSTEM_CLASSES));
 	private final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 	
 	static {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
+		__SYSTEM_CLASSES_N.put("BaseClass", "BaseClass");
 		__SYSTEM_CLASSES.put("BaseException", BaseException.class);
+		__SYSTEM_CLASSES_N.put("BaseException", "BaseException");
 		__SYSTEM_CLASSES.put("NetworkException", NetworkException.class);
+		__SYSTEM_CLASSES_N.put("NetworkException", "NetworkException");
 		__SYSTEM_CLASSES.put("Function", Function.class);
+		__SYSTEM_CLASSES_N.put("Function", "Function");
 		__SYSTEM_CLASSES.put("Integer", BaseInteger.class);
+		__SYSTEM_CLASSES_N.put("BaseInteger", "Integer");
 		__SYSTEM_CLASSES.put("Float", BaseFloat.class);
+		__SYSTEM_CLASSES_N.put("BaseFloat", "Float");
 	}
 	
 	public static final PLRuntime getRuntime(){
@@ -66,8 +83,12 @@ public class PLRuntime {
 	
 	private long objectIdCounter = 0;
 	
+	private Map<Long, BaseCompiledStub> instanceInternalMap = new HashMap<Long, BaseCompiledStub>();
+	
 	public long registerObject(BaseCompiledStub object){
-		return objectIdCounter++;
+		long id = objectIdCounter++;
+		instanceInternalMap.put(id, object);
+		return id;
 	}
 
 	private ParalangClassLoader classLoader = new ParalangClassLoader();
@@ -84,12 +105,10 @@ public class PLRuntime {
 	
 	public PLRuntime(){		
 		initialize(false);
-		compiler.setClassLoader(classLoader);
 	}
 	
 	PLRuntime(boolean miniinit){		
 		initialize(miniinit);
-		compiler.setClassLoader(classLoader);
 	}
 	
 	public static PLRuntime createEmptyRuntime(){
@@ -141,7 +160,7 @@ public class PLRuntime {
 			registerClass("System", cn, SYSTEM_CLASSES.get(cn));	
 		}
 		
-		if (!miniinit){
+		{
 			String path = "plang";
 			if(jarFile.isFile()) {  
 			    JarFile jar = null;
@@ -195,6 +214,7 @@ public class PLRuntime {
 			}
 		}
 		
+		moduleSourceMap.clear();
 		setSafeContext(false);
 	}
 	
@@ -209,8 +229,12 @@ public class PLRuntime {
 	}
 	
 	public PLClass newInstance(String fqname, boolean skipInit, PLangObject... inits){
+		if (__SYSTEM_CLASSES_N.containsKey(fqname)){
+			return newInstance("System."+__SYSTEM_CLASSES_N.get(fqname), skipInit, inits);
+		}
 		String[] components = fqname.split("\\.");
-		if (components.length != 2) throw new RuntimeException("Malformed name of the class!");
+		if (components.length != 2) 
+			throw new RuntimeException("Malformed name of the class!");
 		if (!classMap.containsKey(components[0])) throw new RuntimeException("Unknown module!");
 		if (!classMap.get(components[0]).containsKey(components[1])) throw new RuntimeException("Unknown class!");
 		try {
@@ -228,13 +252,18 @@ public class PLRuntime {
 	}
 	
 	public PLModule getModule(String moduleName){
+		return getModule(moduleName, false);
+	}
+	
+	public PLModule getModule(String moduleName, boolean skipInit){
 		if (!moduleMap.containsKey(moduleName)){
 			if (!preloadedModuleMap.containsKey(moduleName))
 				throw new RuntimeException("Module load failed: No such module " + moduleName);
 			try {
 				PLModule module = preloadedModuleMap.get(moduleName).newInstance();
 				moduleMap.put(moduleName, module);
-				run(moduleName, "init");
+				if (!skipInit)
+					run(moduleName, "init");
 			} catch (Exception e) {
 				if (e instanceof RuntimeException)
 					throw (RuntimeException)e;
@@ -362,14 +391,16 @@ public class PLRuntime {
 			throw newInstance("System.BaseException", new Str("Incorrect number of run count, expected positive integer"));
 		
 		PLClass c = newInstance("Collections.List");
+		List<PLangObject> data = ((PLangList)((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer()).___innerList();
 		
 		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), methodName, tcount);
-		if (r.exception != null){
-			NetworkException e = (NetworkException) newInstance("System.NetworkException", new Str("Failed distributed network call because of remote exception"));
-			e.initCause(r.exception);
+		if (r.hasExceptions()){
+			NetworkException e = (NetworkException) newInstance("System.NetworkException", new Str("Failed distributed network call because of remote exception(s)"));
+			for (PLangObject o : r.exceptions)
+				data.add(o);
+			e.___setkey(NetworkException.listKey, c);
 			throw e;
 		} else {
-			List<PLangObject> data = ((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer();
 			for (PLangObject o : r.results)
 				data.add(o);
 		}
@@ -377,12 +408,14 @@ public class PLRuntime {
 		return c;
 	}
 
-	private NetworkExecutionResult executeDistributed(long ___getObjectId,
-			String methodName, int tcount) {
+	private NetworkExecutionResult executeDistributed(final long ___getObjectId,
+			final String methodName, int tcount) {
 		
 		List<Thread> tList = new ArrayList<Thread>();
 		final NetworkExecutionResult result = new NetworkExecutionResult();
 		result.results = new PLangObject[tcount];
+		result.exceptions = new PLangObject[tcount];
+		final JsonObject serializedRuntimeContent = serializeRuntimeContent();
 		
 		final List<Node> nodes = NodeList.getBestLoadNodes(tcount);
 		
@@ -392,7 +425,7 @@ public class PLRuntime {
 
 				@Override
 				public void run() {
-					handleDistributedCall(tId, result, nodes.get(tId));
+					handleDistributedCall(tId, result, nodes.get(tId), ___getObjectId, methodName, serializedRuntimeContent);
 				}
 				
 			}));
@@ -411,18 +444,85 @@ public class PLRuntime {
 		return result;
 	}
 
-	protected void handleDistributedCall(int tId, NetworkExecutionResult result, Node node) {
+	protected void handleDistributedCall(int tId, NetworkExecutionResult result, Node node, long oid, String methodName, JsonObject serializedRuntimeContent) {
 		boolean executed = false;
+		Socket s = null;
 		
 		do {
-			try {
-				// TODO
+			try {				
+				s = new Socket(node.getAddress(), node.getPort());
+				Protocol.send(s.getOutputStream(), new JsonObject().add("header", Protocol.RESERVE_SPOT_REQUEST));
+				JsonObject response = Protocol.receive(s.getInputStream());
+				
+				if (!response.getString("header", "").equals(Protocol.RESERVE_SPOT_RESPONSE))
+					continue; // bad chain reply
+				
+				if (!response.get("payload").asObject().getBoolean("result", false)){
+					node = NodeList.getRandomNode(); 
+					continue; // no reserved thread for me :(
+				}
+				
+				setAsCurrent();
+				
+				JsonObject payload = new JsonObject().add("header", Protocol.RUN_CODE)
+		     		    .add("payload", new JsonObject()
+		     		    	.add("lastModificationTime", System.currentTimeMillis())
+		     		    	.add("runtimeFiles", buildRuntimeFiles())
+		     		    	.add("runtimeData", serializedRuntimeContent)
+		     		    	.add("runnerId", oid)
+		     		    	.add("id", tId)
+		     		    	.add("methodName", methodName));
+				Protocol.send(s.getOutputStream(), payload);
+				
+				response = Protocol.receive(s.getInputStream());
+				
+				if (!response.getString("header", "").equals(Protocol.RETURNED_EXECUTION))
+					continue; // bad chain reply
+				
+				payload = response.get("payload").asObject();
+				JsonObject data;
+				if (payload.getBoolean("hasResult", false)){
+					data = payload.get("result").asObject();
+				} else {
+					data = payload.get("exception").asObject();
+				}
+				
+				Map<Long, Long> imap = new HashMap<Long, Long>();
+				buildInstanceMap(data, imap);
+				
+				PLangObject deserialized = deserialize(data, imap);
+				
+				if (payload.getBoolean("hasResult", false)){
+					result.results[tId] = deserialized;
+				} else {
+					result.exceptions[tId] = deserialized;
+				}
+				
 				executed = true;
 			} catch (Exception e){
+				e.printStackTrace();
 				node = NodeList.getRandomNode(); // Refresh node since error might have been node related
 				executed = false;
+			} finally {
+				if (s != null){
+					try {
+						s.close();
+					} catch (Exception e){
+						// ignore
+					}	
+				}
 			}
 		} while (!executed);
+	}
+
+	private JsonObject buildRuntimeFiles() {
+		JsonObject o = new JsonObject();
+		
+		for (String module : moduleSourceMap.keySet()){
+			o.add(module, moduleSourceMap.get(module));
+		}
+		
+		return o;
 	}
 
 	public interface RuntimeAccessListener {
@@ -441,7 +541,12 @@ public class PLRuntime {
 	/*
 	 * Only serializes the actual content, not class definitions
 	 */
-	public void serializeRuntimeContent(OutputStream os, long previousSerialization) throws Exception {
+	public void serializeRuntimeContent(OutputStream os) throws Exception {
+		JsonObject root = serializeRuntimeContent();
+		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
+	}
+
+	private JsonObject serializeRuntimeContent() {
 		serializedObjects.clear();
 		
 		JsonObject root = new JsonObject();
@@ -457,11 +562,114 @@ public class PLRuntime {
 		
 		for (String moduleName : moduleMap.keySet()){
 			modules.add(new JsonObject().add("moduleName", moduleName)
-					.add("module", moduleMap.get(moduleName).___toObject(previousSerialization)));
+					.add("module", moduleMap.get(moduleName).___toObject()));
 		}
 		
 		root.add("modules", modules);
-		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
+		
+		serializedObjects.clear();
+		return root;
+	}
+	
+	public void prepareForDeserialization(JsonArray uuids){
+		for (JsonValue v : uuids){
+			JsonObject o = v.asObject();
+			String name = o.getString("fullyQualifiedName", "");
+			long id = o.getLong("serialVersionUID", 0);
+			
+			uuidMap.put(name, id);
+		}
+	}
+	
+	public void deserialize(JsonArray modules) throws Exception {
+		Map<Long, Long> ridxMap = new HashMap<Long, Long>();
+		for (JsonValue v : modules){
+			buildInstanceMap(v.asObject().get("module").asObject(), ridxMap);
+		}
+		
+		for (JsonValue v : modules){
+			deserialize(v.asObject().get("module").asObject(), ridxMap);
+		}
+	}
+
+	public PLangObject deserialize(JsonObject o, Map<Long, Long> ridxMap) throws Exception {
+		PlangObjectType t = PlangObjectType.valueOf(o.getString("metaObjectType", ""));
+		
+		switch (t){
+		case BOOLEAN:
+			return BooleanValue.fromBoolean(o.getBoolean("value", false));
+		case MODULE:
+		case CLASS:
+			if (o.getBoolean("link", false)){
+				return instanceInternalMap.get(ridxMap.get(o.getLong("linkId", 0)));
+			} else {
+				BaseCompiledStub stub = instanceInternalMap.get(ridxMap.get(o.getLong("thisLink", 0)));
+				JsonArray fields = o.get("fields").asArray();
+				for (JsonValue v : fields){
+					JsonObject field = v.asObject();
+					PLangObject fieldValue = deserialize(field.get("fieldValue").asObject(), ridxMap);
+					if (fieldValue == null)
+						return null;
+					stub.___fieldsAndMethods.put(field.getString("fieldName", ""), fieldValue);
+				}
+				return stub;
+			}
+		case FLOAT:
+			return new Flt(o.getFloat("value", 0f));
+		case FUNCTION:
+			JsonObject val = o.get("value").asObject();
+			return new FunctionWrapper(val.getString("methodName", ""), (BaseCompiledStub) deserialize(val.get("owner").asObject(), ridxMap), 
+					val.getBoolean("isClassMethod", false));
+		case INTEGER:
+			return new Int(o.getInt("value", 0));
+		case JAVAOBJECT:
+			String encoded = o.getString("value", "");
+			byte[] decoded = Base64.decodeBase64(encoded);
+			ByteArrayInputStream is = new ByteArrayInputStream(decoded);
+			ObjectInputStream serstream = new ObjectInputStream(is);
+			Object value = serstream.readObject();
+			return new Pointer(value);
+		case NOVALUE:
+			return NoValue.NOVALUE;
+		case STRING:
+			return new Str(o.getString("value", ""));
+		default:
+			break;
+		
+		}
+		
+		
+		return null;
+	}
+
+	public void buildInstanceMap(JsonObject o, Map<Long, Long> ridxMap) {
+		PlangObjectType t = PlangObjectType.valueOf(o.getString("metaObjectType", ""));
+		
+		if (t == PlangObjectType.MODULE || t == PlangObjectType.CLASS){
+			if (!o.getBoolean("isBaseClass", false) && !o.getBoolean("link", false)){
+				long lid = o.getLong("thisLink", 0);
+				BaseCompiledStub stub;
+				
+				if (t == PlangObjectType.CLASS)
+					stub = newInstance(o.getString("className", "").replace("$", "."), true);
+				else
+					stub = getModule(o.getString("className", ""), true);
+				stub.___isInited = o.getBoolean("isInited", false);
+				if (stub.___isInited){
+					stub.___fieldsAndMethods = new HashMap<String, PLangObject>();
+				}
+				
+				if (ridxMap != null){
+					ridxMap.put(lid, stub.___objectId);
+				}
+				
+				JsonArray fields = o.get("fields").asArray();
+				for (JsonValue v : fields){
+					JsonObject field = v.asObject();
+					buildInstanceMap(field.get("fieldValue").asObject(), ridxMap);
+				}
+			}
+		}
 	}
 
 	public String getPackageTarget() {
@@ -482,5 +690,9 @@ public class PLRuntime {
 
 	public void setRuntimeAccessListener(RuntimeAccessListener runtimeAccessListener) {
 		this.runtimeAccessListener = runtimeAccessListener;
+	}
+
+	public PLangObject runByObjectId(long oid, String methodName, Int arg0) {
+		return run(instanceInternalMap.get(oid).___getkey(methodName), instanceInternalMap.get(oid), arg0);
 	}
 }

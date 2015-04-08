@@ -8,5 +8,9 @@
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar" sourcepath="lib/commons-io-2.4-sources.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.3.2.jar" sourcepath="lib/commons-lang3-3.3.2-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/minimal-json-0.9.3-SNAPSHOT.jar" sourcepath="lib/minimal-json-0.9.3-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="/ParaLangShared/lib/antlr-4.5-complete.jar"/>
+	<classpathentry kind="lib" path="/ParaLangShared/lib/commons-codec-1.10.jar" sourcepath="/ParaLangShared/lib/commons-codec-1.10-sources.jar"/>
+	<classpathentry kind="lib" path="/ParaLangShared/lib/commons-collections4-4.0.jar"/>
+	<classpathentry kind="lib" path="/ParaLangShared/lib/javassist.jar" sourcepath="/javassist/src/main"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

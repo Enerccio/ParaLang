@@ -72,4 +72,8 @@ public class PLangList extends ObjectBase implements Serializable {
 	public String doToString(){
 		return innerList.toString();
 	}
+
+	public List<PLangObject> ___innerList() {
+		return innerList;
+	}
 }

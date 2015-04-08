@@ -30,8 +30,9 @@ public class BooleanValue extends PLangObject implements Serializable {
 	}
 
 	@Override
-	public JsonValue ___toObject(long previousTime) {
-		return new JsonObject().add("metaObjectType", ___getType().toString())
+	public JsonValue ___toObject() {
+		return new JsonObject()
+				.add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}
 
