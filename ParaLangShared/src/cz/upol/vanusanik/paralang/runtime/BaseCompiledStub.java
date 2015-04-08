@@ -14,7 +14,7 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
-public abstract class BaseCompiledStub extends PLangObject{
+public abstract class BaseCompiledStub extends PLangObject implements ContainerChangeAware {
 	private static final long serialVersionUID = -2885702496818908285L;
 	protected Map<String, PLangObject> ___fieldsAndMethods;
 	private Map<String, Long> ___fieldModificationMap = new HashMap<String, Long>();
@@ -30,7 +30,7 @@ public abstract class BaseCompiledStub extends PLangObject{
 		}
 		
 	};
-	private Set<BaseCompiledStub> ___containers = new HashSet<BaseCompiledStub>();
+	private Set<ContainerChangeAware> ___containers = new HashSet<ContainerChangeAware>();
 	private final long __objectId;
 	protected boolean ___restrictedOverride = false;
 	
@@ -42,11 +42,13 @@ public abstract class BaseCompiledStub extends PLangObject{
 		return __objectId;
 	}
 	
-	public void ___decouple(BaseCompiledStub coupler){
+	@Override
+	public void ___decouple(ContainerChangeAware coupler){
 		___containers.remove(coupler);
 	}
 	
-	public void __couple(BaseCompiledStub coupler){
+	@Override
+	public void ___couple(ContainerChangeAware coupler){
 		___containers.add(coupler);
 	}
 	
@@ -91,15 +93,15 @@ public abstract class BaseCompiledStub extends PLangObject{
 		
 		if (___fieldsAndMethods.containsKey(key)){
 			PLangObject oldValue = ___fieldsAndMethods.remove(key);
-			if (oldValue instanceof BaseCompiledStub)
-				((BaseCompiledStub) oldValue).___decouple(this);
+			if (oldValue instanceof ContainerChangeAware)
+				((ContainerChangeAware) oldValue).___decouple(this);
 			___reverseMapLookup.get(oldValue).remove(key);
 			if (___reverseMapLookup.get(oldValue).size() == 0)
 				___reverseMapLookup.remove(oldValue);
 		}
 		___fieldsAndMethods.put(key, var);
-		if (var instanceof BaseCompiledStub)
-			((BaseCompiledStub) var).__couple(this);
+		if (var instanceof ContainerChangeAware)
+			((ContainerChangeAware) var).___couple(this);
 		___reverseMapLookup.get(var).add(key);
 		
 		___markModified(key);
@@ -112,7 +114,7 @@ public abstract class BaseCompiledStub extends PLangObject{
 		___fieldModificationMap.put(key, new Long(new Date().getTime()));
 	}
 
-	private void __update(PLangObject changed) {
+	public void __update(ContainerChangeAware changed) {
 		for (String key : ___reverseMapLookup.get(changed)){
 			___markModified(key);
 		}
@@ -132,7 +134,7 @@ public abstract class BaseCompiledStub extends PLangObject{
 		if (traversalChainSet.get().contains(this))
 			return;
 		traversalChainSet.get().add(this);
-		for (BaseCompiledStub owner : ___containers)
+		for (ContainerChangeAware owner : ___containers)
 			owner.__update(this);
 		traversalChainSet.get().remove(this);
 	}

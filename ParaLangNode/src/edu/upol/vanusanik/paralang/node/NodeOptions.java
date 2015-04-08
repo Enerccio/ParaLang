@@ -1,4 +1,4 @@
-package edu.upol.vanusanik.node;
+package edu.upol.vanusanik.paralang.node;
 
 import com.beust.jcommander.Parameter;
 

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -13,9 +15,10 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.runtime.ContainerChangeAware;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
-public class Pointer extends PLangObject implements Serializable {
+public class Pointer extends PLangObject implements ContainerChangeAware, Serializable {
 	private static final long serialVersionUID = -4564277494396267580L;
 
 	public Pointer(){
@@ -28,7 +31,7 @@ public class Pointer extends PLangObject implements Serializable {
 			throw new RuntimeException("Not serializable...");
 	}
 
-	Object value;
+	private Object value;
 	
 	@Override
 	public PlangObjectType ___getType() {
@@ -86,6 +89,8 @@ public class Pointer extends PLangObject implements Serializable {
 					return (PLangObject) m.invoke(value, Utils.asObjectArray(args));
 				} catch (Exception e){
 					throw new RuntimeException(e);
+				} finally {
+					__update(null);
 				}
 			}
 		}
@@ -112,6 +117,26 @@ public class Pointer extends PLangObject implements Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public <T> T getPointer(){
+		__update(null);
 		return (T)value;
+	}
+	
+	private Set<ContainerChangeAware> containers = new HashSet<ContainerChangeAware>();
+
+	@Override
+	public void ___couple(ContainerChangeAware container) {
+		containers.add(container);
+	}
+
+	@Override
+	public void ___decouple(ContainerChangeAware container) {
+		containers.remove(container);
+	}
+
+	@Override
+	public void __update(ContainerChangeAware owner) {
+		for (ContainerChangeAware container : containers){
+			container.__update(this);
+		}
 	}
 }

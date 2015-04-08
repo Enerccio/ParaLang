@@ -1,6 +1,6 @@
-package edu.upol.vanusanik.node;
+package edu.upol.vanusanik.paralang.node;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -85,9 +85,9 @@ public class NodeController {
 	
 	
 	/**
-	 * Contains weak references to RuntimeStoreContainer for particular uuid hash. Might disappear when gc'ed.
+	 * Contains soft references to RuntimeStoreContainer for particular uuid hash. Might disappear when gc'ed.
 	 */
-	private HashMap<String, WeakReference<RuntimeStoreContainer>> cache = new HashMap<String, WeakReference<RuntimeStoreContainer>>();
+	private HashMap<String, SoftReference<RuntimeStoreContainer>> cache = new HashMap<String, SoftReference<RuntimeStoreContainer>>();
 	/**
 	 * Hard reference points to the RuntimeStoreContainers, they will not be stored anywhere else but here and in locals.
 	 * RuntimeMemoryCleaningThread will purge this set periodically, if you need to access this set, use this NodeController instance in sync block.  

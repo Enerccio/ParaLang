@@ -1,11 +1,11 @@
-package edu.upol.vanusanik.node;
+package edu.upol.vanusanik.paralang.node;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import edu.upol.vanusanik.node.NodeController.RuntimeStoreContainer;
+import edu.upol.vanusanik.paralang.node.NodeController.RuntimeStoreContainer;
 
 /**
  * RuntimeMemoryCleaningThread is thread that periodically checks runtime caches and removes them if necessary
