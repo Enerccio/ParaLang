@@ -1,10 +1,12 @@
 package cz.upol.vanusanik.paralang.cli;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 import com.beust.jcommander.JCommander;
 
 import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
+import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.Flt;
 import cz.upol.vanusanik.paralang.plang.types.Int;
@@ -33,6 +35,20 @@ public class ParaLangCLI {
 		String methodName = no.starters.get(1);
 		
 		PLangObject[] args = loadArgs(no.initialFuncArgs);
+		
+		if (no.nodeListFile != null){
+			FileInputStream fis = new FileInputStream(no.nodeListFile);
+			NodeList.loadFile(fis);
+			fis.close();
+		}
+		
+		String[] parsedNodes = no.nodes.split(";");
+		for (String s : parsedNodes){
+			if (!s.equals("")){
+				String[] datum = s.split(":");
+				NodeList.addNode(datum[0], Integer.parseInt(datum[1]));
+			}
+		}
 		
 		runtime.run(moduleName, methodName, args);
 	}

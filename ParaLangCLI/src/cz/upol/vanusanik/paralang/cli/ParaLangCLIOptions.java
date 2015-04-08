@@ -17,4 +17,10 @@ public class ParaLangCLIOptions {
 	@Parameter(names = {"-ia", "--init-args"}, description = "You can specify number only parameters that will be applied to your starting function as arguments in this as string enclosed by \"\".")
 	public String initialFuncArgs = "";
 	
+	@Parameter(names = {"-n", "--nodes"}, description = "List of nodes in <address>:<port>; format in single \"\" string")
+	public String nodes = "";
+	
+	@Parameter(names = {"-nl", "--node-list"}, description = "File containing node list")
+	public File nodeListFile;
+	
 }

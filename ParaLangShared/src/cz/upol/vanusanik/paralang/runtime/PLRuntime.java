@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -32,8 +33,9 @@ import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
 import cz.upol.vanusanik.paralang.compiler.FileDesignator;
 import cz.upol.vanusanik.paralang.compiler.PLCompiler;
 import cz.upol.vanusanik.paralang.compiler.StringDesignator;
-import cz.upol.vanusanik.paralang.connector.NetworkProvider;
-import cz.upol.vanusanik.paralang.connector.NetworkResult;
+import cz.upol.vanusanik.paralang.connector.NetworkExecutionResult;
+import cz.upol.vanusanik.paralang.connector.Node;
+import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
@@ -78,7 +80,6 @@ public class PLRuntime {
 	private boolean isSafeContext = false;
 	private boolean isRestricted = true;
 	private String packageTarget = "";
-	private NetworkProvider np;
 	private PLCompiler compiler = new PLCompiler();
 	
 	public PLRuntime(){		
@@ -103,10 +104,6 @@ public class PLRuntime {
 	
 	public ClassLoader getClassLoader(){
 		return classLoader;
-	}
-	
-	public void setNetworkProvider(NetworkProvider np){
-		this.np = np;
 	}
 	
 	public void addUuidMap(String fqName, Long uuid){
@@ -366,16 +363,66 @@ public class PLRuntime {
 		
 		PLClass c = newInstance("Collections.List");
 		
-		NetworkResult r = np.getConnector().executeDistributed(runner.___getObjectId(), methodName, tcount);
-		if (!r.success)
-			throw r.exception;
-		else {
+		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), methodName, tcount);
+		if (r.exception != null){
+			NetworkException e = (NetworkException) newInstance("System.NetworkException", new Str("Failed distributed network call because of remote exception"));
+			e.initCause(r.exception);
+			throw e;
+		} else {
 			List<PLangObject> data = ((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer();
 			for (PLangObject o : r.results)
 				data.add(o);
 		}
 		
 		return c;
+	}
+
+	private NetworkExecutionResult executeDistributed(long ___getObjectId,
+			String methodName, int tcount) {
+		
+		List<Thread> tList = new ArrayList<Thread>();
+		final NetworkExecutionResult result = new NetworkExecutionResult();
+		result.results = new PLangObject[tcount];
+		
+		final List<Node> nodes = NodeList.getBestLoadNodes(tcount);
+		
+		for (int i=0; i<tcount; i++){
+			final int tId = i;
+			tList.add(new Thread(new Runnable(){
+
+				@Override
+				public void run() {
+					handleDistributedCall(tId, result, nodes.get(tId));
+				}
+				
+			}));
+		}
+		
+		for (Thread t : tList)
+			t.start();
+		
+		for (Thread t : tList)
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				
+			}
+		
+		return result;
+	}
+
+	protected void handleDistributedCall(int tId, NetworkExecutionResult result, Node node) {
+		boolean executed = false;
+		
+		do {
+			try {
+				// TODO
+				executed = true;
+			} catch (Exception e){
+				node = NodeList.getRandomNode(); // Refresh node since error might have been node related
+				executed = false;
+			}
+		} while (!executed);
 	}
 
 	public interface RuntimeAccessListener {

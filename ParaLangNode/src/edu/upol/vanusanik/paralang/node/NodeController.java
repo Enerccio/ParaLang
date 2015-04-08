@@ -88,11 +88,6 @@ public class NodeController {
 	 * Contains soft references to RuntimeStoreContainer for particular uuid hash. Might disappear when gc'ed.
 	 */
 	private HashMap<String, SoftReference<RuntimeStoreContainer>> cache = new HashMap<String, SoftReference<RuntimeStoreContainer>>();
-	/**
-	 * Hard reference points to the RuntimeStoreContainers, they will not be stored anywhere else but here and in locals.
-	 * RuntimeMemoryCleaningThread will purge this set periodically, if you need to access this set, use this NodeController instance in sync block.  
-	 */
-	private Set<RuntimeStoreContainer> containerSet = new HashSet<RuntimeStoreContainer>();
 
 	/**
 	 * Starts this node controller instance server, will start to accept the incoming requests.
@@ -229,8 +224,6 @@ public class NodeController {
 		service = Executors.newCachedThreadPool();
 		options = no;
 		cluster = new NodeCluster(no.threadCount);
-		
-		new RuntimeMemoryCleaningThread(this, containerSet, no.cacheStoreTime);
 	}
 	
 }
