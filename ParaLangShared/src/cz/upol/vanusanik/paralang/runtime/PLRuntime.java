@@ -247,11 +247,11 @@ public class PLRuntime {
 		return moduleMap.get(moduleName);
 	}
 	
-	public PLangObject run(String module, String runnable) throws PLException{
+	public PLangObject run(String module, String runnable, PLangObject... args) throws PLException{
 		PLModule mod = getModule(module);
 		
 		try {
-			return run(mod.___getkey(runnable), mod);
+			return run(mod.___getkey(runnable), mod, args);
 		} catch (RuntimeException e){
 			throw new PLException(e);
 		}
