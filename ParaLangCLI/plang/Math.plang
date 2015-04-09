@@ -1,0 +1,86 @@
+using Collections.List;
+
+module Math {
+
+    class MathException > BaseException {
+        init(message){
+            parent.init(message);
+        }
+    }
+    
+    class Matrix {
+    
+        var matrix, n, m;
+        
+        init(n, m){
+            inst.n = n;
+            inst.m = m;
+            matrix = new List();
+            for (var i=0; i<n; i++){
+                var mcol = new List();
+                for (var j=0; j<m; j++)
+                    mcol.add(0);
+                matrix.add(mcol);
+            }
+        }   
+        
+        get(i, j){
+            return matrix.get(i).get(j);
+        }
+        
+        restricted set(i, j, v){
+            matrix.get(i).setAt(j, v);
+        }
+    
+        __str(){
+            return "Matrix <" + m + ", " + n + "> " + __pretty_print_matrix();
+        }
+        
+        __pretty_print_matrix(){
+            var pp = "[";
+            for (var i=0; i<n; i++){
+                pp += "[";
+                var mcol = matrix.get(i);
+                for (var j=0; j<m; j++)
+                    pp += mcol.get(j) + (j == m-1 ? "" : " ");
+                pp += "]";
+            }
+            return pp + "]";
+        }
+        
+        __mul(other){
+            if (other instanceof Matrix){
+            
+            } else {
+                mul_scalar(other);
+                return inst;
+            }
+        }
+        
+        mul_scalar(scalar){
+            for (var i=0; i<n; i++)
+                    for (var j=0; j<m; j++)
+                        set(i, j, get(i, j) * scalar);
+        }
+    }
+
+    class SquareMatrix > Matrix {
+        
+        init(n){
+            parent.init(n, n);
+        }
+    
+    }
+    
+    random_matrix(i, j, r, maxv){
+        var m = new Matrix(i, j);
+        for (i=0; i<m.n; i++)
+            for (j=0; j<m.m; j++)
+                m.set(i, j, r.get_int(maxv));
+        return m;
+    }
+    
+    abs(a){
+        return a >= 0 ? a : -a;
+    }
+};

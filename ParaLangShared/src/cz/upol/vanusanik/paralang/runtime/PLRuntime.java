@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -56,8 +57,9 @@ public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
 	private static final HashMap<String, Class<? extends PLClass>> __SYSTEM_CLASSES = new HashMap<String, Class<? extends PLClass>>();
 	private static final HashMap<String, String> __SYSTEM_CLASSES_N = new HashMap<String, String>();
-	public static final Map<String, Class<? extends PLClass>> SYSTEM_CLASSES = Collections.synchronizedMap(Collections.unmodifiableMap(__SYSTEM_CLASSES));
-	private final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+	public static final Map<String, Class<? extends PLClass>> SYSTEM_CLASSES;
+	private static final Set<String> __BASE_TYPES = new HashSet<String>();
+	public static final Set<String> BASE_TYPES;
 	
 	static {
 		__SYSTEM_CLASSES.put("BaseClass", BaseClass.class);
@@ -72,6 +74,21 @@ public class PLRuntime {
 		__SYSTEM_CLASSES_N.put("BaseInteger", "Integer");
 		__SYSTEM_CLASSES.put("Float", BaseFloat.class);
 		__SYSTEM_CLASSES_N.put("BaseFloat", "Float");
+		
+		SYSTEM_CLASSES = Collections.synchronizedMap(Collections.unmodifiableMap(__SYSTEM_CLASSES));
+		
+		__BASE_TYPES.add("number");
+		__BASE_TYPES.add("float");
+		__BASE_TYPES.add("integer");
+		__BASE_TYPES.add("string");
+		__BASE_TYPES.add("boolean");
+		__BASE_TYPES.add("null");
+		__BASE_TYPES.add("func");
+		__BASE_TYPES.add("ptr");
+		__BASE_TYPES.add("mod");
+		__BASE_TYPES.add("cls");
+		
+		BASE_TYPES = Collections.synchronizedSet(Collections.unmodifiableSet(__BASE_TYPES));
 	}
 	
 	public static final PLRuntime getRuntime(){
@@ -81,6 +98,7 @@ public class PLRuntime {
 	}
 	
 	private long objectIdCounter = 0;
+	private final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 	
 	private Map<Long, BaseCompiledStub> instanceInternalMap = new HashMap<Long, BaseCompiledStub>();
 	
@@ -350,6 +368,9 @@ public class PLRuntime {
 	}
 	
 	public String getClassNameOrGuess(String fqName) {
+		if (BASE_TYPES.contains(fqName))
+			return fqName;
+		
 		String[] components = fqName.split("\\.");
 		if (components.length != 2) throw new RuntimeException("Malformed name of the class!");
 		if (!classMap.containsKey(components[0]) || !classMap.get(components[0]).containsKey(components[1])){
@@ -372,7 +393,39 @@ public class PLRuntime {
 		return false;
 	}
 	
+	
+	
 	public PLangObject checkInstanceOf(PLangObject o, String className){
+		if (className.equals("number") && (o instanceof Flt || o instanceof Int))
+			return BooleanValue.TRUE;
+		
+		if (className.equals("integer") && o instanceof Int)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("float") && o instanceof Flt)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("string") && o instanceof Str)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("boolean") && o instanceof BooleanValue)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("null") && o instanceof NoValue)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("func") && o instanceof FunctionWrapper)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("ptr") && o instanceof Pointer)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("mod") && o instanceof PLModule)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("cls") && o instanceof PLClass)
+			return BooleanValue.TRUE;
+		
 		if (o.getClass().getName().equals(className))
 			return BooleanValue.TRUE;
 		

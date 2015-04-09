@@ -3,11 +3,14 @@ using Math;
 using Math.Matrix;
 using Random.Random;
 using Random;
+using System;
 
 module Main {
     var r = new Random.Random(NoValue);
 
     restricted calculate(a, b){
+        var ct = System.current_time();
+    
         for (var i=0; i<10; i++){
             IO.out.println(Random.random.get_clamp());
             IO.out.println(Random.java_random.get_clamp());
@@ -15,10 +18,19 @@ module Main {
         }
     
         var m1 = Math.random_matrix(a, a, r, 100);
-        var m2 = Math.random_matrix(a, a, r, 50);
+        var m2 = Math.random_matrix(b, b, r, 50);
         
         IO.out.println(m1);
         IO.out.println(m2);
+        
+        IO.out.println(m1 * 10);
+        IO.out.println(m1 * m2);
+        
+        IO.out.println(m1 instanceof string);
+        IO.out.println(m1 instanceof integer);
+        IO.out.println(m1 instanceof cls);
+        
+        IO.out.println(System.current_time() - ct);
     }
     
 };

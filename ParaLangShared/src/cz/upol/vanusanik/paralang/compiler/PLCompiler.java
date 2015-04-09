@@ -1331,9 +1331,11 @@ public class PLCompiler {
 						if (r.isJava())
 							throw new CompilationException("Only PLang type can be in catch expression!");
 						fqName = r.getFullReference();
+					} else {
+						fqName = type;
 					}
 					
-					if (!fqName.contains(".")){
+					if (!fqName.contains(".") && !isBaseType(fqName)){
 						throw new CompilationException("Class type " + type + " is unknown. Have you forgotten using declaration?");
 					}
 					
@@ -1432,6 +1434,10 @@ public class PLCompiler {
 				bc.add(Opcode.POP);
 			}
 		}
+	}
+
+	private boolean isBaseType(String fqName) {
+		return PLRuntime.BASE_TYPES.contains(fqName);
 	}
 
 	private void compileTernaryOperator(ExpressionContext e,

@@ -1,0 +1,17 @@
+import cz.upol.vanusanik.paralang.runtime.wrappers.PLTime;
+
+module Utils {
+
+    class Time {
+        var wrappedTime;
+        
+        init(unixTime){
+            wrappedTime = PLTime->PLTime(unixTime);
+        }
+        
+        get_time(){
+            return wrappedTime->getUnixTime();
+        }
+    }
+
+};
