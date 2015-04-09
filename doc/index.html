@@ -16,7 +16,134 @@
 	</head>
 	<body>
 		<article class="markdown-body">
-			
+			<h1 id="toc">Table of Content</h1>
+            <ol>
+                <li><a href="#usage">How to Use</a></li>
+                <li>
+                    <a href="#examples">Examples</a>
+                    <ol>
+                        <li><a href="#ex-moduledef">Module Definition</a></li>
+                        <li><a href="#ex-classdef">Class Definition</a></li>
+                        <li><a href="#ex-fielddef">Field Definition</a></li>
+                        <li><a href="#ex-funcdef">Function/Method definition</a></li>
+                        
+                    </ol>    
+                </li>
+                <li>
+                    <a href="#documentation">Documentation</a>
+                    <ol>
+                        <li><a href="#doc-basetypes">Base Types</a></li>
+                    </ol>    
+                </li>
+            </ol>
+            
+            <h1 id="usage">How to Use</h1>
+            <a href="#toc">Back to top</a>
+            <h1 id="examples">Examples</h1>
+            
+            <h2 id="#ex-moduledef">Module Definition</h2>
+            
+            Every .plang file represents a module. There can only be one module defined in every .plang file. Every module 
+            definition starts with 'module' keyword followed by the name of the module, followed by module body definition. 
+            Module definition body starts with { and ends with };.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+
+};</pre></div>
+            
+            Every module can have functions, classes or variables defined. Prior to the module definition, modules or classes which are 
+            used by this module must be declared via 'using' keyword:
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> IO;
+<span class="pl-k">using</span> System;
+<span class="pl-k">using</span> System.BaseException;
+
+<span class="pl-k">module</span> ExampleModule {
+
+};</pre></div>
+
+            Module can have initialization method called 'init' which is called when module is initialized for the first time. This method
+            has no parameters and whatever it returns is ignored.
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> IO;
+<span class="pl-k">using</span> System;
+<span class="pl-k">using</span> System.BaseException;
+
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn init()</span>{
+		<span class="pl-s3">IO</span>.out.println(<span class="pl-s2"><span class="pl-pds">"Hello, world"</span></span>);
+	}
+};</pre></div>
+
+            <h2 id="#ex-classdef">Class Definition</h2>
+            
+            Every class is defined via 'class' keyword, followed by identifier followed by class body.
+            
+            <div class="highlight highlight-js"><pre>
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">class</span> HelloWorld {
+	
+	}
+};</pre></div>
+
+            You can specify one parent class from which this class will be derived by prepending the class body with '>' followed by identifier:
+            
+            <div class="highlight highlight-js"><pre>
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">class</span> HelloWorld > HelloWorldBase {
+	
+	}
+};</pre></div>
+
+            Every class is automatically derived from <i>System.BaseClass</i> if there is no parent class specified. Every class can have one init method defined 
+            that can take defined amount of parameters and will be called when new instance is created automatically. New instance is created via 'new' keyword.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">class</span> ExampleClass {
+		def init(a, b, c){
+		}
+	}
+	<span class="pl-k">var</span> x = new ExampleClass(<span class="pl-s2"><span class="pl-pds">1</span></span>, <span class="pl-s2"><span class="pl-pds">2</span></span>, <span class="pl-s2"><span class="pl-pds">3</span></span>);
+};</pre></div>
+            
+            <h2 id="#ex-fielddef">Field Definition</h2>
+                Field is defined via 'var' keyword followed by field definition and optional initialization. 
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">var</span> x;
+	<span class="pl-k">var</span> y = <span class="pl-s2"><span class="pl-pds">""</span></span>, z;
+	<span class="pl-k">var</span> z = <span class="pl-s2"><span class="pl-pds">10</span></span>;
+};</pre></div>
+            
+                Fields can be defined for either module or class. Any uninitialized field will have value of <b>NoValue</b>.
+            
+            <h2 id="#ex-funcdef">Function/Method definition</h2>
+            
+            Function/Method (the only difference is where they are defined, functions are defined at module level, methods are defined
+            at class level) are defined via 'defn' keyword followed by optional 'restricted' keyword followed by parameter definition and function/method body.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn method(x, y)</span>{
+	
+	}
+};</pre></div>
+            
+            <hr/><a href="#toc">Back to top</a>
+            <h1 id="documentation">Documentation</h1>
+            
+            <h2 id="#doc-basetypes">Base Types</h2>
+            <table>
+                <tr><td width="10%"><b>Type</b></td><td width="10%"><b>instanceof type</b></td><td width="10%"><b>class variant</b></td><td width="70%"><b>description</b></td><tr>
+                <tr><td width="10%">integer</td><td width="10%">integer, number</td><td width="10%"><i>System.Integer</i></td><td width="70%">Base integers from -9223372036854775808 to 9223372036854775807, data value corresponds to java long</td><tr>
+                <tr><td width="10%">float</td><td width="10%">float, number</td><td width="10%"><i>System.Float</i></td><td width="70%">Float point numbers, data value corresponds to java float</td><tr>
+                <tr><td width="10%">string</td><td width="10%">string</td><td width="10%">N/A</td><td width="70%">Strings enclosed by "". Immutable, data value corresponds to java String.</td><tr>
+                <tr><td width="10%">boolean</td><td width="10%">boolean</td><td width="10%">N/A</td><td width="70%">Two possible values: TRUE or FALSE. Immutable.</td><tr>
+                <tr><td width="10%">NoValue</td><td width="10%">null</td><td width="10%">N/A</td><td width="70%">Represents no value. Every function automatically returns this value. This value is considered FALSE.</td><tr>
+                <tr><td width="10%">Method or function</td><td width="10%">func</td><td width="10%">N/A</td><td width="70%">Function of module or method of class. System only type.</td><tr>
+                <tr><td width="10%">Java wrapped object</td><td width="10%">pointer</td><td width="10%">N/A</td><td width="70%">Java wrapped objects are represented as this type. Only serializable java classes can be represented by pointer type.</td><tr>
+                <tr><td width="10%">Module</td><td width="10%">mod</td><td width="10%">N/A</td><td width="70%">Module instance. Used to access module fields and functions.</td><tr>
+                <tr><td width="10%">Class</td><td width="10%">cls</td><td width="10%"><i>System.BaseClass</i></td><td width="70%">Class instance.</td><tr>
+            </table>
+            <a href="#toc">Back to top</a>
         </article>
         <a href="https://github.com/Enerccio/ParaLang/"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="http://aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
         </body>
