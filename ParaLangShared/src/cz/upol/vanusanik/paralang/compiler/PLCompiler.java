@@ -23,6 +23,7 @@ import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.Bytecode;
+import javassist.bytecode.ClassFile;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.LineNumberAttribute;
@@ -198,6 +199,7 @@ public class PLCompiler {
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.MODULE_BASE_CLASS));
+		cls.getClassFile().setMajorVersion(ClassFile.JAVA_6);
 		
 		// Serialization
 		cls.addInterface(cp.getCtClass(Strings.SERIALIZABLE));
@@ -289,6 +291,7 @@ public class PLCompiler {
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.CLASS_BASE_CLASS));
+		cls.getClassFile().setMajorVersion(ClassFile.JAVA_6);
 		
 		String superClass = null;
 		if (classDeclaration.type() != null)
@@ -2043,7 +2046,7 @@ public class PLCompiler {
 			at.getAttributes().add(lineNubmerInfo);
 			
 			m.getMethodInfo().setCodeAttribute(at);
-			m.getMethodInfo().rebuildStackMap(cp);
+			// m.getMethodInfo().rebuildStackMap(cp);
 			
 			//InstructionPrinter.print(m, System.err);
 			

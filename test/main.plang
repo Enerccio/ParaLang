@@ -26,9 +26,7 @@ module Main {
         IO.out.println(m1 * 10);
         IO.out.println(m1 * m2);
         
-        IO.out.println(m1 instanceof string);
-        IO.out.println(m1 instanceof integer);
-        IO.out.println(m1 instanceof cls);
+        IO.out.println(Math.sqrt(4) + Math.sqrt(2.2));
         
         IO.out.println(System.current_time() - ct);
     }

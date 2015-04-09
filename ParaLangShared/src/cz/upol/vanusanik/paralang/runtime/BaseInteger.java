@@ -1,6 +1,7 @@
 package cz.upol.vanusanik.paralang.runtime;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
+import cz.upol.vanusanik.paralang.plang.types.Flt;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
@@ -22,6 +23,7 @@ public class BaseInteger extends BaseNumber {
 		this.___restrictedOverride = true;
 		___setkey(__valKey, new Int(iv.___getNumber(iv).intValue()));
 		___setkey(Operator.UBINNEG.classMethod, new FunctionWrapper("__ubn_base", this, true));
+		___setkey("sqrt", new FunctionWrapper("sqrt", this, true));
 		this.___restrictedOverride = false;
 		
 		return NoValue.NOVALUE;
@@ -36,4 +38,9 @@ public class BaseInteger extends BaseNumber {
 		return PLRuntime.getRuntime().newInstance("System.Integer", o);
 	}
 
+	public PLangObject sqrt(PLangObject self){
+		Int value = (Int)___getkey(__valKey);
+		Flt result = new Flt((float) Math.sqrt(value.getValue()));
+		return asObject(result);
+	}
 }

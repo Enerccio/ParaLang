@@ -315,7 +315,7 @@ public class PLRuntime {
 	
 	public PLangObject run(PLangObject runner, BaseCompiledStub currentRunner, PLangObject... args){
 		if (runner == null)
-			throw new NullPointerException("Runner is empty");
+			throw new NullPointerException("No such method!");
 	
 		if (runner.___getType() == PlangObjectType.FUNCTION){
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
