@@ -4,3 +4,4 @@ findbugs*
 /bcel/*
 /cz.edu.vanusanik.e.*/
 /ParalangPlugin/
+*.class

@@ -273,10 +273,8 @@ public class PLCompiler {
 		}.compileMethod();
 		
 		varStack.popStack(); // pop class variable
-		
-		Class<?> klazz = cls.toClass(getClassLoader(), null);
-
-		return klazz;
+		cls.debugWriteFile();
+		return cls.toClass(getClassLoader(), null);
 	}
 	
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
@@ -365,6 +363,7 @@ public class PLCompiler {
 		}.compileMethod();		
 		
 		varStack.popStack(); // pop class variables
+		cls.debugWriteFile();
 		return cls.toClass(getClassLoader(), null);
 	}
 
@@ -1040,6 +1039,7 @@ public class PLCompiler {
 				"()" + Strings.RUNTIME_L); // call to __get_runtime, PLRuntime is on stack
 	}
 
+	private boolean cmpInitFuncwraps = false;
 	private void compileInitMethod(List<FieldDeclarationContext> fields, Set<String> methods, final String superClass) throws Exception{
 		stacker.acquire();
 		if (compilingClass)
@@ -1096,6 +1096,7 @@ public class PLCompiler {
 		for (FieldDeclarationContext field : fields){
 			compileField(field);
 		}
+		cmpInitFuncwraps = true;
 		for (final String method : methods){
 			new StoreToField(method){
 
@@ -1112,6 +1113,7 @@ public class PLCompiler {
 				
 			}.compile();
 		}
+		cmpInitFuncwraps = false;
 		stacker.release();
 		bc.add(Opcode.RETURN); // Return
 	}
@@ -1151,7 +1153,7 @@ public class PLCompiler {
 		protected abstract void provideSourceValue() throws Exception;
 		public void compile() throws Exception {
 			
-			if (compilingClass)
+			if (compilingClass && !cmpInitFuncwraps)
 				bc.addAload(1); 						// load self
 			else
 				bc.addAload(0); 						// load this

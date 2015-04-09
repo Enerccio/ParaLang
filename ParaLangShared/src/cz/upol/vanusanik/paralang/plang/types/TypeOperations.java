@@ -242,6 +242,10 @@ public class TypeOperations {
 				Float vb = b.___getNumber(b);
 				Float result = 0f;
 				
+				if (va == null || vb == null){
+					throw new RuntimeException("One of the arguments was NoValue");
+				}
+				
 				switch(o){
 				case BITAND:
 					result = (float) (va.intValue() & vb.intValue());
@@ -386,6 +390,10 @@ public class TypeOperations {
 		Float v = a.___getNumber(a);
 		Float add = 1.0f;
 		Float res;
+		
+		if (v == null){
+			throw new RuntimeException("NoValue");
+		}
 		
 		switch (o){
 		case LPLUSPLUS:
