@@ -3,7 +3,7 @@ using Collections.List;
 module Math {
 
     class MathException > BaseException {
-        init(message){
+        defn init(message){
             parent.init(message);
         }
     }
@@ -12,7 +12,7 @@ module Math {
     
         var matrix, n, m;
         
-        init(n, m){
+        defn init(n, m){
             inst.n = n;
             inst.m = m;
             matrix = new List();
@@ -24,19 +24,19 @@ module Math {
             }
         }   
         
-        get(i, j){
+        defn get(i, j){
             return matrix.get(i).get(j);
         }
         
-        restricted set(i, j, v){
+        defn restricted set(i, j, v){
             matrix.get(i).setAt(j, v);
         }
     
-        __str(){
+        defn __str(){
             return "Matrix <" + m + ", " + n + "> " + __pretty_print_matrix();
         }
         
-        __pretty_print_matrix(){
+        defn __pretty_print_matrix(){
             var pp = "[";
             for (var i=0; i<n; i++){
                 pp += "[";
@@ -48,7 +48,7 @@ module Math {
             return pp + "]";
         }
         
-        __mul(other){
+        defn __mul(other){
             if (other instanceof Matrix){
             
             } else {
@@ -57,7 +57,7 @@ module Math {
             }
         }
         
-        mul_scalar(scalar){
+        defn mul_scalar(scalar){
             for (var i=0; i<n; i++)
                     for (var j=0; j<m; j++)
                         set(i, j, get(i, j) * scalar);
@@ -66,13 +66,13 @@ module Math {
 
     class SquareMatrix > Matrix {
         
-        init(n){
+        defn init(n){
             parent.init(n, n);
         }
     
     }
     
-    random_matrix(i, j, r, maxv){
+    defn random_matrix(i, j, r, maxv){
         var m = new Matrix(i, j);
         for (i=0; i<m.n; i++)
             for (j=0; j<m.m; j++)
@@ -80,19 +80,23 @@ module Math {
         return m;
     }
     
-    abs(a){
+    defn abs(a){
         return a >= 0 ? a : -a;
     }
     
-    max(a, b){
+    defn max(a, b){
         return a >= b ? a : b;
     }
     
-    min(a, b){
+    defn min(a, b){
         return a <= b? a : b;
     }
     
-    sqrt(a){
+    defn sqr(a){
+        return a * a;
+    }
+    
+    defn sqrt(a){
         if (!(a instanceof number)) 
             throw new MathException("Argument must be a number!");
               

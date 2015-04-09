@@ -9,7 +9,7 @@ importDeclaration
     |   'import' qualifiedName ';'
     ; 
     
-moduleDeclaration  
+moduleDeclaration
 	: 'module' Identifier '{' moduleDeclarations* '};' 
 	; 
 	
@@ -19,7 +19,7 @@ moduleDeclarations
 	| classDeclaration 
 	;
 
-classDeclaration
+classDeclaration 
     :   'class' Identifier 
         ('>' type)?
         classBody
@@ -41,10 +41,7 @@ memberDeclaration
     ;
 
 functionDeclaration
-    :   'restricted'? Identifier formalParameters
-        (   functionBody
-        |   ';'
-        )
+    :   'defn' 'restricted'? Identifier formalParameters functionBody
     ;
 
 fieldDeclaration

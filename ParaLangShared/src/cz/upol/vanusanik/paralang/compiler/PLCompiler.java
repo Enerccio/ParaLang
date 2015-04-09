@@ -144,15 +144,6 @@ public class PLCompiler {
 	@SuppressWarnings("unchecked")
 	private void compileModule(CompilationUnitContext ctx, FileDesignator in) throws Exception{
 		
-//		ClassVisitor cl =new ClassVisitor(Opcodes.ASM4) {
-//			@Override
-//            public MethodVisitor visitMethod(int access, String name,
-//                    String desc, String signature, String[] exceptions) {
-//                System.out.println("Method: "+name+" "+desc);
-//                return super.visitMethod(access, name, desc, signature, exceptions);
-//            }
-//		};
-		
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
@@ -229,8 +220,8 @@ public class PLCompiler {
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.functionDeclaration() != null){
 				FunctionDeclarationContext fcx = mdc.functionDeclaration();
-				boolean restricted = fcx.getText().startsWith("restricted");
-				String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+				boolean restricted = fcx.getChild(1).getText().startsWith("restricted");
+				String name = restricted ? fcx.getChild(2).getText() : fcx.getChild(1).getText();
 				if (methods.contains(name))
 					throw new CompilationException("Already containing function " + name);
 				methods.add(name);
@@ -325,8 +316,8 @@ public class PLCompiler {
 		for (ClassBodyDeclarationContext cbd : cbdList){
 			if (cbd.memberDeclaration().functionDeclaration() != null){
 				FunctionDeclarationContext fcx = cbd.memberDeclaration().functionDeclaration();
-				boolean restricted = fcx.getText().startsWith("restricted");
-				String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+				boolean restricted = fcx.getChild(1).getText().startsWith("restricted");
+				String name = restricted ? fcx.getChild(2).getText() : fcx.getChild(1).getText();
 				if (methods.contains(name))
 					throw new CompilationException("Already containing function " + name);
 				methods.add(name);
@@ -372,8 +363,8 @@ public class PLCompiler {
 
 	private boolean compilingInit;
 	private String compileFunction(final FunctionDeclarationContext fcx) throws Exception{
-		final boolean restricted = fcx.getText().startsWith("restricted");
-		String name = restricted ? fcx.getChild(1).getText() : fcx.getChild(0).getText();
+		final boolean restricted = fcx.getChild(1).getText().startsWith("restricted");
+		String name = restricted ? fcx.getChild(2).getText() : fcx.getChild(1).getText();
 		
 		isRestrictedMethodQualifier = restricted ? RestrictedTo.MODULE : null;
 		if (name.equals("init")){

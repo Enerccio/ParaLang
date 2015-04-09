@@ -1,4 +1,4 @@
-package edu.upol.vanusanik.paralang.node;
+package cz.upol.vanusanik.paralang.node;
 
 /**
  * Base runnable payload class. Will give access to returned value and whether runnable has finished or not

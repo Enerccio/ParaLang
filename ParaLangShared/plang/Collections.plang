@@ -6,37 +6,37 @@ module Collections {
 	class HashSet {
 		var wrappedSet;
 	
-		init(){
+		defn init(){
 			inst.wrappedSet = PLangHashSet->PLangHashSet();
 		}
 		
-		restricted insert(o){
+		defn restricted insert(o){
 			wrappedSet->insert(o);
 		}
 		
-		push(o){
+		defn push(o){
 			var set = new HashSet();
 			wrappedSet->push(o, set.wrappedSet);
 			return set;
 		}
 		
-		contains(o){
+		defn contains(o){
 			return wrappedSet->contains(o);
 		}
 		
-		restricted remove(o){
+		defn restricted remove(o){
 			return wrappedSet->remove(o);
 		}
 		
-		restricted clear(){
+		defn restricted clear(){
 			wrappedSet->clear();
 		}
 		
-		size(){
+		defn size(){
 			return wrappedSet->size();
 		}
 		
-		__str(){
+		defn __str(){
 			return wrappedSet;
 		}
 	}
@@ -44,59 +44,59 @@ module Collections {
 	class List {
 		var wrappedList;
 		
-		init(){
+		defn init(){
 			wrappedList = PLangList->PLangList();
 		}
 		
-		restricted add(o){
+		defn restricted add(o){
 			return wrappedList->add(o);
 		}
 		
-		append(o){
+		defn append(o){
 			var list = new List();
 			wrappedList->append(o, list.wrappedList);
 			return list;
 		}
 		
-		restricted insert(o, index){
+		defn restricted insert(o, index){
 			return wrappedList->insert(o);
 		}
 		
-		appendAt(o, index){
+		defn appendAt(o, index){
 			var list = new List();
 			wrappedList->appendAt(o, index, list.innerList);
 			return list;
 		}
 		
-		restricted remove(o){
+		defn restricted remove(o){
 			return wrappedList->remove(o);
 		}
 		
-		restricted removeAt(o){
+		defn restricted removeAt(o){
 			return wrappedList->removeAt(o);
 		}
         
-        restricted setAt(index, o){
+        defn restricted setAt(index, o){
             return wrappedList->setAt(index, o);
         }
 		
-		get(index){
+		defn get(index){
 			return wrappedList->get(index);
 		}
 		
-		find(o){
+		defn find(o){
 			return wrappedList->find(o);
 		}
 		
-		restricted clear(){
+		defn restricted clear(){
 			wrappedList->clear();
 		}
 		
-		size(){
+		defn size(){
 			return wrappedList->size();
 		}
 	
-		__str(){
+		defn __str(){
 			return wrappedList;
 		}
 	}

@@ -1,4 +1,4 @@
-package edu.upol.vanusanik.paralang.node;
+package cz.upol.vanusanik.paralang.node;
 
 import java.io.File;
 

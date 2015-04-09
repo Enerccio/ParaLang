@@ -13,24 +13,24 @@ module Random {
     
         var seed;
     
-        init(seed){
+        defn init(seed){
             if (seed == NoValue){
                 seed = new Time(NoValue).get_time();
             }
             inst.seed = seed;
         }
         
-        restricted get_int(max){
+        defn restricted get_int(max){
             seed = Math.abs(1103515245 * seed + 12345);
             return seed % max;
         }
         
-        restricted get_float(a){
+        defn restricted get_float(a){
             var r = get_int(2147483647);
             return Math.abs(r / 2147483647.0 * a);
         }
         
-        restricted get_clamp(){
+        defn restricted get_clamp(){
             return get_float(1.0);
         }
     }
@@ -38,11 +38,11 @@ module Random {
     class JavaRandom > Random {
         var wrappedObject;
         
-        init(seed){
+        defn init(seed){
             wrappedObject = PLJavaRandom->PLJavaRandom(seed);
         }
         
-        restricted get_int(max){
+        defn restricted get_int(max){
             return wrappedObject->nextInt(max);
         }
     }
@@ -50,11 +50,11 @@ module Random {
     class SecureRandom > Random {
         var wrappedObject;
         
-        init(){
+        defn init(){
             wrappedObject = PLSecureRandom->PLSecureRandom();
         }
     
-        restricted get_int(max){
+        defn restricted get_int(max){
             return wrappedObject->nextInt(max);
         }
     }

@@ -6,16 +6,20 @@ module IO {
 	class SystemPrinter {
 		var wrappedPrinter;
 		var emptyLine = "";
-		init(wp){
+		
+		defn init(wp){
 			inst.wrappedPrinter = PrintStreamWrapper->PrintStreamWrapper(wp);
 		}
-		restricted print(object){
+		
+		defn restricted print(object){
 			wrappedPrinter->print(object);
 		}
-		restricted println(object){
+		
+		defn restricted println(object){
 			print(object); lerp();
 		}
-		restricted lerp(){
+		
+		defn restricted lerp(){
 			wrappedPrinter->println(emptyLine);
 		}
 	}

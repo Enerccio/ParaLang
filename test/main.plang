@@ -8,14 +8,10 @@ using System;
 module Main {
     var r = new Random.Random(NoValue);
 
-    restricted calculate(a, b){
+    defn restricted calculate(a, b){
         var ct = System.current_time();
-    
-        for (var i=0; i<10; i++){
-            IO.out.println(Random.random.get_clamp());
-            IO.out.println(Random.java_random.get_clamp());
-            IO.out.println(Random.secure_random.get_clamp());
-        }
+        
+        IO.out.println("Ahoj".to(3).from(1));
     
         var m1 = Math.random_matrix(a, a, r, 100);
         var m2 = Math.random_matrix(b, b, r, 50);

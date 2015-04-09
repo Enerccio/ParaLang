@@ -5,3 +5,5 @@ findbugs*
 /cz.edu.vanusanik.e.*/
 /ParalangPlugin/
 *.class
+a.html
+/doc2/

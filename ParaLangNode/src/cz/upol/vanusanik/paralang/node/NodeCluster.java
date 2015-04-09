@@ -1,4 +1,4 @@
-package edu.upol.vanusanik.paralang.node;
+package cz.upol.vanusanik.paralang.node;
 
 /**
  * NodeCluster class contains all the nodes for this Node Controller. 
