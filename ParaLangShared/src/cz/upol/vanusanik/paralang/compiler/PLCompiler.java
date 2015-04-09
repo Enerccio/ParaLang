@@ -261,7 +261,7 @@ public class PLCompiler {
 		}
 		
 		// Compile system init method
-		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields() { return null; }", cls);
+		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields(cz.upol.vanusanik.paralang.runtime.BaseCompiledStub self) {  }", cls);
 		new MethodCompiler(m){
 
 			@Override
@@ -352,7 +352,8 @@ public class PLCompiler {
 		}
 
 		// Compile system init method
-		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields() { return null; }", cls);
+		
+		final CtMethod m = CtNewMethod.make("protected void ___init_internal_datafields(cz.upol.vanusanik.paralang.runtime.BaseCompiledStub self) { }", cls);
 		new MethodCompiler(m){
 
 			@Override
@@ -598,9 +599,9 @@ public class PLCompiler {
 			
 			List<VariableDeclaratorContext> decls;
 			
-			if (fcc.forInit() != null)
+			if (fcc.forInit() != null && fcc.forInit().localVariableDeclaration() != null){
 				decls = fcc.forInit().localVariableDeclaration().variableDeclarators().variableDeclarator();
-			else
+			} else
 				decls = new ArrayList<VariableDeclaratorContext>();
 			for (VariableDeclaratorContext vd : decls){
 				markLine(bc.currentPc(), vd.start.getLine());
@@ -620,6 +621,14 @@ public class PLCompiler {
 				varStack.addVariable(varId, VariableType.LOCAL_VARIABLE, localId);
 			}
 			
+			if (fcc.forInit().expressionList() != null){
+				ExpressionListContext el = fcc.forInit().expressionList();
+				for (ExpressionContext ex : el.expression()){
+					isStatementExpression.add(true);
+					compileExpression(ex, false, -1);
+					isStatementExpression.pop();
+				}
+			}
 			
 			setLabelPos(loopStart);
 			
@@ -1032,6 +1041,7 @@ public class PLCompiler {
 	}
 
 	private void compileInitMethod(List<FieldDeclarationContext> fields, Set<String> methods, final String superClass) throws Exception{
+		stacker.acquire();
 		if (compilingClass)
 			new StoreToField(BaseClass.___superKey){
 	
@@ -1102,6 +1112,7 @@ public class PLCompiler {
 				
 			}.compile();
 		}
+		stacker.release();
 		bc.add(Opcode.RETURN); // Return
 	}
 	
@@ -1140,7 +1151,11 @@ public class PLCompiler {
 		protected abstract void provideSourceValue() throws Exception;
 		public void compile() throws Exception {
 			
-			bc.addAload(0); 						// load this
+			if (compilingClass)
+				bc.addAload(1); 						// load self
+			else
+				bc.addAload(0); 						// load this
+			bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 			bc.addLdc(cacheStrings(varId));			// load string from constants
 			provideSourceValue();
 			bc.addCheckcast(Strings.PLANGOBJECT);	// cast obj to PLangObject
@@ -1687,7 +1702,11 @@ public class PLCompiler {
 					 * Prepares the store operation by getting either class or module on the stack and ready
 					 */
 					if (vt != null && vt == VariableType.CLASS_VARIABLE){
-						bc.addAload(0); 								// load this
+						if (compilingClass)
+							bc.addAload(1); // load self
+						else
+ 							bc.addAload(0); 								// load this
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
 						addGetRuntime();
 						bc.addLdc(cacheStrings(moduleName));
@@ -1704,7 +1723,11 @@ public class PLCompiler {
 					 * Loads the old value on the stack either from instance or from module field
 					 */
 					if (vt != null && vt == VariableType.CLASS_VARIABLE){
-						bc.addAload(0); 								// load this
+						if (compilingClass)
+							bc.addAload(1); 								// load self
+						else
+							bc.addAload(0);									// load this
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
 						addGetRuntime();
 						bc.addLdc(cacheStrings(moduleName));
@@ -1727,7 +1750,11 @@ public class PLCompiler {
 				if (isStatementExpression.peek() == false){
 					/* Put new value on stack */
 					if (vt != null && vt == VariableType.CLASS_VARIABLE){
-						bc.addAload(0); 								// load this
+						if (compilingClass)
+							bc.addAload(1); 								// load self
+						else
+							bc.addAload(0);									// load this
+						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 					} else if (vt != null && vt == VariableType.MODULE_VARIABLE) {
 						addGetRuntime();
 						bc.addLdc(cacheStrings(moduleName));
@@ -1830,7 +1857,7 @@ public class PLCompiler {
 			if (identifier.equals("parent"))
 				identifier = BaseClass.___superKey;
 			
-			if (identifier.startsWith("__")){
+			if (identifier.startsWith("___")){
 				throw new CompilationException("Identifier cannot start with ___, ___ is disabled due to nameclashing with internal methods and fields");
 			} else if (identifier.equals("readResolve")){
 				throw new CompilationException("readResolve is reserved keyword used by serialization");
@@ -1871,7 +1898,11 @@ public class PLCompiler {
 			
 			switch (vt){
 			case CLASS_VARIABLE:
-				bc.addAload(0); 								// load this
+				if (compilingClass)
+					bc.addAload(1); 								// load self
+				else
+					bc.addAload(0);									// load this
+				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 				if (compilingMethod){
 					bc.add(Opcode.DUP);
 					bc.addAstore(storeVar);
@@ -1889,7 +1920,11 @@ public class PLCompiler {
 				break;
 			case MODULE_VARIABLE:
 				// test whether class contains the variable since it might be owned by superclass
-				bc.addAload(0);
+				if (compilingClass)
+					bc.addAload(1); // load self
+				else
+					bc.addAload(0); // load this
+				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 				if (compilingMethod){
 					bc.add(Opcode.DUP);
 					bc.addAstore(storeVar);

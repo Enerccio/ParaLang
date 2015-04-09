@@ -10,7 +10,7 @@ public class SystemModule extends PLModule implements Serializable {
 	private static final long serialVersionUID = -499503904346523233L;
 
 	@Override
-	protected void ___init_internal_datafields() {
+	protected void ___init_internal_datafields(BaseCompiledStub self) {
 		this.___restrictedOverride = true;
 		
 		___setkey("init", new FunctionWrapper("__init", this, false));

@@ -24,7 +24,7 @@ public class PLangList extends ObjectBase implements Serializable {
 	public PLangObject appendAt(PLangObject o, Int ix, Pointer p){
 		PLangList newList = p.getPointer();
 		newList.innerList.addAll(innerList);
-		newList.innerList.add(ix.getValue(), o);
+		newList.innerList.add((int) ix.getValue(), o);
 		return o;
 	}
 	
@@ -35,7 +35,7 @@ public class PLangList extends ObjectBase implements Serializable {
 	}
 	
 	public PLangObject insert(PLangObject o, Int ix){
-		innerList.add(ix.getValue(), o);
+		innerList.add((int) ix.getValue(), o);
 		return o;
 	}
 	
@@ -48,11 +48,15 @@ public class PLangList extends ObjectBase implements Serializable {
 	}
 	
 	public PLangObject removeAt(Int ix){		
-		return innerList.remove(ix.getValue());
+		return innerList.remove((int) ix.getValue());
+	}
+	
+	public PLangObject setAt(Int ix, PLangObject v){
+		return innerList.set((int) ix.getValue(), v);
 	}
 	
 	public PLangObject get(Int ix){
-		return innerList.get(ix.getValue());
+		return innerList.get((int) ix.getValue());
 	}
 	
 	public PLangObject find(PLangObject o){

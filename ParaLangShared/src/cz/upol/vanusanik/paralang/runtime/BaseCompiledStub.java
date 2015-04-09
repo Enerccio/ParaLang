@@ -33,13 +33,13 @@ public abstract class BaseCompiledStub extends PLangObject {
 		___fieldsAndMethods = new HashMap<String, PLangObject>();
 		___isInited = true;
 		___restrictedOverride = true;
-		___init_internal_datafields();
+		___init_internal_datafields(this);
 		___restrictedOverride = false;
 	}
 	
 	protected boolean ___isInited;
 	
-	protected abstract void ___init_internal_datafields();
+	protected abstract void ___init_internal_datafields(BaseCompiledStub self);
 	
 	public PLangObject ___getkey(String key){
 		if (!___isInited){

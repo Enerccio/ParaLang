@@ -15,7 +15,7 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	protected static final String __valKey = "__val";
 	
 	@Override
-	protected void ___init_internal_datafields() {
+	protected void ___init_internal_datafields(BaseCompiledStub self) {
 		this.___restrictedOverride = true;
 		
 		___setkey(BaseClass.___superKey, new BaseClass());

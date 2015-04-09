@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -336,14 +335,14 @@ public class PLRuntime {
 		isRestricted = restricted;
 	}
 
-	private Set<Object> serializedObjects = new HashSet<Object>();
+	private ThreadLocal<HashSet<Object>> serializedObjects = new ThreadLocal<HashSet<Object>>();
 	
 	public void setAsAlreadySerialized(BaseCompiledStub baseCompiledStub) {
-		serializedObjects.add(baseCompiledStub);
+		serializedObjects.get().add(baseCompiledStub);
 	}
 
 	public boolean isAlreadySerialized(BaseCompiledStub baseCompiledStub) {
-		return serializedObjects.contains(baseCompiledStub);
+		return serializedObjects.get().contains(baseCompiledStub);
 	}
 	
 	public PLangObject wrapJavaObject(Object object){
@@ -547,7 +546,7 @@ public class PLRuntime {
 	}
 
 	private JsonObject serializeRuntimeContent() {
-		serializedObjects.clear();
+		serializedObjects.set(new HashSet<Object>());
 		
 		JsonObject root = new JsonObject();
 		JsonArray modules = new JsonArray();
@@ -567,7 +566,7 @@ public class PLRuntime {
 		
 		root.add("modules", modules);
 		
-		serializedObjects.clear();
+		serializedObjects.get().clear();
 		return root;
 	}
 	

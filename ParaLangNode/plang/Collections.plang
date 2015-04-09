@@ -75,6 +75,10 @@ module Collections {
 		restricted removeAt(o){
 			return wrappedList->removeAt(o);
 		}
+        
+        restricted setAt(index, o){
+            return wrappedList->setAt(index, o);
+        }
 		
 		get(index){
 			return wrappedList->get(index);

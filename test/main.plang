@@ -1,23 +1,24 @@
 using IO;
+using Math;
+using Math.Matrix;
+using Random.Random;
+using Random;
 
 module Main {
-    var aa, bb, cc, d;
+    var r = new Random.Random(NoValue);
+
     restricted calculate(a, b){
-        aa = a;
-        bb = b;
-        cc = new Integer(4);
-        d = 4.8;
-        var result = (dist (6) { 
-            return doCalculate(run_id, aa, bb, cc); 
-        });
-        IO.out.println(result);
-    }
+        for (var i=0; i<10; i++){
+            IO.out.println(Random.random.get_clamp());
+            IO.out.println(Random.java_random.get_clamp());
+            IO.out.println(Random.secure_random.get_clamp());
+        }
     
-    doCalculate(x, a, b, c){
-        return new Float(x + 
-            a + b + 
-                     c  
-                  +  d);
+        var m1 = Math.random_matrix(a, a, r, 100);
+        var m2 = Math.random_matrix(a, a, r, 50);
+        
+        IO.out.println(m1);
+        IO.out.println(m2);
     }
     
 };

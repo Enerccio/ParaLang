@@ -52,7 +52,7 @@ public class TypeOperations {
 	}
 	public static PLangObject mul(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
-			return new Str(StringUtils.repeat(a.toString(), ((Int)b).value));
+			return new Str(StringUtils.repeat(a.toString(), (int) ((Int)b).value));
 		}
 		return operator(a, b, Operator.MUL);
 	}
@@ -61,7 +61,7 @@ public class TypeOperations {
 	}
 	public static PLangObject mod(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
-			int radix = ((Int)b).value;
+			int radix = (int) ((Int)b).value;
 			if (radix < 1 || radix > 16)
 				throw new RuntimeException("Incorrect radix for string % int operation.");
 			return new Int(Integer.parseInt(a.toString(), radix));
@@ -72,7 +72,7 @@ public class TypeOperations {
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			String val = a.toString();
 			int len = val.length();
-			int lsa = ((Int)b).value;
+			int lsa = (int) ((Int)b).value;
 			
 			if (lsa >= len)
 				return new Str("");
@@ -85,7 +85,7 @@ public class TypeOperations {
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			String val = a.toString();
 			int len = val.length();
-			int rsa = ((Int)b).value;
+			int rsa = (int) ((Int)b).value;
 			
 			if (rsa >= len)
 				return new Str("");
@@ -98,7 +98,7 @@ public class TypeOperations {
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			String val = a.toString();
 			int len = val.length();
-			int rsh = ((Int)b).value;
+			int rsh = (int) ((Int)b).value;
 			
 			StringBuilder sb = new StringBuilder();
 			
@@ -194,47 +194,92 @@ public class TypeOperations {
 		case BITOR:
 		case BITAND:
 		case BITXOR: {
-			Float va = a.___getNumber(a);
-			Float vb = b.___getNumber(b);
-			Float result = 0f;
-			
-			switch(o){
-			case BITAND:
-				result = (float) (va.intValue() & vb.intValue());
-				break;
-			case BITOR:
-				result = (float) (va.intValue() | vb.intValue());
-				break;
-			case BITXOR:
-				result = (float) (va.intValue() ^ vb.intValue());
-				break;
-			case DIV:
-				result = va / vb;
-				break;
-			case LSHIFT:
-				result = (float) (va.intValue() << vb.intValue());
-				break;
-			case MINUS:
-				result = va - vb;
-				break;
-			case MOD:
-				result = va % vb;
-				break;
-			case MUL:
-				result = va * vb;
-				break;
-			case PLUS:
-				result = va + vb;
-				break;
-			case RSHIFT:
-				result = (float) (va.intValue() >> vb.intValue());
-				break;
-			case RUSHIFT:
-				result = (float) (va.intValue() >>> vb.intValue());
-				break;			
+			if (a instanceof Int && b instanceof Int){
+				long va = ((Int)a).value;
+				long vb = ((Int)b).value;
+				
+				long result = 0;
+				
+				switch(o){
+				case BITAND:
+					result = va & vb;
+					break;
+				case BITOR:
+					result = va | vb;
+					break;
+				case BITXOR:
+					result = va ^ vb;
+					break;
+				case DIV:
+					result = va / vb;
+					break;
+				case LSHIFT:
+					result = va << vb;
+					break;
+				case MINUS:
+					result = va - vb;
+					break;
+				case MOD:
+					result = va % vb;
+					break;
+				case MUL:
+					result = va * vb;
+					break;
+				case PLUS:
+					result = va + vb;
+					break;
+				case RSHIFT:
+					result = va >> vb;
+					break;
+				case RUSHIFT:
+					result = va >>> vb;
+					break;			
+				}
+				
+				return new Int(result);
+			} else {
+				Float va = a.___getNumber(a);
+				Float vb = b.___getNumber(b);
+				Float result = 0f;
+				
+				switch(o){
+				case BITAND:
+					result = (float) (va.intValue() & vb.intValue());
+					break;
+				case BITOR:
+					result = (float) (va.intValue() | vb.intValue());
+					break;
+				case BITXOR:
+					result = (float) (va.intValue() ^ vb.intValue());
+					break;
+				case DIV:
+					result = va / vb;
+					break;
+				case LSHIFT:
+					result = (float) (va.intValue() << vb.intValue());
+					break;
+				case MINUS:
+					result = va - vb;
+					break;
+				case MOD:
+					result = va % vb;
+					break;
+				case MUL:
+					result = va * vb;
+					break;
+				case PLUS:
+					result = va + vb;
+					break;
+				case RSHIFT:
+					result = (float) (va.intValue() >> vb.intValue());
+					break;
+				case RUSHIFT:
+					result = (float) (va.intValue() >>> vb.intValue());
+					break;			
+				}
+				
+				return new Flt(result);
 			}
-			
-			return PLangObject.___autocast(result, a, b);
 		} 
 		case EQ:
 		case LEQ:
@@ -310,6 +355,34 @@ public class TypeOperations {
 			return BooleanValue.fromBoolean(!BooleanValue.toBoolean(a));
 		}
 		
+		if (a instanceof Int){
+			long v = ((Int)a).value;
+			long add = 1;
+			long res;
+			
+			switch (o){
+			case LPLUSPLUS:
+				res = v + add;
+				break;
+			case LMINUSMINUS:
+				res = v - add;
+				break;
+			case UMINUS:
+				res = -v;
+				break;
+			case UPLUS:
+				res = +v;
+				break;
+			case UBINNEG:
+				res = v;
+				break;
+			default:
+				res = -1;
+			}
+			
+			return new Int(res);
+		}
+		
 		Float v = a.___getNumber(a);
 		Float add = 1.0f;
 		Float res;
@@ -334,7 +407,7 @@ public class TypeOperations {
 			res = -1f;
 		}
 		
-		return PLangObject.___autocast(res, a);
+		return new Flt(res);
 	}
 	
 	

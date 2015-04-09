@@ -2,8 +2,6 @@ package cz.upol.vanusanik.paralang.plang;
 
 import com.eclipsesource.json.JsonValue;
 
-import cz.upol.vanusanik.paralang.plang.types.Flt;
-import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 
 public abstract class PLangObject extends RuntimeException {
@@ -16,20 +14,6 @@ public abstract class PLangObject extends RuntimeException {
 	public abstract boolean ___isNumber();
 	
 	public abstract Float ___getNumber(PLangObject self);
-	
-	public static PLangObject ___autocast(Float number, PLangObject a, PLangObject b){
-		if (a.___getType() == PlangObjectType.FLOAT || b.___getType() == PlangObjectType.FLOAT)
-			return new Flt(number);
-		else
-			return new Int(number.intValue());
-	}
-	
-	public static PLangObject ___autocast(Float number, PLangObject a){
-		if (a.___getType() == PlangObjectType.FLOAT)
-			return new Flt(number);
-		else
-			return new Int(number.intValue());
-	}
 
 	public abstract boolean ___eq(PLangObject self, PLangObject b);
 
@@ -47,5 +31,18 @@ public abstract class PLangObject extends RuntimeException {
 
 	public String toString(PLangObject self) {
 		return toString();
+	}
+	
+	@Override
+    public Throwable fillInStackTrace()
+    {
+		if (___isException(this))
+			return super.fillInStackTrace();
+		else
+			return this;
+    }
+
+	protected boolean ___isException(PLangObject self) {
+		return false;
 	}
 }

@@ -15,7 +15,7 @@ public class Function  extends PLClass implements Serializable {
 	}
 	
 	@Override
-	protected void ___init_internal_datafields() {
+	protected void ___init_internal_datafields(BaseCompiledStub self) {
 		this.___restrictedOverride = true;
 		
 		___setkey(BaseClass.___superKey, new BaseClass());

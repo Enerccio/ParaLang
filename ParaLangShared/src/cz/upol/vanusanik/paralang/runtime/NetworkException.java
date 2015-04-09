@@ -15,7 +15,7 @@ public class NetworkException extends PLClass{
 	}
 
 	@Override
-	protected void ___init_internal_datafields() {
+	protected void ___init_internal_datafields(BaseCompiledStub self) {
 		this.___restrictedOverride = true;
 		
 		BaseException be = new BaseException();

@@ -28,7 +28,7 @@ public abstract class PLClass extends BaseCompiledStub{
 		}
 		
 		PLClass parent = null;
-		if (!___fieldsAndMethods.containsKey(key) && ((parent = __getSuper())!=null))
+		if (!___fieldsAndMethods.containsKey(key) && ((parent = ___getSuper())!=null))
 			return parent.___getkey(key);
 		else if (!___fieldsAndMethods.containsKey(key)){
 			return null;
@@ -38,7 +38,7 @@ public abstract class PLClass extends BaseCompiledStub{
 		return data;
 	}
 
-	public PLClass __getSuper() {
+	public PLClass ___getSuper() {
 		if (!___isInited){
 			___init_class();
 		}
@@ -67,13 +67,21 @@ public abstract class PLClass extends BaseCompiledStub{
 	
 	@Override
 	public String toString(PLangObject self) {
-		if (___fieldsAndMethods.containsKey("__str")){
-			PLangObject str = ___getkey("__str");
-			if (str instanceof FunctionWrapper){
-				PLangObject o = PLRuntime.getRuntime().run(str, (BaseCompiledStub)self);
-				return o.toString(o);
-			}
+		PLangObject str = ___getkey("__str");
+		if (str != null && str instanceof FunctionWrapper){
+			PLangObject o = PLRuntime.getRuntime().run(str, (BaseCompiledStub)self);
+			return o.toString(o);
 		}
 		return super.toString();
+	}
+	
+	@Override
+	protected boolean ___isException(PLangObject self) {
+		if (this instanceof BaseException)
+			return true;
+		PLClass superclass = ___getSuper();
+		if (superclass == null)
+			return false;
+		return superclass.___isException(self);
 	}
 }

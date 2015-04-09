@@ -10,13 +10,17 @@ import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 
 public class Int extends PLangObject implements Serializable {
 	private static final long serialVersionUID = 3731336418712870225L;
-	int value;
+	long value;
 	
 	public Int(){
 		
 	}
 	
 	public Int(int value){
+		this.value = value;
+	}
+	
+	public Int(long value){
 		this.value = value;
 	}
 
@@ -34,7 +38,7 @@ public class Int extends PLangObject implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + value;
+		result = prime * result + (int) (value ^ (value >>> 32));
 		return result;
 	}
 
@@ -74,7 +78,7 @@ public class Int extends PLangObject implements Serializable {
 		return value == b.___getNumber(b).intValue();
 	}
 
-	public int getValue() {
+	public long getValue() {
 		return value;
 	}
 	
