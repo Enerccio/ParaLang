@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-		<title>GitHub Markdown CSS demo</title>
+		<title>ParaLang language specification and User Manual</title>
 		<link rel="stylesheet" href="github-markdown.css">
 		<style>
 			body {
@@ -26,13 +26,27 @@
                         <li><a href="#ex-classdef">Class Definition</a></li>
                         <li><a href="#ex-fielddef">Field Definition</a></li>
                         <li><a href="#ex-funcdef">Function/Method definition</a></li>
-                        
+                        <li><a href="#ex-cex">Complete Example</a></li>
                     </ol>    
                 </li>
                 <li>
                     <a href="#documentation">Documentation</a>
                     <ol>
                         <li><a href="#doc-basetypes">Base Types</a></li>
+                        <li>
+                            <a href="#doc-statements">Statements</a>
+                            <ol>
+                                <li><a href="#doc-st-block">Block</a></li>
+                                <li><a href="#doc-st-ifelse">If/Else</a></li>
+                                <li><a href="#doc-st-for">For</a></li>
+                                <li><a href="#doc-st-while">While</a></li>
+                                <li><a href="#doc-st-do">Do</a></li>
+                                <li><a href="#doc-st-breakcont">Break/Continue</a></li>
+                                <li><a href="#doc-st-throw">Try/Catch/Finally and Throw - handling exceptions</a></li>
+                                <li><a href="#doc-st-return">Return</a></li>
+                                <li><a href="#doc-st-empty">Empty Statement</a></li>
+                            </ol>
+                        </li>
                     </ol>    
                 </li>
             </ol>
@@ -41,18 +55,18 @@
             <a href="#toc">Back to top</a>
             <h1 id="examples">Examples</h1>
             
-            <h2 id="#ex-moduledef">Module Definition</h2>
+            <h2 id="ex-moduledef">Module Definition</h2>
             
-            Every .plang file represents a module. There can only be one module defined in every .plang file. Every module 
-            definition starts with 'module' keyword followed by the name of the module, followed by module body definition. 
-            Module definition body starts with { and ends with };.
+            Every <code>.plang</code> file represents a module. There can only be one module defined in every <code>.plang</code> file. Every module 
+            definition starts with <code>module</code> keyword followed by the name of the module, followed by module body definition. 
+            Module definition body starts with <code>{</code> and ends with <code>};</code>.
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
 
 };</pre></div>
             
             Every module can have functions, classes or variables defined. Prior to the module definition, modules or classes which are 
-            used by this module must be declared via 'using' keyword:
+            used by this module must be declared via <code>using</code> keyword:
             
             <div class="highlight highlight-js"><pre><span class="pl-k">using</span> IO;
 <span class="pl-k">using</span> System;
@@ -62,7 +76,7 @@
 
 };</pre></div>
 
-            Module can have initialization method called 'init' which is called when module is initialized for the first time. This method
+            Module can have initialization method called <code>init</code> which is called when module is initialized for the first time. This method
             has no parameters and whatever it returns is ignored.
             <div class="highlight highlight-js"><pre><span class="pl-k">using</span> IO;
 <span class="pl-k">using</span> System;
@@ -74,9 +88,9 @@
 	}
 };</pre></div>
 
-            <h2 id="#ex-classdef">Class Definition</h2>
+            <h2 id="ex-classdef">Class Definition</h2>
             
-            Every class is defined via 'class' keyword, followed by identifier followed by class body.
+            Every class is defined via <code>class</code> keyword, followed by identifier followed by class body.
             
             <div class="highlight highlight-js"><pre>
 <span class="pl-k">module</span> ExampleModule {
@@ -85,7 +99,7 @@
 	}
 };</pre></div>
 
-            You can specify one parent class from which this class will be derived by prepending the class body with '>' followed by identifier:
+            You can specify one parent class from which this class will be derived by prepending the class body with <code>></code> followed by identifier:
             
             <div class="highlight highlight-js"><pre>
 <span class="pl-k">module</span> ExampleModule {
@@ -94,19 +108,19 @@
 	}
 };</pre></div>
 
-            Every class is automatically derived from <i>System.BaseClass</i> if there is no parent class specified. Every class can have one init method defined 
+            Every class is automatically derived from <i>System.BaseClass</i> if there is no parent class specified. Every class can have one <code>init</code> method defined 
             that can take defined amount of parameters and will be called when new instance is created automatically. New instance is created via 'new' keyword.
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
 	<span class="pl-k">class</span> ExampleClass {
-		def init(a, b, c){
+		<span class="pl-s3">defn init(a, b, c)</span>{
 		}
 	}
 	<span class="pl-k">var</span> x = new ExampleClass(<span class="pl-s2"><span class="pl-pds">1</span></span>, <span class="pl-s2"><span class="pl-pds">2</span></span>, <span class="pl-s2"><span class="pl-pds">3</span></span>);
 };</pre></div>
             
-            <h2 id="#ex-fielddef">Field Definition</h2>
-                Field is defined via 'var' keyword followed by field definition and optional initialization. 
+            <h2 id="ex-fielddef">Field Definition</h2>
+                Field is defined via <code>var</code> keyword followed by field definition and optional initialization. 
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
 	<span class="pl-k">var</span> x;
@@ -116,23 +130,31 @@
             
                 Fields can be defined for either module or class. Any uninitialized field will have value of <b>NoValue</b>.
             
-            <h2 id="#ex-funcdef">Function/Method definition</h2>
+            <h2 id="ex-funcdef">Function/Method definition</h2>
             
             Function/Method (the only difference is where they are defined, functions are defined at module level, methods are defined
-            at class level) are defined via 'defn' keyword followed by optional 'restricted' keyword followed by parameter definition and function/method body.
+            at class level) are defined via <code>defn</code> keyword followed by optional 'restricted' keyword followed by parameter definition and function/method body.
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
 	<span class="pl-s3">defn method(x, y)</span>{
 	
 	}
 };</pre></div>
+
+            <h2 id="ex-cex">Complete Example</h2>
             
             <hr/><a href="#toc">Back to top</a>
             <h1 id="documentation">Documentation</h1>
             
-            <h2 id="#doc-basetypes">Base Types</h2>
+            <h2 id="doc-basetypes">Base Types</h2>
+            
+            There are 9 types in ParaLang. 7 of those are base types and include: <b>integer, float, string, boolean, NoValue, Method/Function</b> and <b>Jawa wrapped Object</b>. You cannot derive 
+            these types. <b>String</b> type has methods that create modified variants while <b>integer</b> and <b>float</b> have their class variant as <code>System.Integer</code> and <code>System.Float</code>
+            respectively. The following table lists all the types of objects in ParaLang, along with <code>instanceof</code> type that can be used to determine if value is the type that is being tested. 
+            Module type cannot be extended while class type can be extended.
+            
             <table>
-                <tr><td width="10%"><b>Type</b></td><td width="10%"><b>instanceof type</b></td><td width="10%"><b>class variant</b></td><td width="70%"><b>description</b></td><tr>
+                <tr><td width="10%"><b>Type</b></td><td width="10%"><b>instanceof/catch type</b></td><td width="10%"><b>class variant</b></td><td width="70%"><b>description</b></td><tr>
                 <tr><td width="10%">integer</td><td width="10%">integer, number</td><td width="10%"><i>System.Integer</i></td><td width="70%">Base integers from -9223372036854775808 to 9223372036854775807, data value corresponds to java long</td><tr>
                 <tr><td width="10%">float</td><td width="10%">float, number</td><td width="10%"><i>System.Float</i></td><td width="70%">Float point numbers, data value corresponds to java float</td><tr>
                 <tr><td width="10%">string</td><td width="10%">string</td><td width="10%">N/A</td><td width="70%">Strings enclosed by "". Immutable, data value corresponds to java String.</td><tr>
@@ -143,7 +165,140 @@
                 <tr><td width="10%">Module</td><td width="10%">mod</td><td width="10%">N/A</td><td width="70%">Module instance. Used to access module fields and functions.</td><tr>
                 <tr><td width="10%">Class</td><td width="10%">cls</td><td width="10%"><i>System.BaseClass</i></td><td width="70%">Class instance.</td><tr>
             </table>
-            <a href="#toc">Back to top</a>
+            
+            <h2 id="doc-statements">Statements</h2>
+            
+            Method or function body is defined as 0 or more statements. Every statement except <code>block</code> must be ended with semicolon <code>&#59;</code>. 
+            
+            <h3 id="doc-st-block">Block</h3>
+            
+            Every block starts with <code>{</code> and ends with <code>}</code>. Inside the block, you can have any number of statements and any number of variable declarators. Variable declarators have 
+            the same syntax as field declarators, <code>var</code> followed by one or more variable declaration consisting either of identifier or identifier followed by <code>=</code> followed by expression.
+            You can nest blocks.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		{
+			{
+			}
+		}
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-ifelse">If/Else</h3>
+            
+            If/Else branching statement has following syntax: <code>if (expression) statement</code> or <code>if (expression) statement else statement</code>. Depending on whether expression evaluates to TRUE or FALSE
+            first or second statement (if there is one) will be executed. Remember, every value that is not FALSE or NoValue is considered true.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">if</span> (<span class="pl-s3">x</span> == <span class="pl-s3">y</span>) {
+		
+		}<span class="pl-k"> else </span>{
+		
+		}
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-for">For</h3>
+            
+            For statement has same syntax as in java or c++: <code>for (initializer; expression; expression) statement</code>. <code>initializer</code> can either be expression, variable declaration or empty. 
+            Other two expressions can be empty as well.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">for</span> (<span class="pl-k">var</span> i=<span class="pl-s2"><span class="pl-pds">0</span></span>; <span class="pl-s3">i</span><<span class="pl-s3">x</span>; <span class="pl-s3">i</span>++)
+			;
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-while">While</h3>
+            
+            While statement has following syntax: <code>while (expression) statement</code>. While expression resolves to TRUE, statement will continue to be executed.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">while</span> (<span class="pl-s3">x</span>++ < <span class="pl-s3">y</span>) 
+			;
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-do">Do</h3>
+            
+            Do statement has following syntax: <code>do statement while (expression)</code>. The statement will be executed at least once and then depending on the expression it will continue to be executed or not.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">do</span> {
+			++<span class="pl-s3">x</span>;
+		}<span class="pl-k"> while </span>(<span class="pl-s3">x</span> < <span class="pl-s3">y</span>);
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-breakcont">Break/Continue</h3>
+            
+            These statements can only be used during loops. <code>break</code> statement will exit the most recent nested loop of where it is written, while <code>continue</code> will return to the beginning 
+            of the loop.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">while</span> (<span class="pl-s3">TRUE</span>){
+			<span class="pl-k">if</span> (<span class="pl-s3">x</span> % <span class="pl-s2"><span class="pl-pds">2</span></span> == <span class="pl-s3">TRUE</span>) <span class="pl-k">continue</span>;
+			<span class="pl-k">if</span> (<span class="pl-s3">x</span> >= <span class="pl-s3">y</span>) <span class="pl-k">break</span>;
+		}
+	}
+};</pre></div>
+
+            <h3 id="doc-st-throw">Try/Catch/Finally and Throw - handling exceptions</h3>
+            
+            ParaLang has same exception handling system as Java. You can enclose the statements in <code>try block</code> and if any value is thrown, it will be handled by proper handler you provide.
+            You can throw any ParaLang value, however, only objects that are instance of classes derived from <code>System.BaseException</code> will have stack trace generated. You can provide handlers 
+            via <code>catch (type identifier) block</code> followed the try block. If the type matches, the handler will be executed, if not, the next handler will be tried. Finally, you can have <code>finally block</code>
+            after all handlers, which will be executed every time you exit the try or catch block, even via break or return.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> System.BaseException;
+<span class="pl-k">using</span> System.NetworkException;
+
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">try</span> {
+			<span class="pl-k">throw</span> new NetworkException(<span class="pl-s2"><span class="pl-pds">"NO!"</span></span>);
+		} <span class="pl-k">catch</span> (NetworkException e){
+		
+		} <span class="pl-k">catch</span> (BaseException e){
+		
+		} <span class="pl-k">finally</span> {
+		
+		}
+	}
+};</pre></div>
+
+            <h3 id="doc-st-return">Return</h3>
+            
+            Return statement is optional statement that has following syntax: <code>return expression</code>. It will return the value of expression from the function/method it is located in. 
+            If function/method ends without return statement, NoValue is returned instead.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> System.BaseException;
+<span class="pl-k">using</span> System.NetworkException;
+
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">return</span> <span class="pl-s3">x</span> * <span class="pl-s3">y</span>;
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-empty">Empty Statement</h3>
+            
+            Single semicolon <code>;</code> can be used for empty statement. Such statement does nothing.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">while</span> (<span class="pl-s3">x</span>++ < <span class="pl-s3">y</span>) 
+			;
+	}
+};</pre></div>
+            
+            <hr/><a href="#toc">Back to top</a>
         </article>
         <a href="https://github.com/Enerccio/ParaLang/"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="http://aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
         </body>

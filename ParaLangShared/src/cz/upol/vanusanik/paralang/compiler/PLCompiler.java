@@ -472,6 +472,8 @@ public class PLCompiler {
 		}
 		
 		fbcList = new LinkedList<FinallyBlockProtocol>();
+		fbcLoopList = new LinkedList<FinallyBlockProtocol>();
+		
 		compileBlock(b);	
 		
 		markLine(bc.currentPc(), b.stop.getLine());
@@ -482,6 +484,17 @@ public class PLCompiler {
 	
 	private static interface FinallyBlockProtocol {
 		public void doCompile() throws Exception;
+	}
+	
+	private void breakContinueExitProtocol() throws Exception {
+		List<FinallyBlockProtocol> copy = new ArrayList<FinallyBlockProtocol>(fbcList);
+		Collections.reverse(copy);
+		for (FinallyBlockProtocol fbc : copy){
+			if (fbc == null) break;
+			fbc.doCompile();
+		}
+		return;
+		
 	}
 
 	private void functionExitProtocol() throws Exception {
@@ -533,6 +546,7 @@ public class PLCompiler {
 	private Stack<Boolean> isStatementExpression = new Stack<Boolean>();
 	private Stack<Integer> continueStack = new Stack<Integer>();
 	private Stack<Integer> breakStack = new Stack<Integer>();
+	private List<FinallyBlockProtocol> fbcLoopList;
 	private void compileStatement(final StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
 		
@@ -540,6 +554,7 @@ public class PLCompiler {
 			if (continueStack.empty())
 				throw new CompilationException("Continue not inside any loop");
 			
+			breakContinueExitProtocol();
 			int label = continueStack.peek();
 			addLabel(new LabelInfo(){
 
@@ -562,6 +577,7 @@ public class PLCompiler {
 			if (breakStack.empty())
 				throw new CompilationException("Break not inside any loop");
 			
+			breakContinueExitProtocol();
 			int label = breakStack.peek();
 			addLabel(new LabelInfo(){
 
@@ -645,7 +661,9 @@ public class PLCompiler {
 			
 			breakStack.add(loopEnd);
 			continueStack.add(continueLoop);
+			fbcLoopList.add(null);
 			compileStatement(statement.statement(0));
+			fbcLoopList.remove(fbcLoopList.size()-1);
 			breakStack.pop();
 			continueStack.pop();
 			
@@ -709,7 +727,9 @@ public class PLCompiler {
 			continueStack.add(loopStart);
 			breakStack.add(loopEnd);
 			
+			fbcLoopList.add(null);
 			compileStatement(statement.statement(0));
+			fbcLoopList.remove(fbcLoopList.size()-1);
 			addLabel(new LabelInfo(){
 
 				@Override
@@ -743,7 +763,9 @@ public class PLCompiler {
 			continueStack.add(loopStart);
 			breakStack.add(loopEnd);
 			
+			fbcLoopList.add(null);
 			compileStatement(statement.statement(0));
+			fbcLoopList.remove(fbcLoopList.size()-1);
 			addLabel(new LabelInfo(){
 
 				@Override
@@ -798,6 +820,7 @@ public class PLCompiler {
 						compileBlock(statement.finallyBlock().block());
 					}
 				});
+				fbcLoopList.add(fbcList.get(fbcList.size()-1));
 			}
 			
 			int start = bc.currentPc();
@@ -841,10 +864,6 @@ public class PLCompiler {
 						if (r.isJava())
 							throw new CompilationException("Only PLang type can be in catch expression!");
 						fqName = r.getFullReference();
-					}
-					
-					if (!fqName.contains(".")){
-						throw new CompilationException("Class type " + type + " is unknown. Have you forgotten using declaration?");
 					}
 					
 					String className = PLRuntime.getRuntime().getClassNameOrGuess(fqName);
@@ -937,8 +956,10 @@ public class PLCompiler {
 			setLabelPos(endLabel);
 			bc.add(Opcode.NOP);
 			
-			if (hasFinally)
+			if (hasFinally) {
 				fbcList.remove(fbcList.size() - 1);
+				fbcLoopList.remove(fbcLoopList.size()-1);
+			}
 
 			stacker.release();
 			stacker.release();

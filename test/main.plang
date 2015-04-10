@@ -4,17 +4,26 @@ using Math.Matrix;
 using Random.Random;
 using Random;
 using System;
+using System.BaseException;
 
 module Main {
     var r = new Random.Random(NoValue);
 
     defn restricted calculate(a, b){
+    
+        for (var x=0; x<10; x++)
+            try {
+                continue;
+            finally {
+                IO.out.println("Still in loop!");
+            }
+    
         var ct = System.current_time();
         
         IO.out.println("Ahoj".to(3).from(1));
-    
+        
         var m1 = Math.random_matrix(a, a, r, 100);
-        var m2 = Math.random_matrix(b, b, r, 50);
+        var m2 = Math.random_matrix(b, b, r, 50);        
         
         IO.out.println(m1);
         IO.out.println(m2);
