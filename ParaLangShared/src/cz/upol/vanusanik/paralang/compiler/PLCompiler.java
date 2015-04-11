@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.LineNumberAttribute;
+import javassist.bytecode.Mnemonic;
 import javassist.bytecode.Opcode;
 import javassist.bytecode.SourceFileAttribute;
 
@@ -2040,6 +2042,8 @@ public class PLCompiler {
 	
 	private List<LabelInfo> labelList;
 
+	
+	private Map<Integer, Integer> bcToLineMap;
 	private abstract class MethodCompiler {
 		private CtMethod m;
 		public MethodCompiler(CtMethod m){
@@ -2052,6 +2056,7 @@ public class PLCompiler {
 			counter = 0;
 			labelMap = new HashMap<Integer, Integer>();
 			labelList = new ArrayList<LabelInfo>();
+			bcToLineMap = new HashMap<Integer, Integer>();
 			
 			pool = m.getMethodInfo().getConstPool();
 			SourceFileAttribute attr = new SourceFileAttribute(pool, source);
@@ -2068,6 +2073,8 @@ public class PLCompiler {
 			for (LabelInfo nfo : labelList)
 				nfo.add(bc);
 			
+			pruneDeadCode();
+			
 			byte[] bytes = stream.toByteArray();
 			int size = (bytes.length - 2) / 4;
 			bytes[0] = (byte) ((size >>> 8) & 0xFF);
@@ -2075,8 +2082,8 @@ public class PLCompiler {
 			AttributeInfo lineNubmerInfo = new AttributeInfo(pool, LineNumberAttribute.tag, bytes);
 			
 			CodeAttribute at = bc.toCodeAttribute();
-			at.computeMaxStack();
-			//at.setMaxStack(128); // FIXME
+			//at.computeMaxStack();
+			at.setMaxStack(128); // FIXME
 			at.setMaxLocals(stacker.getMax());
 			at.getAttributes().add(lineNubmerInfo);
 			
@@ -2095,6 +2102,438 @@ public class PLCompiler {
 		return restrictions;
 	}
 
+	private static class Instruction {
+		private boolean visited 		 = false;
+		private Integer lineNo 			 = null;
+		private byte[] instBytes 		 = null;
+		private Instruction branchTarget = null;
+		
+		@Override
+		public String toString(){
+			return Mnemonic.OPCODE[(int)instBytes[0] & 0x000000FF] + ": " + visited;
+		}
+	}
+	
+	public void pruneDeadCode() throws Exception {
+		byte[] bytecode = bc.get();
+		List<Instruction> insts = parseBytecode(bytecode);
+		
+		markDeadCode(insts);
+		
+		List<Instruction> prunned = new ArrayList<Instruction>();
+		for (Instruction i : insts){
+			if (i.visited)
+				prunned.add(i);
+		}
+		
+		recalculateJumps(prunned);
+		
+		bc = new Bytecode(pool);
+		for (Instruction i : prunned){
+			if (i.lineNo != null)
+				writeLine(bc.currentPc(), i.lineNo);
+			for (byte b : i.instBytes)
+				bc.add(b);
+		}
+	}
+
+	private void recalculateJumps(List<Instruction> prunned) {
+		for (Instruction i : prunned){
+			if (i.branchTarget != null){
+				short distance = getDistance(i, i.branchTarget, prunned);
+//				byte[] cpy = Arrays.copyOf(i.instBytes, i.instBytes.length);
+				i.instBytes[1] = (byte) (distance >> 8);
+				i.instBytes[2] = (byte) distance;
+//				if (!Arrays.equals(cpy, i.instBytes)){
+//					getDistance(i, i.branchTarget, prunned);
+//				}
+			}
+		}
+	}
+
+	private short getDistance(Instruction a, Instruction b,
+			List<Instruction> list) {
+		
+		int idxa = list.indexOf(a);
+		int idxb = list.indexOf(b);
+		
+		if (idxa == idxb) return 0;
+		
+		int idxs = Math.min(idxa, idxb);
+		int idxl = Math.max(idxa, idxb);
+		
+		short delta = getDistance(idxs, idxl, list);
+		
+		if (idxa < idxb)
+			return delta;
+		else
+			return (short) -delta;
+	}
+
+	private short getDistance(int idxs, int idxl, List<Instruction> list) {
+		short delta = 0;
+		for (int i=idxs; i<idxl; i++){
+			delta += list.get(i).instBytes.length;
+		}
+		return delta;
+	}
+
+	private void markDeadCode(List<Instruction> insts) {
+		markFrom(insts, 0);
+	}
+
+	private void markFrom(List<Instruction> insts, int i) {
+		while (i < insts.size()){
+			Instruction inst = insts.get(i);
+			if (inst.visited) return;
+			
+			inst.visited = true;
+			if (inst.branchTarget != null){
+				markFrom(insts, insts.indexOf(inst.branchTarget));
+			}
+			
+			int opcode = inst.instBytes[0] & 0x000000FF;
+			
+			switch (opcode){
+			case 0xac:
+			case 0xad:
+			case 0xb1:
+			case 0xb0:
+			case 0xaf:
+			case 0xae:
+				return; // is return
+			}
+			
+			++i;
+		}
+	}
+
+	private List<Instruction> parseBytecode(byte[] bytecode) throws Exception {
+		List<Instruction> iList = new ArrayList<Instruction>();
+		Map<Integer, Instruction> iPosList = new HashMap<Integer, Instruction>();
+		for (int i=0; i<bytecode.length; i++){
+			Instruction in = new Instruction();
+			int pos = i;
+			
+			switch ((int)bytecode[i] & 0x000000FF){
+				// 1
+			case 0x19:
+			case 0x3a:
+			case 0x10:
+			case 0x39:
+			case 0x17:
+			case 0x38:
+			case 0x15:
+			case 0x36:
+			case 0x12:
+			case 0x16:
+			case 0x37:
+			case 0xbc:
+			case 0xa9:
+				in.instBytes = new byte[2];
+				in.instBytes[0] = bytecode[i];
+				in.instBytes[1] = bytecode[++i];
+				break;
+				
+				// 2
+			case 0xbd:
+			case 0xc0:
+			case 0xb4:
+			case 0xb2:
+			case 0xa7:
+			case 0xa5:
+			case 0xa6:
+			case 0x9f:
+			case 0xa2:
+			case 0xa3:
+			case 0xa4:
+			case 0xa1:
+			case 0xa0:
+			case 0x99:
+			case 0x9c:
+			case 0x9d:
+			case 0x9e:
+			case 0x9b:
+			case 0x9a:
+			case 0xc7:
+			case 0xc6:
+			case 0x84:
+			case 0xc1:
+			case 0xb7:
+			case 0xb8:
+			case 0xb6:
+			case 0xa8:
+			case 0x13:
+			case 0x14:
+			case 0xbb:
+			case 0xb5:
+			case 0xb3:
+			case 0x11:
+				in.instBytes = new byte[3];
+				in.instBytes[0] = bytecode[i];
+				in.instBytes[1] = bytecode[++i];
+				in.instBytes[2] = bytecode[++i];
+				break;
+				
+				// 3
+			case 0xc5:				
+				in.instBytes = new byte[4];
+				in.instBytes[0] = bytecode[i];
+				in.instBytes[1] = bytecode[++i];
+				in.instBytes[2] = bytecode[++i];
+				in.instBytes[3] = bytecode[++i];
+				break;
+				
+				// 4
+			case 0xc8:
+			case 0xba:
+			case 0xb9:
+			case 0xc9:
+				in.instBytes = new byte[5];
+				in.instBytes[0] = bytecode[i];
+				in.instBytes[1] = bytecode[++i];
+				in.instBytes[2] = bytecode[++i];
+				in.instBytes[3] = bytecode[++i];
+				in.instBytes[4] = bytecode[++i];
+				break;
+				
+				// x not used
+			case 0xab:
+			case 0xaa:
+				throw new CompilationException("Not allowed");
+				
+				// wide
+			case 0xc4:
+				int cbc = (int)bytecode[i] & 0x000000FF;
+				if (cbc == 0x84){
+					in.instBytes = new byte[6];
+					in.instBytes[0] = bytecode[i];
+					in.instBytes[1] = bytecode[++i];
+					in.instBytes[2] = bytecode[++i];
+					in.instBytes[3] = bytecode[++i];
+					in.instBytes[4] = bytecode[++i];
+					in.instBytes[5] = bytecode[++i];
+				} else {
+					in.instBytes = new byte[4];
+					in.instBytes[0] = bytecode[i];
+					in.instBytes[1] = bytecode[++i];
+					in.instBytes[2] = bytecode[++i];
+					in.instBytes[3] = bytecode[++i];
+				}
+				break;
+				
+			case 0x32:
+			case 0x53:
+			case 0x01:
+			case 0x2a:
+			case 0x2b:
+			case 0x2c:
+			case 0x2d:
+			case 0xb0:
+			case 0xbe:
+			case 0x4b:
+			case 0x4c:
+			case 0x4d:
+			case 0x4e:
+			case 0xbf:
+			case 0x33:
+			case 0x54:
+			case 0xca:
+			case 0x34:
+			case 0x55:
+			case 0x90:
+			case 0x8e:
+			case 0x8f:
+			case 0x63:
+			case 0x31:
+			case 0x52:
+			case 0x98:
+			case 0x97:
+			case 0x0e:
+			case 0x0f:
+			case 0x6f:
+			case 0x18:
+			case 0x26:
+			case 0x27:
+			case 0x28:
+			case 0x29:
+			case 0x6b:
+			case 0x77:
+			case 0x73:
+			case 0xaf:
+			case 0x47:
+			case 0x48:
+			case 0x49:
+			case 0x4a:
+			case 0x67:
+			case 0x59:
+			case 0x5a:
+			case 0x5b:
+			case 0x5c:
+			case 0x5d:
+			case 0x5e:
+			case 0x8d:
+			case 0x8b:
+			case 0x8c:
+			case 0x62:
+			case 0x30:
+			case 0x51:
+			case 0x96:
+			case 0x95:
+			case 0x0b:
+			case 0x0c:
+			case 0x0d:
+			case 0x6e:
+			case 0x22:
+			case 0x23:
+			case 0x24:
+			case 0x25:
+			case 0x76:
+			case 0x6a:
+			case 0x72:
+			case 0xae:
+			case 0x43:
+			case 0x44:
+			case 0x45:
+			case 0x46:
+			case 0x66:
+			case 0x91:
+			case 0x92:
+			case 0x87:
+			case 0x86:
+			case 0x85:
+			case 0x93:
+			case 0x60:
+			case 0x2e:
+			case 0x7e:
+			case 0x4f:
+			case 0x02:
+			case 0x03:
+			case 0x04:
+			case 0x05:
+			case 0x06:
+			case 0x07:
+			case 0x08:
+			case 0x6c:
+			case 0x1a:
+			case 0x1b:
+			case 0x1c:
+			case 0x1d:
+			case 0xfe:
+			case 0xff:
+			case 0x68:
+			case 0x74:
+			case 0x80:
+			case 0x70:
+			case 0xac:
+			case 0x78:
+			case 0x7a:
+			case 0x3b:
+			case 0x3c:
+			case 0x3d:
+			case 0x3e:
+			case 0x64:
+			case 0x7c:
+			case 0x82:
+			case 0x8a:
+			case 0x89:
+			case 0x88:
+			case 0x61:
+			case 0x2f:
+			case 0x7f:
+			case 0x50:
+			case 0x94:
+			case 0x09:
+			case 0x0a:
+			case 0x6d:
+			case 0x1e:
+			case 0x1f:
+			case 0x20:
+			case 0x21:
+			case 0x69:
+			case 0x75:
+			case 0x79:
+			case 0x7b:
+			case 0x81:
+			case 0x71:
+			case 0xad:
+			case 0x3f:
+			case 0x40:
+			case 0x41:
+			case 0x42:
+			case 0x65:
+			case 0x7d:
+			case 0x83:
+			case 0xc2:
+			case 0xc3:
+			case 0x00:
+			case 0x57:
+			case 0x58:
+			case 0xb1:
+			case 0x35:
+			case 0x56:
+			case 0x5f:
+			default:
+				in.instBytes = new byte[1];
+				in.instBytes[0] = bytecode[i];
+			}
+			iList.add(in);
+			iPosList.put(pos, in);
+		}
+		
+		int it = 0;
+		for (Instruction i : iList){
+			int opcode = (int)i.instBytes[0] & 0x000000FF;
+			
+			switch (opcode){
+			case 0xa7:
+			case 0xa5:
+			case 0xa6:
+			case 0x9f:
+			case 0xa2:
+			case 0xa3:
+			case 0xa4:
+			case 0xa1:
+			case 0xa0:
+			case 0x99:
+			case 0x9c:
+			case 0x9d:
+			case 0x9e:
+			case 0x9b:
+			case 0x9a:
+			case 0xc7:
+			case 0xc6: {
+				int branchbyte1 = i.instBytes[1] & 0x000000FF;
+				int branchbyte2 = i.instBytes[2] & 0x000000FF;
+				short offset = (short) ((branchbyte1 << 8) + branchbyte2);
+				int instoffset = it + offset;
+				i.branchTarget = iPosList.get(instoffset);
+			} break;
+			
+			case 0xc8:{
+				int branchbyte1 = i.instBytes[1] & 0x000000FF;
+				int branchbyte2 = i.instBytes[2] & 0x000000FF;
+				int branchbyte3 = i.instBytes[3] & 0x000000FF;
+				int branchbyte4 = i.instBytes[4] & 0x000000FF;
+				short offset = (short) ((branchbyte1 << 24) + (branchbyte2 << 16) + (branchbyte3 << 8) + branchbyte4);
+				int instoffset = it + offset;
+				i.branchTarget = iPosList.get(instoffset);
+			} break;
+				
+			case 0xa8:
+			case 0xc9:
+				throw new CompilationException("Not allowed");
+				
+			default:
+				break;
+			}
+			
+			it += i.instBytes.length;
+		}
+		
+		return iList;
+	}
+
 	public void setRestrictions(boolean restrictions) {
 		this.restrictions = restrictions;
 	}
@@ -2108,7 +2547,11 @@ public class PLCompiler {
 	}
 	
 	private void markLine(int pc, int line, boolean override) throws Exception {
-		if (line == lastLineWritten && !override)
+		bcToLineMap.put(pc, line);
+	}
+	
+	private void writeLine(int pc, int line) throws Exception {
+		if (line == lastLineWritten)
 			return;
 		lineNumberStream.writeShort(pc);
 		lineNumberStream.writeShort(line);
