@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +26,7 @@ import javassist.bytecode.Bytecode;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.ConstPool;
+import javassist.bytecode.ExceptionTable;
 import javassist.bytecode.LineNumberAttribute;
 import javassist.bytecode.Mnemonic;
 import javassist.bytecode.Opcode;
@@ -37,6 +37,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+
+import com.patrikdufresne.util.BidiMultiHashMap;
+import com.patrikdufresne.util.BidiMultiMap;
 
 import cz.upol.vanusanik.paralang.compiler.VariableScopeStack.VariableType;
 import cz.upol.vanusanik.paralang.plang.PLangLexer;
@@ -2082,8 +2085,8 @@ public class PLCompiler {
 			AttributeInfo lineNubmerInfo = new AttributeInfo(pool, LineNumberAttribute.tag, bytes);
 			
 			CodeAttribute at = bc.toCodeAttribute();
-			//at.computeMaxStack();
-			at.setMaxStack(128); // FIXME
+			at.computeMaxStack();
+			//at.setMaxStack(128); // FIXME
 			at.setMaxLocals(stacker.getMax());
 			at.getAttributes().add(lineNubmerInfo);
 			
@@ -2107,6 +2110,7 @@ public class PLCompiler {
 		private Integer lineNo 			 = null;
 		private byte[] instBytes 		 = null;
 		private Instruction branchTarget = null;
+		private int originalPos;
 		
 		@Override
 		public String toString(){
@@ -2114,16 +2118,70 @@ public class PLCompiler {
 		}
 	}
 	
+	private static class ExceptionHandler {
+		Integer startLink;
+		Integer endLink;
+		Integer bcLink;
+		int type;
+	}
+	
+	private static class IntegerLink {
+		public IntegerLink(int i) {
+			this.i = i;
+		}
+
+		private int i;
+		private boolean isStartPos = false;
+	}
+	
 	public void pruneDeadCode() throws Exception {
 		byte[] bytecode = bc.get();
-		List<Instruction> insts = parseBytecode(bytecode);
+		ExceptionTable etable = bc.getExceptionTable();
 		
-		markDeadCode(insts);
+		int counter = 0;
+		List<ExceptionHandler> eh = new ArrayList<ExceptionHandler>();
+		BidiMultiMap<Integer, IntegerLink> linkMap = new BidiMultiHashMap<Integer, IntegerLink>();
 		
+		for (int i=0; i<etable.size(); i++){
+			ExceptionHandler ehi = new ExceptionHandler();
+			ehi.bcLink = counter++;
+			linkMap.put(ehi.bcLink, new IntegerLink(etable.handlerPc(i)));
+			ehi.startLink = counter++;
+			IntegerLink startLink = new IntegerLink(etable.endPc(i));
+			linkMap.put(ehi.startLink, startLink);
+			startLink.isStartPos  = true;
+			ehi.endLink = counter++;
+			linkMap.put(ehi.endLink, new IntegerLink(etable.startPc(i)));
+			ehi.type = etable.catchType(i);
+			eh.add(ehi);
+		}	
+		
+		Map<Integer, Instruction> iPosList = new HashMap<Integer, Instruction>();
+		List<Instruction> insts = parseBytecode(bytecode, iPosList);
+		
+		markDeadCode(insts, iPosList, etable);
+		
+		ExceptionTable copy = new ExceptionTable(pool);
 		List<Instruction> prunned = new ArrayList<Instruction>();
+		BidiMultiMap<Integer, IntegerLink> cpyMap = new BidiMultiHashMap<Integer, IntegerLink>(linkMap);
 		for (Instruction i : insts){
 			if (i.visited)
 				prunned.add(i);
+			else {
+				int bcpos = i.originalPos;
+				for (IntegerLink ilink : cpyMap.values()){
+					if (ilink.i > bcpos){
+						ilink.i -= i.instBytes.length;
+					} else if (ilink.i == bcpos && ilink.isStartPos){
+						linkMap.removeValue(ilink);
+					}
+				}
+			}
+		}
+		
+		for (ExceptionHandler ehi : eh){
+			if (linkMap.get(ehi.startLink) != null)
+				copy.add(linkMap.get(ehi.startLink).i, linkMap.get(ehi.endLink).i, linkMap.get(ehi.bcLink).i, ehi.type);
 		}
 		
 		recalculateJumps(prunned);
@@ -2135,18 +2193,17 @@ public class PLCompiler {
 			for (byte b : i.instBytes)
 				bc.add(b);
 		}
+		
+		for (int i=0; i<copy.size(); i++)
+			bc.addExceptionHandler(copy.startPc(i), copy.endPc(i), copy.startPc(i), copy.catchType(i));
 	}
 
 	private void recalculateJumps(List<Instruction> prunned) {
 		for (Instruction i : prunned){
 			if (i.branchTarget != null){
 				short distance = getDistance(i, i.branchTarget, prunned);
-//				byte[] cpy = Arrays.copyOf(i.instBytes, i.instBytes.length);
 				i.instBytes[1] = (byte) (distance >> 8);
 				i.instBytes[2] = (byte) distance;
-//				if (!Arrays.equals(cpy, i.instBytes)){
-//					getDistance(i, i.branchTarget, prunned);
-//				}
 			}
 		}
 	}
@@ -2178,8 +2235,13 @@ public class PLCompiler {
 		return delta;
 	}
 
-	private void markDeadCode(List<Instruction> insts) {
+	private void markDeadCode(List<Instruction> insts, Map<Integer, Instruction> iPosList, ExceptionTable etable) {
 		markFrom(insts, 0);
+		for (int i=0; i<etable.size(); i++){
+			int startPc = etable.startPc(i);
+			if (iPosList.get(startPc).visited)
+				markFrom(insts, etable.handlerPc(i));
+		}
 	}
 
 	private void markFrom(List<Instruction> insts, int i) {
@@ -2201,16 +2263,17 @@ public class PLCompiler {
 			case 0xb0:
 			case 0xaf:
 			case 0xae:
+			case 0xa7:
 				return; // is return
+				
 			}
 			
 			++i;
 		}
 	}
 
-	private List<Instruction> parseBytecode(byte[] bytecode) throws Exception {
+	private List<Instruction> parseBytecode(byte[] bytecode, Map<Integer, Instruction> iPosList) throws Exception {
 		List<Instruction> iList = new ArrayList<Instruction>();
-		Map<Integer, Instruction> iPosList = new HashMap<Integer, Instruction>();
 		for (int i=0; i<bytecode.length; i++){
 			Instruction in = new Instruction();
 			int pos = i;
@@ -2477,6 +2540,10 @@ public class PLCompiler {
 				in.instBytes = new byte[1];
 				in.instBytes[0] = bytecode[i];
 			}
+			
+			if (bcToLineMap.containsKey(pos))
+				in.lineNo = bcToLineMap.get(pos);
+			in.originalPos = pos;
 			iList.add(in);
 			iPosList.put(pos, in);
 		}
