@@ -158,8 +158,8 @@
                 <tr><td width="10%">integer</td><td width="10%">integer, number</td><td width="10%"><i>System.Integer</i></td><td width="70%">Base integers from -9223372036854775808 to 9223372036854775807, data value corresponds to java long</td><tr>
                 <tr><td width="10%">float</td><td width="10%">float, number</td><td width="10%"><i>System.Float</i></td><td width="70%">Float point numbers, data value corresponds to java float</td><tr>
                 <tr><td width="10%">string</td><td width="10%">string</td><td width="10%">N/A</td><td width="70%">Strings enclosed by "". Immutable, data value corresponds to java String.</td><tr>
-                <tr><td width="10%">boolean</td><td width="10%">boolean</td><td width="10%">N/A</td><td width="70%">Two possible values: TRUE or FALSE. Immutable.</td><tr>
-                <tr><td width="10%">NoValue</td><td width="10%">null</td><td width="10%">N/A</td><td width="70%">Represents no value. Every function automatically returns this value. This value is considered FALSE.</td><tr>
+                <tr><td width="10%">boolean</td><td width="10%">boolean</td><td width="10%">N/A</td><td width="70%">Two possible values: true or false. Immutable.</td><tr>
+                <tr><td width="10%">NoValue</td><td width="10%">null</td><td width="10%">N/A</td><td width="70%">Represents no value. Every function automatically returns this value. This value is considered false.</td><tr>
                 <tr><td width="10%">Method or function</td><td width="10%">func</td><td width="10%">N/A</td><td width="70%">Function of module or method of class. System only type.</td><tr>
                 <tr><td width="10%">Java wrapped object</td><td width="10%">pointer</td><td width="10%">N/A</td><td width="70%">Java wrapped objects are represented as this type. Only serializable java classes can be represented by pointer type.</td><tr>
                 <tr><td width="10%">Module</td><td width="10%">mod</td><td width="10%">N/A</td><td width="70%">Module instance. Used to access module fields and functions.</td><tr>
@@ -187,7 +187,7 @@
             
             <h3 id="doc-st-ifelse">If/Else</h3>
             
-            If/Else branching statement has following syntax: <code>if (expression) statement</code> or <code>if (expression) statement else statement</code>. Depending on whether expression evaluates to TRUE or FALSE
+            If/Else branching statement has following syntax: <code>if (expression) statement</code> or <code>if (expression) statement else statement</code>. Depending on whether expression evaluates to true or false
             first or second statement (if there is one) will be executed. Remember, every value that is not FALSE or NoValue is considered true.
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
@@ -214,7 +214,7 @@
             
             <h3 id="doc-st-while">While</h3>
             
-            While statement has following syntax: <code>while (expression) statement</code>. While expression resolves to TRUE, statement will continue to be executed.
+            While statement has following syntax: <code>while (expression) statement</code>. While expression resolves to true, statement will continue to be executed.
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
 	<span class="pl-s3">defn example(x, y)</span>{
@@ -242,8 +242,8 @@
             
             <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
 	<span class="pl-s3">defn example(x, y)</span>{
-		<span class="pl-k">while</span> (<span class="pl-s3">TRUE</span>){
-			<span class="pl-k">if</span> (<span class="pl-s3">x</span> % <span class="pl-s2"><span class="pl-pds">2</span></span> == <span class="pl-s3">TRUE</span>) <span class="pl-k">continue</span>;
+		<span class="pl-k">while</span> (<span class="pl-s3">true</span>){
+			<span class="pl-k">if</span> (<span class="pl-s3">x</span> % <span class="pl-s2"><span class="pl-pds">2</span></span> == <span class="pl-s3">true</span>) <span class="pl-k">continue</span>;
 			<span class="pl-k">if</span> (<span class="pl-s3">x</span> >= <span class="pl-s3">y</span>) <span class="pl-k">break</span>;
 		}
 	}

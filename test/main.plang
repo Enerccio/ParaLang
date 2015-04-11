@@ -9,14 +9,21 @@ using System.BaseException;
 module Main {
     var r = new Random.Random(NoValue);
 
+    defn test(a){
+        while (a) {
+            try {
+                return true;
+            }
+            finally {
+                break;
+            }
+        }
+        return false;
+    }
+    
     defn restricted calculate(a, b){
     
-        for (var x=0; x<10; x++)
-            try {
-                continue;
-            finally {
-                IO.out.println("Still in loop!");
-            }
+        IO.out.println(test(true));
     
         var ct = System.current_time();
         

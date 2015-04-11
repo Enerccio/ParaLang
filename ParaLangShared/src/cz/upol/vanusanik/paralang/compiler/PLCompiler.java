@@ -487,7 +487,7 @@ public class PLCompiler {
 	}
 	
 	private void breakContinueExitProtocol() throws Exception {
-		List<FinallyBlockProtocol> copy = new ArrayList<FinallyBlockProtocol>(fbcList);
+		List<FinallyBlockProtocol> copy = new ArrayList<FinallyBlockProtocol>(fbcLoopList);
 		Collections.reverse(copy);
 		for (FinallyBlockProtocol fbc : copy){
 			if (fbc == null) break;
@@ -499,10 +499,12 @@ public class PLCompiler {
 
 	private void functionExitProtocol() throws Exception {
 		if (!compilingInit){
+			fbcLoopList.add(null);
 			List<FinallyBlockProtocol> copy = new ArrayList<FinallyBlockProtocol>(fbcList);
 			Collections.reverse(copy);
 			for (FinallyBlockProtocol fbc : copy)
 				fbc.doCompile();
+			fbcLoopList.remove(fbcLoopList.size()-1);
 			return;
 		}
 		
@@ -812,23 +814,31 @@ public class PLCompiler {
 			final int finallyStack = stacker.acquire();
 			final int throwableStack = stacker.acquire();
 			
-			if (hasFinally){
-				fbcList.add(new FinallyBlockProtocol() {
-					
-					@Override
-					public void doCompile() throws Exception {
-						compileBlock(statement.finallyBlock().block());
-					}
-				});
-				fbcLoopList.add(fbcList.get(fbcList.size()-1));
-			}
+			FinallyBlockProtocol fbc = new FinallyBlockProtocol() {
+				
+				@Override
+				public void doCompile() throws Exception {
+					compileBlock(statement.finallyBlock().block());
+				}
+			};
+			
 			
 			int start = bc.currentPc();
+			if (hasFinally){
+				fbcList.add(fbc);
+				fbcLoopList.add(fbcList.get(fbcList.size()-1));
+			}
 			compileBlock(statement.block());
+			if (hasFinally){
+				fbcList.remove(fbcList.size()-1);
+				fbcLoopList.remove(fbcLoopList.size()-1);
+			}
+			
 			int end = bc.currentPc();
 			if (hasFinally){
 				compileBlock(statement.finallyBlock().block());
 			}
+			
 			addLabel(new LabelInfo(){
 
 				@Override
@@ -896,7 +906,17 @@ public class PLCompiler {
 					
 					varStack.addVariable(ccc.Identifier().getText(), VariableType.LOCAL_VARIABLE, throwableStack);
 					int sstart = bc.currentPc();
+					
+					if (hasFinally){
+						fbcList.add(fbc);
+						fbcLoopList.add(fbcList.get(fbcList.size()-1));
+					}
 					compileBlock(ccc.block());
+					if (hasFinally){
+						fbcList.remove(fbcList.size()-1);
+						fbcLoopList.remove(fbcLoopList.size()-1);
+					}
+					
 					int ssend = bc.currentPc();
 					addLabel(new LabelInfo(){
 
@@ -955,11 +975,6 @@ public class PLCompiler {
 			
 			setLabelPos(endLabel);
 			bc.add(Opcode.NOP);
-			
-			if (hasFinally) {
-				fbcList.remove(fbcList.size() - 1);
-				fbcLoopList.remove(fbcLoopList.size()-1);
-			}
 
 			stacker.release();
 			stacker.release();
@@ -973,6 +988,9 @@ public class PLCompiler {
 		}
 		
 		if (statement.getText().startsWith("return")){
+			
+			int local = stacker.acquire();
+			
 			if (statement.expression() != null){
 				isStatementExpression.add(false);
 				compileExpression(statement.expression(), false, -1);
@@ -981,8 +999,13 @@ public class PLCompiler {
 				addNil();
 			}
 			
+			bc.addAstore(local);
+			
 			functionExitProtocol();
+			
+			bc.addAload(local);
 			bc.add(Opcode.ARETURN);
+			stacker.release();
 			return;
 		}
 		
@@ -2060,7 +2083,7 @@ public class PLCompiler {
 			m.getMethodInfo().setCodeAttribute(at);
 			// m.getMethodInfo().rebuildStackMap(cp);
 			
-			//InstructionPrinter.print(m, System.err);
+			// InstructionPrinter.print(m, System.err);
 			
 			cls.addMethod(m);
 		}
