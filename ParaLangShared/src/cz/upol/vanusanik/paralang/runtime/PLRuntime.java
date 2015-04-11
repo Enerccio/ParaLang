@@ -449,7 +449,10 @@ public class PLRuntime {
 		if (r.hasExceptions()){
 			NetworkException e = (NetworkException) newInstance("System.NetworkException", new Str("Failed distributed network call because of remote exception(s)"));
 			for (PLangObject o : r.exceptions)
-				data.add(o);
+				if (o != null)
+					data.add(o);
+				else
+					data.add(NoValue.NOVALUE);
 			e.___setkey(NetworkException.listKey, c);
 			throw e;
 		} else {
