@@ -10,8 +10,30 @@ import cz.upol.vanusanik.paralang.connector.Protocol;
 
 
 public class Test {
+	
+	@SuppressWarnings("finally")
+	public static boolean test(boolean a){
+		while (a)
+			try {
+				return getTrue();
+			} finally {
+				break;
+			}
+		return getFalse();
+	}
+
+	private static boolean getFalse() {
+		System.err.println("FALSE");
+		return false;
+	}
+	
+	private static boolean getTrue() {
+		System.err.println("TRUE");
+		return true;
+	}
 
 	public static void main(String[] xx) throws Exception{
+		test(true);
 		
 //		File f = new File("bin\\x.plang");
 //		PLCompiler c = new PLCompiler();
