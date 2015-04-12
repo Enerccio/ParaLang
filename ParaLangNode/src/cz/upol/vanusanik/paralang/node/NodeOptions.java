@@ -14,6 +14,12 @@ public class NodeOptions {
 	@Parameter(required = true, names = {"-p", "--port"}, description="Port on which this node will listen")
 	public Integer portNumber;
 	
+	@Parameter(required = true, names = {"-ks", "--keystore"}, description="Keystore for SSL conecction.  Must be in same dir as running process.")
+	public String keystore;
+	
+	@Parameter(required = true, names = {"-ksp", "--keystore-password"}, description="Keystore password for SSL conecction.")
+	public String keystorepass;
+	
 	@Parameter(names = {"-tc", "--thread-count"}, description="Number of available node threads, default is number of cpu hardware threads available")
 	public Integer threadCount = Runtime.getRuntime().availableProcessors();
 

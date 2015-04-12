@@ -14,7 +14,9 @@ public class NodeCluster {
 		nodes = new Node[wtc];
 		for (int i=0; i<wtc; i++){
 			nodes[i] = new Node(this, i);
-			new Thread(nodes[i], "Worker Thread " + i + ";").start();
+			Thread t = new Thread(nodes[i], "Worker Thread " + i + ";");
+			t.setDaemon(true);
+			t.start();
 		}
 	}
 	

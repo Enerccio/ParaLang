@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLServerSocketFactory;
+
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
@@ -78,8 +80,9 @@ public class NodeController {
 		log.info("Starting ParaLang Node Controller at port " + no.portNumber + ", number of working threads: " + no.threadCount);
 		
 		initialize(no);
-		@SuppressWarnings("resource")
-		ServerSocket server = new ServerSocket(no.portNumber);
+		
+		SSLServerSocketFactory sslServerFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+	 	ServerSocket server = sslServerFactory.createServerSocket(no.portNumber);
 		
 		while (true){
 			final Socket s = server.accept();
@@ -291,7 +294,6 @@ public class NodeController {
 		service = Executors.newCachedThreadPool();
 		options = no;
 		cluster = new NodeCluster(no.threadCount);
-		
 
 		if (no.nodeListFile != null){
 			FileInputStream fis = new FileInputStream(no.nodeListFile);
@@ -306,6 +308,9 @@ public class NodeController {
 				NodeList.addNode(datum[0], Integer.parseInt(datum[1]));
 			}
 		}
+		
+		System.setProperty("javax.net.ssl.keyStore", no.keystore);
+	    System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
 	}
 	
 }

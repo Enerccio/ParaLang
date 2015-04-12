@@ -22,6 +22,10 @@ public class ParaLangCLI {
 	}
 
 	private static void run(ParaLangCLIOptions no) throws Exception {
+		System.setProperty("javax.net.ssl.keyStore", no.keystore);
+		System.setProperty("javax.net.ssl.trustStore", no.keystore);
+	    System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
+		
 		File workingDir = no.sourcesDirectory;
 		PLRuntime runtime = new PLRuntime();
 		

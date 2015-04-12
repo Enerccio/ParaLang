@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import javassist.ClassPool;
 import javassist.CtClass;
 
@@ -495,7 +497,14 @@ public class PLRuntime {
 		result.exceptions = new PLangObject[tcount];
 		final JsonObject serializedRuntimeContent = serializeRuntimeContent();
 		
-		final List<Node> nodes = NodeList.getBestLoadNodes(tcount);
+		List<Node> nnodes;
+		try {
+			nnodes = NodeList.getBestLoadNodes(tcount);
+		} catch (Exception e){
+			throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("No hosts available"));
+		}
+		
+		final List<Node> nodes = nnodes;
 		
 		for (int i=0; i<tcount; i++){
 			final int tId = i;
@@ -528,7 +537,7 @@ public class PLRuntime {
 		
 		do {
 			try {				
-				s = new Socket(node.getAddress(), node.getPort());
+				s = SSLSocketFactory.getDefault().createSocket(node.getAddress(), node.getPort());
 				Protocol.send(s.getOutputStream(), new JsonObject().add("header", Protocol.RESERVE_SPOT_REQUEST));
 				JsonObject response = Protocol.receive(s.getInputStream());
 				

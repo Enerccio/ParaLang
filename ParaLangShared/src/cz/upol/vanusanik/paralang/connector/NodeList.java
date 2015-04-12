@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.commons.io.IOUtils;
 
 import com.eclipsesource.json.JsonObject;
 
 public class NodeList {
-
 	
 	private NodeList(){
 		
@@ -91,7 +92,7 @@ public class NodeList {
 	}
 
 	private static int getFreeNodes(Node n) throws Exception {
-		Socket s = new Socket(n.getAddress(), n.getPort());
+		Socket s = SSLSocketFactory.getDefault().createSocket(n.getAddress(), n.getPort());
 		
 		JsonObject o = new JsonObject();
 		o.add("header", Protocol.GET_STATUS_REQUEST);

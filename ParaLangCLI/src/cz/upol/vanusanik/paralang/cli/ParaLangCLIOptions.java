@@ -23,4 +23,10 @@ public class ParaLangCLIOptions {
 	@Parameter(names = {"-nl", "--node-list"}, description = "File containing node list")
 	public File nodeListFile;
 	
+	@Parameter(required = true, names = {"-ks", "--keystore"}, description="Keystore for SSL conecction.  Must be in same dir as running process.")
+	public String keystore;
+	
+	@Parameter(required = true, names = {"-ksp", "--keystore-password"}, description="Keystore password for SSL conecction.")
+	public String keystorepass;
+	
 }
