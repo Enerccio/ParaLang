@@ -26,6 +26,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 
@@ -113,7 +116,9 @@ public class PLRuntime {
 	private Map<String, PLModule> moduleMap = new HashMap<String, PLModule>();
 	private Map<String, Map<String, Class<?>>> classMap = new HashMap<String, Map<String,Class<?>>>();
 	private Map<String, Long> uuidMap = new HashMap<String, Long>();
-	private Map<String, String> moduleSourceMap = new HashMap<String, String>();
+	
+	private Map<String, Map<String, String>> classBytecodeData = new HashMap<String, Map<String, String>>();
+	private Map<String, String> moduleBytecodeData = new HashMap<String, String>();
 	
 	private boolean isSafeContext = false;
 	private boolean isRestricted = true;
@@ -121,10 +126,12 @@ public class PLRuntime {
 	private PLCompiler compiler = new PLCompiler();
 	
 	public PLRuntime(){		
+		cp.appendSystemPath();
 		initialize(false);
 	}
 	
-	PLRuntime(boolean miniinit){		
+	PLRuntime(boolean miniinit){
+		cp.appendSystemPath();
 		initialize(miniinit);
 	}
 	
@@ -132,10 +139,27 @@ public class PLRuntime {
 		return new PLRuntime(true);
 	}
 	
+	public synchronized void addClassBytedata(String moduleName, String className, byte[] bytedata){
+		addClassBytedata(moduleName, className, Base64.encodeBase64String(bytedata));
+	}
+	
+	public synchronized void addClassBytedata(String moduleName, String className, String bytedata){
+		if (!classBytecodeData.containsKey(moduleName))
+			classBytecodeData.put(moduleName, new HashMap<String, String>());
+		classBytecodeData.get(moduleName).put(className, bytedata);
+	}
+	
+	public synchronized void addModuleBytedata(String moduleName, byte[] bytedata){
+		addModuleBytedata(moduleName, Base64.encodeBase64String(bytedata));
+	}
+	
+	public synchronized void addModuleBytedata(String moduleName, String bytedata){
+		moduleBytecodeData.put(moduleName, bytedata);
+	}
+	
 	public void compileSource(FileDesignator fd) throws Exception{
 		setAsCurrent();
-		String moduleName = compiler.compile(fd);
-		moduleSourceMap.put(moduleName, fd.getSourceContent());
+		compiler.compile(fd);
 	}
 	
 	public ClassLoader getClassLoader(){
@@ -177,7 +201,7 @@ public class PLRuntime {
 			registerClass("System", cn, SYSTEM_CLASSES.get(cn));	
 		}
 		
-		{
+		if (!miniinit){
 			String path = "plang";
 			if(jarFile.isFile()) {  
 			    JarFile jar = null;
@@ -231,7 +255,6 @@ public class PLRuntime {
 			}
 		}
 		
-		moduleSourceMap.clear();
 		setSafeContext(false);
 	}
 	
@@ -570,14 +593,29 @@ public class PLRuntime {
 		} while (!executed);
 	}
 
-	private JsonObject buildRuntimeFiles() {
-		JsonObject o = new JsonObject();
+	private JsonArray buildRuntimeFiles() {
+		JsonArray a = new JsonArray();
 		
-		for (String module : moduleSourceMap.keySet()){
-			o.add(module, moduleSourceMap.get(module));
+		for (String module : moduleBytecodeData.keySet()){
+			JsonObject m = new JsonObject();
+			m.add("name", module);
+			m.add("content", moduleBytecodeData.get(module));
+			m.add("type", "module");
+			a.add(m);
 		}
 		
-		return o;
+		for (String moduleName : classBytecodeData.keySet()){
+			for (String className  : classBytecodeData.get(moduleName).keySet()){
+				JsonObject c = new JsonObject();
+				c.add("name", className);
+				c.add("content", classBytecodeData.get(moduleName).get(className));
+				c.add("type", "class");
+				c.add("module", moduleName);
+				a.add(c);
+			}
+		}
+		
+		return a;
 	}
 
 	public interface RuntimeAccessListener {
@@ -676,7 +714,7 @@ public class PLRuntime {
 			return new FunctionWrapper(val.getString("methodName", ""), (BaseCompiledStub) deserialize(val.get("owner").asObject(), ridxMap), 
 					val.getBoolean("isClassMethod", false));
 		case INTEGER:
-			return new Int(o.getInt("value", 0));
+			return new Int(o.getLong("value", 0));
 		case JAVAOBJECT:
 			String encoded = o.getString("value", "");
 			byte[] decoded = Base64.decodeBase64(encoded);
@@ -749,5 +787,27 @@ public class PLRuntime {
 
 	public PLangObject runByObjectId(long oid, String methodName, Int arg0) {
 		return run(instanceInternalMap.get(oid).___getkey(methodName), instanceInternalMap.get(oid), arg0);
+	}
+
+	
+	private ClassPool cp = new ClassPool();
+	@SuppressWarnings("unchecked")
+	public void loadBytecode(String mname, String bytecontent) throws Exception {
+		String clsName = mname;
+		Class<?> cls = loadClass(clsName, bytecontent);
+		addModule(mname, (Class<? extends PLModule>) cls);
+		addModuleBytedata(mname, bytecontent);
+	}
+
+	public void loadBytecode(String cname, String mname, String bytecontent) throws Exception {
+		String clsName = mname + "$" + cname;
+		Class<?> cls = loadClass(clsName, bytecontent);
+		registerClass(mname, cname, cls);
+		addClassBytedata(mname, cname, bytecontent);
+	}
+
+	private Class<?> loadClass(String clsName, String bytecontent) throws Exception {
+		CtClass cls = cp.makeClass(new ByteArrayInputStream(Base64.decodeBase64(bytecontent)));
+		return cls.toClass(classLoader, null);
 	}
 }

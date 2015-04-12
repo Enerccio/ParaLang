@@ -151,7 +151,6 @@ public class PLCompiler {
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
-				
 				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 			}
 		}
@@ -271,6 +270,8 @@ public class PLCompiler {
 		
 		varStack.popStack(); // pop class variable
 		cls.debugWriteFile();
+		byte[] bytedata = cls.toBytecode();
+		PLRuntime.getRuntime().addModuleBytedata(moduleName, bytedata);
 		return cls.toClass(getClassLoader(), null);
 	}
 	
@@ -282,7 +283,8 @@ public class PLCompiler {
 		cp.appendSystemPath();
 		
 		cache = new HashMap<String, Integer>();
-		String className = moduleName + "$" + classDeclaration.children.get(1).getText();
+		String clsName = classDeclaration.children.get(1).getText();
+		String className = moduleName + "$" + clsName;
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.CLASS_BASE_CLASS));
@@ -362,6 +364,8 @@ public class PLCompiler {
 		
 		varStack.popStack(); // pop class variables
 		cls.debugWriteFile();
+		byte[] bytedata = cls.toBytecode();
+		PLRuntime.getRuntime().addClassBytedata(moduleName, clsName, bytedata);
 		return cls.toClass(getClassLoader(), null);
 	}
 

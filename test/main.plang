@@ -5,6 +5,7 @@ using Random.Random;
 using Random;
 using System;
 using System.BaseException;
+using System.Integer;
 
 module Main {
     var r = new Random.Random(NoValue);
@@ -23,7 +24,11 @@ module Main {
     
     defn restricted calculate(a, b){
     
+        IO.out.println((dist (4) { return run_id; }));
+    
         IO.out.println(test(true));
+        
+        IO.out.println(new Integer(10) + new Integer(20));
     
         var ct = System.current_time();
         

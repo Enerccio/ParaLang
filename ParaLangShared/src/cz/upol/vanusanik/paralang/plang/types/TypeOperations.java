@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.runtime.BaseInteger;
+import cz.upol.vanusanik.paralang.runtime.BaseNumber;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
@@ -194,9 +196,14 @@ public class TypeOperations {
 		case BITOR:
 		case BITAND:
 		case BITXOR: {
-			if (a instanceof Int && b instanceof Int){
+			if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
 				long va = ((Int)a).value;
-				long vb = ((Int)b).value;
+				long vb;
+				
+				if (b instanceof Int)
+					vb = ((Int)b).value;
+				else
+					vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
 				
 				long result = 0;
 				

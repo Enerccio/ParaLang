@@ -11,7 +11,9 @@ import java.util.concurrent.Executors;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.compiler.StringDesignator;
 import cz.upol.vanusanik.paralang.connector.NodeList;
@@ -158,24 +160,18 @@ public class NodeController {
 		final JsonObject input = m.get("payload").asObject();
 		
 		storage.runtime = new RuntimeStoreContainer();
-		JsonObject sources = input.get("runtimeFiles").asObject();
-		for (String name : sources.names()){
-			StringDesignator sd = new StringDesignator();
-			sd.setSource(name);
-			sd.setClassDef(sources.getString(name, ""));
-			storage.runtime.sources.add(sd);
-		}
-		storage.runtime.runtime = new PLRuntime();
-		storage.runtime.runtime.prepareForDeserialization(input.get("runtimeData").asObject().get("serialVersionUIDs").asArray());
-		for (StringDesignator sd : storage.runtime.sources){
-			try {
-				storage.runtime.runtime.compileSource(sd);
-			} catch (Exception e){
-				sendError(s, payload, Protocol.ERROR_COMPILATION_FAILURE, sd.getSource());
-				storage.runtime = null;
-				return;
+		storage.runtime.runtime = PLRuntime.createEmptyRuntime();
+		storage.runtime.runtime.setAsCurrent();
+		JsonArray sources = input.get("runtimeFiles").asArray();
+		for (JsonValue v : sources){
+			JsonObject data = v.asObject();
+			if (data.getString("type", "").equals("module")){
+				storage.runtime.runtime.loadBytecode(data.getString("name", ""), data.getString("content", ""));
+			} else {
+				storage.runtime.runtime.loadBytecode(data.getString("name", ""), data.getString("module", ""), data.getString("content", ""));
 			}
 		}
+		storage.runtime.runtime.prepareForDeserialization(input.get("runtimeData").asObject().get("serialVersionUIDs").asArray());
 		try {
 			storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray());
 		} catch (Exception e){
