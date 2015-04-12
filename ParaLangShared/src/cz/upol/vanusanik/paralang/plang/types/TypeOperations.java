@@ -40,10 +40,10 @@ public class TypeOperations {
 	
 	public static PLangObject plus(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING){
-			return new Str(a.toString() + b.toString());
+			return new Str(a.toString(a) + b.toString(b));
 		}
 		if (b.___getType() == PlangObjectType.STRING){
-			return new Str(a.toString() + b.toString());
+			return new Str(a.toString(a) + b.toString(b));
 		}
 		return operator(a, b, Operator.PLUS);
 	}
@@ -52,7 +52,7 @@ public class TypeOperations {
 	}
 	public static PLangObject mul(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
-			return new Str(StringUtils.repeat(a.toString(), (int) ((Int)b).value));
+			return new Str(StringUtils.repeat(a.toString(a), (int) ((Int)b).value));
 		}
 		return operator(a, b, Operator.MUL);
 	}
@@ -64,13 +64,13 @@ public class TypeOperations {
 			int radix = (int) ((Int)b).value;
 			if (radix < 1 || radix > 16)
 				throw new RuntimeException("Incorrect radix for string % int operation.");
-			return new Int(Integer.parseInt(a.toString(), radix));
+			return new Int(Integer.parseInt(a.toString(a), radix));
 		}
 		return operator(a, b, Operator.MOD);
 	}
 	public static PLangObject lshift(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
-			String val = a.toString();
+			String val = a.toString(a);
 			int len = val.length();
 			int lsa = (int) ((Int)b).value;
 			
@@ -83,7 +83,7 @@ public class TypeOperations {
 	}
 	public static PLangObject rshift(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
-			String val = a.toString();
+			String val = a.toString(a);
 			int len = val.length();
 			int rsa = (int) ((Int)b).value;
 			
@@ -96,7 +96,7 @@ public class TypeOperations {
 	}
 	public static PLangObject rushift(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
-			String val = a.toString();
+			String val = a.toString(a);
 			int len = val.length();
 			int rsh = (int) ((Int)b).value;
 			
@@ -139,8 +139,8 @@ public class TypeOperations {
 	}
 	public static PLangObject less(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
-			String sa = a.toString();
-			String sb = a.toString();
+			String sa = a.toString(a);
+			String sb = a.toString(b);
 			int cmp = sa.compareTo(sb);
 			return cmp < 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
@@ -148,8 +148,8 @@ public class TypeOperations {
 	}
 	public static PLangObject more(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
-			String sa = a.toString();
-			String sb = b.toString();
+			String sa = a.toString(a);
+			String sb = b.toString(b);
 			int cmp = sa.compareTo(sb);
 			return cmp > 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
@@ -157,8 +157,8 @@ public class TypeOperations {
 	}
 	public static PLangObject leq(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
-			String sa = a.toString();
-			String sb = a.toString();
+			String sa = a.toString(a);
+			String sb = a.toString(b);
 			int cmp = sa.compareTo(sb);
 			return cmp <= 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
@@ -166,8 +166,8 @@ public class TypeOperations {
 	}
 	public static PLangObject meq(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
-			String sa = a.toString();
-			String sb = a.toString();
+			String sa = a.toString(a);
+			String sb = a.toString(b);
 			int cmp = sa.compareTo(sb);
 			return cmp >= 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}

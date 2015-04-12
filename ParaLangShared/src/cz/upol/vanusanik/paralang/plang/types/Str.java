@@ -2,6 +2,8 @@ package cz.upol.vanusanik.paralang.plang.types;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
@@ -91,8 +93,98 @@ public class Str extends BaseCompiledStub implements Serializable {
 		___setkey("to", new FunctionWrapper("substringTo", this, true));
 		___setkey("starts_with", new FunctionWrapper("startsWith", this, true));
 		___setkey("ends_with", new FunctionWrapper("endsWith", this, true));
+		___setkey("is_empty", new FunctionWrapper("isEmpty", this, true));
+		___setkey("abbreviate", new FunctionWrapper("abbreviate", this, true));
+		___setkey("center", new FunctionWrapper("center", this, true));
+		___setkey("contains", new FunctionWrapper("contains", this, true));
+		___setkey("count_matches", new FunctionWrapper("countMatches", this, true));
+		___setkey("__eq_ignorecase", new FunctionWrapper("equalsIgnoreCase", this, true));
+		___setkey("index_of", new FunctionWrapper("indexOf", this, true));
+		___setkey("last_index_of", new FunctionWrapper("lastIndexOf", this, true));
+		___setkey("is_all_lowercase", new FunctionWrapper("isAllLowerCase", this, true));
+		___setkey("is_all_uppercase", new FunctionWrapper("isAllUpperCase", this, true));
+		___setkey("is_alphanumeric", new FunctionWrapper("isAlphanumeric", this, true));
+		___setkey("is_alphanumeric_with_space", new FunctionWrapper("isAlphanumericWithSpace", this, true));
+		___setkey("is_ascii_printable", new FunctionWrapper("isAsciiPrintable", this, true));
+		___setkey("strip_accents", new FunctionWrapper("stripAccents", this, true));
+		___setkey("strip", new FunctionWrapper("strip", this, true));
+		___setkey("strip_whitespace", new FunctionWrapper("stripWhitespace", this, true));
+		___setkey("to_upper_case", new FunctionWrapper("toUpperCase", this, true));
+		___setkey("to_lower_case", new FunctionWrapper("toLowerCase", this, true));
 		
 		___restrictedOverride = false;
+	}
+	
+	public PLangObject toLowerCase(PLangObject self){
+		return new Str(StringUtils.lowerCase(value));
+	}
+	
+	public PLangObject toUpperCase(PLangObject self){
+		return new Str(StringUtils.upperCase(value));
+	}
+	
+	public PLangObject stripWhitespace(PLangObject self){
+		return new Str(StringUtils.strip(value));
+	}
+	
+	public PLangObject strip(PLangObject self, Str chars){
+		return new Str(StringUtils.strip(value, chars.value));
+	}
+	
+	public PLangObject stripAccents(PLangObject self){
+		return new Str(StringUtils.stripAccents(value));
+	}
+	
+	public PLangObject isAsciiPrintable(PLangObject self){
+		return BooleanValue.fromBoolean(StringUtils.isAsciiPrintable(value));
+	}
+	
+	public PLangObject isAlphanumericWithSpace(PLangObject self){
+		return BooleanValue.fromBoolean(StringUtils.isAlphanumericSpace(value));
+	}
+	
+	public PLangObject isAlphanumeric(PLangObject self){
+		return BooleanValue.fromBoolean(StringUtils.isAlphanumeric(value));
+	}
+	
+	public PLangObject isAllLowerCase(PLangObject self){
+		return BooleanValue.fromBoolean(StringUtils.isAllLowerCase(value));
+	}
+	
+	public PLangObject isAllUpperCase(PLangObject self){
+		return BooleanValue.fromBoolean(StringUtils.isAllUpperCase(value));
+	}
+	
+	public PLangObject lastIndexOf(PLangObject self, Str pattern){
+		return new Int(StringUtils.lastIndexOf(value, pattern.value));
+	}
+	
+	public PLangObject indexOf(PLangObject self, Str pattern){
+		return new Int(StringUtils.indexOf(value, pattern.value));
+	}
+	
+	public PLangObject equalsIgnoreCase(PLangObject self, Str other){
+		return BooleanValue.fromBoolean(StringUtils.equalsIgnoreCase(value, other.value));
+	}
+	
+	public PLangObject countMatches(PLangObject self, Str pattern){
+		return new Int(StringUtils.countMatches(value, pattern.value));
+	}
+	
+	public PLangObject contains(PLangObject self, Str pattern){
+		return BooleanValue.fromBoolean(StringUtils.contains(value, pattern.value));
+	}
+	
+	public PLangObject center(PLangObject self, Int mw){
+		return new Str(StringUtils.center(value, (int) mw.value));
+	}
+	
+	public PLangObject characterAt(PLangObject self){
+		return BooleanValue.fromBoolean(StringUtils.isEmpty(value));
+	}
+	
+	public PLangObject abbreviate(PLangObject self, Int mw){
+		return new Str(StringUtils.abbreviate(value, (int) mw.value));
 	}
 	
 	public PLangObject characterAt(PLangObject self, Int id){

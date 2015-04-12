@@ -1028,12 +1028,35 @@
             
             <table>
                 <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
-                <tr><td width="10%"><code>character_at</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns single string character at location of index or throws BaseException if index value is invalid</td></tr>
-                <tr><td width="10%"><code>from</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns substring of original string from location of index or throws BaseException if index value is invalid</td></tr>
-                <tr><td width="10%"><code>to</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns substring of original string to location of index or throws BaseException if index value is invalid</td></tr>
-                <tr><td width="10%"><code>starts_with</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string starts with passed argument or not</td></tr>
-                <tr><td width="10%"><code>ends_with</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string ends with passed argument or not</td></tr>
+                <tr><td width="10%"><code>character_at</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns single string character at location of index or throws BaseException if index value is invalid.</td></tr>
+                <tr><td width="10%"><code>from</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns substring of original string from location of index or throws BaseException if index value is invalid.</td></tr>
+                <tr><td width="10%"><code>to</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns substring of original string to location of index or throws BaseException if index value is invalid.</td></tr>
+                <tr><td width="10%"><code>starts_with</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string starts with passed argument or not.</td></tr>
+                <tr><td width="10%"><code>ends_with</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string ends with passed argument or not.</td></tr>
+                <tr><td width="10%"><code>is_empty</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is empty or not.</td></tr>
+                <tr><td width="10%"><code>abbreviate</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns abbreviated form on a string with dots at the end.</td></tr>
+                <tr><td width="10%"><code>center</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns string off-setted by space characters.</td></tr>
+                <tr><td width="10%"><code>contains</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string contains string provided as argument.</td></tr>
+                <tr><td width="10%"><code>count_matches</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns number of times argument matches in this string.</td></tr>
+                <tr><td width="10%"><code>__eq_ignorecase</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether string is equal with argument ignoring case.</td></tr>
+                <tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr><tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr>
+                <tr><td width="10%"><code>last_index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of last match of parameter in this string, -1 if not found.</td></tr><tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr>
+                <tr><td width="10%"><code>is_all_uppercase</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is all upper case.</td></tr>
+                <tr><td width="10%"><code>is_all_lowercase</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is all lower case.</td></tr>
+                <tr><td width="10%"><code>is_alphanumeric</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is alphanumeric.</td></tr>
+                <tr><td width="10%"><code>is_alphanumeric_with_space</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is alphanumeric with spaces.</td></tr>
+                <tr><td width="10%"><code>is_ascii_printable</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is printable in ascii console.</td></tr>
+                <tr><td width="10%"><code>strip_accents</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string stripped of all accents.</td></tr>
+                <tr><td width="10%"><code>strip</code></td><td width="20%">string</td><td width="10%"><code>string</code></td><td width="60%">Returns this string stripped of all characters in provided string.</td></tr>
+                <tr><td width="10%"><code>strip_whitespace</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string stripped of all whitespace.</td></tr>
+                <tr><td width="10%"><code>to_upper_case</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string in all uppercase.</td></tr>
+                <tr><td width="10%"><code>to_lower_case</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string in all lowercase.</td></tr>
             </table>
+            
+            Also, string has special interaction with some operations. <code>+</code> combines string with another element, which will be converted to string before adding expression. 
+            <code>*</code> expression with one argument being string and one being integer will return that string concatenated that many times together. <code>%</code> expression with left argument string 
+            and right argument integer between 1 and 16 will convert string into integer with that radix. <code><<</code> is a shortcut for <code>from</code> method and <code>>></code> is a shortcut for
+            <code>to</code> method. <code>>>></code> will rotate provided string by provided index to the right. Strings can also be compared via <code><, <=, ==, !=, >=, ></code>.
             
             <h3 id="doc-sl-system-moduledef">Module: System</h3>
             
