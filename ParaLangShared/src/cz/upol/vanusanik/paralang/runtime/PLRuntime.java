@@ -406,6 +406,9 @@ public class PLRuntime {
 					
 					Object ret = m.invoke(null, constructedArgs.toArray());
 					
+					if (ret == null)
+						return NoValue.NOVALUE;
+					
 					if (retType.isAssignableFrom(PLangObject.class))
 						return (PLangObject) ret;
 					

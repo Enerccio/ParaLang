@@ -10,10 +10,11 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
-public class FunctionWrapper extends PLangObject implements Serializable {
+public class FunctionWrapper extends PrimitivePLangObject implements Serializable {
 
 	private static final long serialVersionUID = 3998164784189902299L;
 

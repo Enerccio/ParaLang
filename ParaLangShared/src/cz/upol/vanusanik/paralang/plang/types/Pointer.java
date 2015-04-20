@@ -15,9 +15,11 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
+import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
-public class Pointer extends PLangObject implements Serializable {
+public class Pointer extends BaseCompiledStub implements Serializable  {
 	private static final long serialVersionUID = -4564277494396267580L;
 
 	public Pointer(){
@@ -26,8 +28,6 @@ public class Pointer extends PLangObject implements Serializable {
 	
 	public Pointer(Object value){
 		this.value = value;
-		if (!(value instanceof Serializable))
-			throw new RuntimeException("Not serializable...");
 	}
 
 	private Object value;
@@ -72,7 +72,10 @@ public class Pointer extends PLangObject implements Serializable {
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ObjectOutputStream serstream = new ObjectOutputStream(out);
-			serstream.writeObject(value);
+			if (value instanceof Serializable)
+				serstream.writeObject(value);
+			else
+				serstream.writeObject(NoValue.NOVALUE);
 			String serializedForm = Base64.encodeBase64String(out.toByteArray());
 			return new JsonObject().add("metaObjectType", ___getType().toString())
 					.add("value", serializedForm);
@@ -83,10 +86,20 @@ public class Pointer extends PLangObject implements Serializable {
 	
 	public static class PointerMethodIncompatibleException extends Exception {
 		private static final long serialVersionUID = -7762628083995844743L;
+		public PointerMethodIncompatibleException(){
+			super();
+		}
+		@Override
+		public synchronized Throwable fillInStackTrace() {
+			return this;
+		}
 		
 	};
 
 	public PLangObject runMethod(String methodName, PLangObject[] args) throws Throwable {
+		if (value == null)
+			throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("Transient pointer accessed"));
+		
 		for (Method m : value.getClass().getMethods()){
 			if (m.getName().equals(methodName)){
 				try {
@@ -107,7 +120,11 @@ public class Pointer extends PLangObject implements Serializable {
 						++it;
 					}
 					
+					m.setAccessible(true);
 					Object ret = m.invoke(value, constructedArgs.toArray());
+					
+					if (ret == null)
+						return NoValue.NOVALUE;
 					
 					if (retType.isAssignableFrom(PLangObject.class))
 						return (PLangObject) ret;
@@ -144,5 +161,23 @@ public class Pointer extends PLangObject implements Serializable {
 	@SuppressWarnings("unchecked")
 	public <T> T getPointer(){
 		return (T)value;
+	}
+
+	@Override
+	protected void ___init_internal_datafields(BaseCompiledStub self) {
+		___restrictedOverride = true;
+		
+		___setkey("is_transient_pointer", new FunctionWrapper("transientPointer", this, true));
+		___setkey("will_be_transient_pointer", new FunctionWrapper("willBeTransientPointer", this, true));
+		
+		___restrictedOverride = false;
+	}
+	
+	public PLangObject transientPointer(PLangObject self){
+		return BooleanValue.fromBoolean(value == null);
+	}
+	
+	public PLangObject willBeTransientPointer(PLangObject self){
+		return BooleanValue.fromBoolean(!(value instanceof Serializable));
 	}
 }

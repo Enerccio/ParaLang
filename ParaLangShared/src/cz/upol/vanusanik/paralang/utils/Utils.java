@@ -67,7 +67,7 @@ public class Utils {
 			return new Str((String)ret);
 		if (retType == Void.class)
 			return NoValue.NOVALUE;
-		if (retType == Boolean.class)
+		if (retType == Boolean.class || retType == boolean.class)
 			return BooleanValue.fromBoolean((Boolean)ret);
 		return new Pointer(ret);
 	}

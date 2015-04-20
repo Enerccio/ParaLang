@@ -22,6 +22,7 @@ import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.connector.Protocol;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.Int;
+import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
 /**
@@ -194,7 +195,7 @@ public class NodeController {
 				try {
 					storage.runtime.runtime.setAsCurrent();
 					return storage.runtime.runtime.runByObjectId(input.getLong("runnerId", 0), input.getString("methodName", ""), new Int(input.getInt("id", 0)));	
-				} catch (PLangObject e){
+				} catch (PLClass e){
 					storage.exception = e;
 					return null;
 				}

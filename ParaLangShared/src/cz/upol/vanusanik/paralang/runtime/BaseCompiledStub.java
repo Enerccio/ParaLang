@@ -11,7 +11,7 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
-public abstract class BaseCompiledStub extends PLangObject {
+public abstract class BaseCompiledStub extends RuntimeException implements PLangObject {
 	private static final long serialVersionUID = -2885702496818908285L;
 	protected Map<String, PLangObject> ___fieldsAndMethods;
 	public long ___objectId;
@@ -117,6 +117,22 @@ public abstract class BaseCompiledStub extends PLangObject {
 	
 	protected PLangObject ___convertBoolean(boolean b){
 		return BooleanValue.fromBoolean(b);
+	}
+	
+	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {
+		throw new RuntimeException("Undefined method for this type!");
+	}
+	
+	public boolean ___more(PLangObject self, PLangObject other, boolean equals) {
+		throw new RuntimeException("Undefined method for this type!");
+	}
+	
+	public BaseCompiledStub ___getLowestClassdef(){
+		return null;
+	}
+
+	public String toString(PLangObject self) {
+		return toString();
 	}
 	
 	@Override

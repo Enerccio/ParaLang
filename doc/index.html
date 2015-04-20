@@ -716,6 +716,7 @@
                             <a href="#doc-stdlib">Standard Library</a>
                             <ol>
                                 <li><a href="#doc-sl-string">Type: string</a></li>
+                                <li><a href="#doc-sl-pointer">Type: pointer</a></li>
                                 <li>
                                     <a href="#doc-sl-system-moduledef">Module: System</a>
                                     <ol>
@@ -1023,7 +1024,7 @@
 
             <h3 id="doc-sl-string">Type: string</h3>    
 
-            Unlike other base types, strings have methods that can be called on them. All of these methods are immutable and always return a new, fresh copy of string of what the result of the method is if it returns string.
+            Strings along pointers have methods that can be called on them. All of these methods are immutable and always return a new, fresh copy of string of what the result of the method is if it returns string.
             However, string type by itself is NOT a class type (and instanceof operator will return false on that test) and thus cannot be derived from.
             
             <table>
@@ -1057,6 +1058,22 @@
             <code>*</code> expression with one argument being string and one being integer will return that string concatenated that many times together. <code>%</code> expression with left argument string 
             and right argument integer between 1 and 16 will convert string into integer with that radix. <code><<</code> is a shortcut for <code>from</code> method and <code>>></code> is a shortcut for
             <code>to</code> method. <code>>>></code> will rotate provided string by provided index to the right. Strings can also be compared via <code><, <=, ==, !=, >=, ></code>.
+            
+            <h3 id="doc-sl-pointer">Type: pointer</h3> 
+            
+            Pointer type represents java objects wrapped in ParaLang type. You can access methods of said objects via <code>-></code> operator. However, you can only compile such code in <code>safe context</code>.
+            Creating new instances of pointer object is done via <code>Identifier->Identifier '(' params ')'</code> call. However, for pointer to be valid in remote calls, the java object has to implement
+            <code>serializable</code> interface. If you attempt to call java method of pointer whose java object does not implement this interface in remote calls, it will fail with BaseException. 
+            
+            Pointer has two methods which you can use to query whether the wrapped object implements serializable or not:
+            
+            <table>
+                <tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>is_transient_pointer</code></td><td width="20%">0</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this pointer has value or not.</td></tr>
+                <tr><td width="10%"><code>will_be_transient_pointer</code></td><td width="20%">0</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this pointer will have transient value when in remote call.</td></tr>
+            </table>
+            
+            Some other classes in standard library will implement same methods if they deal with potential transient pointers (such as <code>Iterator</code> class).
             
             <h3 id="doc-sl-system-moduledef">Module: System</h3>
             

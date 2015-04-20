@@ -6,7 +6,7 @@ import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
-public abstract class PLClass extends BaseCompiledStub{
+public abstract class PLClass extends BaseCompiledStub {
 	private static final long serialVersionUID = 715934816813529044L;
 	public static final String ___superKey = "$$__parent__$$";
 	public static final String ___derivedKey = "$$__derived__$$";
@@ -76,6 +76,14 @@ public abstract class PLClass extends BaseCompiledStub{
 	}
 	
 	@Override
+    public Throwable fillInStackTrace()
+    {
+		if (___isException(this))
+			return super.fillInStackTrace();
+		else
+			return this;
+    }
+	
 	protected boolean ___isException(PLangObject self) {
 		if (this instanceof BaseException)
 			return true;

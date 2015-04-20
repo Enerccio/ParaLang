@@ -565,7 +565,7 @@ public class PLCompiler {
 	private void compileStatement(final StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
 		
-		if (statement.getText().startsWith("continue")){
+		if (statement.getText().equals("continue")){
 			if (continueStack.empty())
 				throw new CompilationException("Continue not inside any loop");
 			
@@ -588,7 +588,7 @@ public class PLCompiler {
 			
 			return;
 		}
-		if (statement.getText().startsWith("break")){
+		if (statement.getText().equals("break")){
 			if (breakStack.empty())
 				throw new CompilationException("Break not inside any loop");
 			
@@ -611,7 +611,7 @@ public class PLCompiler {
 			
 			return;
 		}
-		if (statement.getText().startsWith("for")){
+		if (statement.getText().startsWith("for ")){
 			ForControlContext fcc = statement.forControl();
 			
 			int loopStart = counter++;
@@ -716,7 +716,7 @@ public class PLCompiler {
 			
 			return;
 		}
-		if (statement.getText().startsWith("while")){
+		if (statement.getText().startsWith("while ")){
 			
 			int loopStart = counter++;
 			int loopEnd = counter++;
@@ -767,7 +767,7 @@ public class PLCompiler {
 			bc.add(Opcode.NOP);
 			return;
 		}
-		if (statement.getText().startsWith("do")){
+		if (statement.getText().startsWith("do ")){
 			
 			int loopStart = counter++;
 			int loopEnd = counter++;
@@ -820,7 +820,7 @@ public class PLCompiler {
 			bc.add(Opcode.NOP);
 			return;
 		}
-		if (statement.getText().startsWith("try")){
+		if (statement.getText().startsWith("try ")){
 			int endLabel = counter++;
 			boolean hasFinally = statement.finallyBlock() != null;
 			
@@ -871,7 +871,7 @@ public class PLCompiler {
 			
 			if (statement.catchClause() != null){
 				int throwLabel = counter++;
-				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.PLANGOBJECT);
+				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.BASE_COMPILED_STUB);
 				bc.addAstore(throwableStack); // save old exception
 				
 				Iterator<CatchClauseContext> ccit = statement.catchClause().iterator();

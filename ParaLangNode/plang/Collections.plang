@@ -1,15 +1,45 @@
 import java.util.HashSet as __JHashSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import cz.upol.vanusanik.paralang.runtime.wrappers.CollectionsUtils;
 
 module Collections {
 
+    class Iterator {
+    
+        var iter;
+        
+        defn init(iterator){
+            iter = iterator;
+        }
+    
+        defn next(){
+            return iter->next();
+        }
+        
+        defn has_next(){
+            return iter->hasNext();
+        }
+        
+        defn restricted remove(){
+            return iter->remove();
+        }
+    
+        defn __str(){
+            return iter;
+        }
+        
+        defn will_be_transient_pointer(){
+            return iter.will_be_transient_pointer();
+        }
+        
+        defn is_transient_pointer(){
+            return iter.is_transient_pointer();
+        }
+    }
+
 	class HashSet {
-		var wrappedSet;
-	
-		defn init(){
-			inst.wrappedSet = __JHashSet->__JHashSet();
-		}
+		var wrappedSet = __JHashSet->__JHashSet();
 		
 		defn restricted insert(o){
 			return wrappedSet->add(o);
@@ -37,6 +67,10 @@ module Collections {
 		defn size(){
 			return wrappedSet->size();
 		}
+        
+        defn iterator(){
+            return new Iterator(wrappedSet->iterator());
+        }
 		
 		defn __str(){
 			return "Set=" + wrappedSet;
@@ -44,11 +78,7 @@ module Collections {
 	}
 	
 	class List {
-		var wrappedList;
-		
-		defn init(){
-			wrappedList = ArrayList->ArrayList();
-		}
+		var wrappedList = ArrayList->ArrayList();
 		
 		defn restricted add(o){
 			return wrappedList->add(o);
@@ -99,10 +129,74 @@ module Collections {
 		defn size(){
 			return wrappedList->size();
 		}
+        
+        defn iterator(){
+            return new Iterator(wrappedList->iterator());
+        }
 	
 		defn __str(){
 			return wrappedList;
 		}
 	}
 
+    class Map {
+    
+        var wrappedMap = HashMap->HashMap(32);
+        
+        defn restricted put(key, value){
+            return wrappedMap->put(key, value);
+        }
+        
+        defn push(key, value){
+            var m = new Map();
+            var it = keys().iterator();
+            while (it.has_next()){
+                var key = it.next();
+                m.wrappedMap->put(key, get(key));
+            }
+            m.wrappedMap->put(key, value);
+            return m;
+        }
+        
+        defn get(key){
+            return wrappedMap->get(key);
+        }
+        
+        defn contains(key){
+            return wrappedMap->containsKey(key);
+        }
+        
+        defn contains_value(value){
+            return wrappedMap->containsValue(value);
+        }
+        
+        defn restricted remove(key){
+            return wrappedMap->remove(key);
+        }
+        
+        defn keys(){
+            var set = new HashSet();
+            set.wrappedSet->addAll(wrappedMap->keySet());
+            return set;
+        }
+        
+        defn values(){
+            var list = new List();
+            list.wrappedList->addAll(wrappedMap->values());
+            return list;
+        }
+        
+        defn size(){
+            return wrappedMap->size();
+        }
+        
+        defn restricted clear(){
+            wrappedMap->clear();
+        }
+        
+        defn __str(){
+            return wrappedMap;
+        }
+    
+    }
 };

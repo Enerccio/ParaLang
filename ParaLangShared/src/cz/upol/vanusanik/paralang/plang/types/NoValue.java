@@ -7,8 +7,9 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 
-public class NoValue extends PLangObject implements Serializable {
+public class NoValue extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = 7573052889816332570L;
 
 	private NoValue(){
