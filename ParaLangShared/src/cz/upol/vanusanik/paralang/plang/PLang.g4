@@ -6,7 +6,9 @@ compilationUnit
 
 importDeclaration
 	:   'using' singleQualifiedName ';'
+	|   'using' singleQualifiedName 'as' Identifier ';'
     |   'import' qualifiedName ';'
+    |   'import' qualifiedName 'as' Identifier ';'
     ; 
     
 moduleDeclaration

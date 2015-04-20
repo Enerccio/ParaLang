@@ -31,6 +31,8 @@ public class Strings {
 	public static final String RUNTIME__WRAP_JAVA_OBJECT = "wrapJavaObject";
 	public static final String RUNTIME__RUN = "run";
 	public static final String RUNTIME__RUN_JAVA_WRAPPER = "runJavaWrapper";
+	public static final String RUNTIME__CREATE_JAVA_WRAPPER = "createJavaWrapper";
+	public static final String RUNTIME__RUN_JAVA_STATIC_METHOD = "runJavaStaticMethod";
 	public static final String RUNTIME__CHECK_EXCEPTION_HIERARCHY = "checkExceptionHierarchy";
 	public static final String RUNTIME__CHECK_INSTANCEOF = "checkInstanceOf";
 	public static final String RUNTIME__RUN_DISTRIBUTED = "runDistributed";

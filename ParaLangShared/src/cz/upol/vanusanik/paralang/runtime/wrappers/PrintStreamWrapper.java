@@ -4,8 +4,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
-import cz.upol.vanusanik.paralang.plang.PlangObjectType;
-import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 
 public class PrintStreamWrapper extends ObjectBase implements Serializable {
 	
@@ -16,11 +14,8 @@ public class PrintStreamWrapper extends ObjectBase implements Serializable {
 	public PrintStreamWrapper(){
 	}
 	
-	public PrintStreamWrapper(PLangObject... args){
-		PLangObject arg0 = args[0];
-		if (arg0.___getType() != PlangObjectType.BOOLEAN)
-			throw new RuntimeException("Argument 0 must be of type BOOLEAN!");
-		isOutStream = !(arg0 == BooleanValue.FALSE);
+	public PrintStreamWrapper(boolean arg0){
+		isOutStream = arg0;
 		this.stream = isOutStream ? System.out : System.err;
 	}
 	

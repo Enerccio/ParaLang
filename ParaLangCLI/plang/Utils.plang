@@ -1,16 +1,19 @@
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLTime;
+import java.util.Date;
 
 module Utils {
 
     class Time {
-        var wrappedTime;
+        var date;
         
         defn init(unixTime){
-            wrappedTime = PLTime->PLTime(unixTime);
+            if (unixTime == NoValue)
+                date = Date->Date();
+            else
+                date = Date->Date(unixTime);
         }
         
         defn get_time(){
-            return wrappedTime->getUnixTime();
+            return date->getTime();
         }
     }
 

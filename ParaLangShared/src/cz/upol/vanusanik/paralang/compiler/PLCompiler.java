@@ -111,12 +111,16 @@ public class PLCompiler {
 					name = qId;
 					if (qId.contains("."))
 						name = StringUtils.substringAfterLast(qId, ".");
+					if (id.Identifier() != null)
+						name = id.Identifier().getText();
 					r = new Reference(qId, name, true);
 				} else {
 					String qId = id.singleQualifiedName().getText();
 					name = qId;
 					if (qId.contains("."))
 						name = StringUtils.substringAfterLast(qId, ".");
+					if (id.Identifier() != null)
+						name = id.Identifier().getText();
 					r = new Reference(qId, name, false);
 				}
 				referenceMap.put(name, r);
@@ -193,10 +197,9 @@ public class PLCompiler {
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.MODULE_BASE_CLASS));
-		// cls.getClassFile().setMajorVersion(ClassFile.JAVA_6);
-		
 		// Serialization
 		cls.addInterface(cp.getCtClass(Strings.SERIALIZABLE));
+		
 		CtField f = new CtField(CtClass.longType, Strings.SERIALIZATION_UID, cls);
 		f.setModifiers(Modifier.STATIC | Modifier.FINAL);
 		cls.addField(f, "" + PLRuntime.getRuntime().getUuid(className));
@@ -204,7 +207,9 @@ public class PLCompiler {
 		CtConstructor ct = CtNewConstructor.defaultConstructor(cls);
 		cls.addConstructor(ct);
 		
-		CtMethod serM = CtNewMethod.make("private java.lang.Object readResolve() { return cz.upol.vanusanik.paralang.runtime.PLRuntime.getRuntime().resolveModule(\""+ moduleName + "\"); }", cls);
+		CtMethod serM = CtNewMethod.make("private java.lang.Object readResolve() "
+				+ "{ return cz.upol.vanusanik.paralang.runtime.PLRuntime.getRuntime()"
+					+ ".resolveModule(\""+ moduleName + "\"); }", cls);
 		cls.addMethod(serM);
 		
 		final List<FieldDeclarationContext> fields = new ArrayList<FieldDeclarationContext>();
@@ -1320,20 +1325,21 @@ public class PLCompiler {
 						throw new CompilationException("Type is not java type!");
 					
 					boolean isConstructorCall = refName.equals(mname);
-					String fqNameS = Utils.slashify(fqName);
 					
 					if (isConstructorCall){
 						addGetRuntime();
-						bc.addNew(fqNameS);
-						bc.add(Opcode.DUP);
+						bc.addLdc(cacheStrings(fqName));
 						compileParameters(expression.expressionList());
-						bc.addInvokespecial(fqNameS, 
-								"<init>", "([" +  Strings.PLANGOBJECT_L + ")V");
-						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__WRAP_JAVA_OBJECT, 
-								"(" + Strings.OBJECT_L +")" + Strings.PLANGOBJECT_L);
+						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CREATE_JAVA_WRAPPER, 
+								"(" + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.POINTER_L);
 					} else {
 						// TODO
-						
+						addGetRuntime();
+						bc.addLdc(cacheStrings(fqName));
+						bc.addLdc(cacheStrings(mname));
+						compileParameters(expression.expressionList());
+						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN_JAVA_STATIC_METHOD, 
+								"(" + Strings.STRING_L + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
 					}
 				}
 			} else if (expression.methodCall() != null){
@@ -2089,15 +2095,12 @@ public class PLCompiler {
 			
 			CodeAttribute at = bc.toCodeAttribute();
 			at.computeMaxStack();
-			//at.setMaxStack(128); // FIXME
 			at.setMaxLocals(stacker.getMax());
 			at.getAttributes().add(lineNubmerInfo);
 			
 			m.getMethodInfo().setCodeAttribute(at);
 			m.getMethodInfo().rebuildStackMap(cp);
-			
-			// InstructionPrinter.print(m, System.err);
-			
+						
 			cls.addMethod(m);
 		}
 		

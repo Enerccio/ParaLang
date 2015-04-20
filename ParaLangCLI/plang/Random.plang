@@ -1,5 +1,5 @@
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLJavaRandom;
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLSecureRandom;
+import java.security.SecureRandom as __JSecureRandom;
+import java.util.Random as __JRandom;
 
 using Utils.Time;
 using Math;
@@ -39,11 +39,14 @@ module Random {
         var wrappedObject;
         
         defn init(seed){
-            wrappedObject = PLJavaRandom->PLJavaRandom(seed);
+            if (seed == NoValue)
+                wrappedObject = __JRandom->__JRandom();
+            else
+                wrappedObject = __JRandom->__JRandom(seed);
         }
         
         defn restricted get_int(max){
-            return wrappedObject->nextInt(max);
+            return wrappedObject->nextLong() % max;
         }
     }
     
@@ -51,11 +54,11 @@ module Random {
         var wrappedObject;
         
         defn init(){
-            wrappedObject = PLSecureRandom->PLSecureRandom();
+            wrappedObject = __JSecureRandom->__JSecureRandom();
         }
     
         defn restricted get_int(max){
-            return wrappedObject->nextInt(max);
+            return wrappedObject->nextLong() % max;
         }
     }
 };

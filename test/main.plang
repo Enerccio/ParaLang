@@ -3,9 +3,12 @@ using Math;
 using Math.Matrix;
 using Random.Random;
 using Random;
+using Random;
 using System;
 using System.BaseException;
 using System.Integer;
+using Collections.HashSet;
+using Collections.List;
 
 module Main {
     var r = new Random.Random(NoValue);
@@ -24,11 +27,27 @@ module Main {
     
     defn restricted calculate(a, b){
     
-        IO.out.println((dist (4) { return run_id; }));
+        var hs = new HashSet();
+        hs.insert(1);
+        hs.insert(2);
+        hs.insert(1);
+        
+        IO.out.println(hs);
+        IO.out.println(hs.push(4));
+        IO.out.println(hs);
+        
+        var ls = new List();
+        ls.add(1);
+        ls.add(2);
+        
+        IO.out.println(ls);
+        IO.out.println(ls.append(3));
+        IO.out.println(ls);
+        IO.out.println(ls.removeAt(0));
     
         IO.out.println(test(true));
         
-        IO.out.println(new Integer(10) + new Integer(20));
+        IO.out.println(new Integer(10) + new Integer(20) + Random.secure_random.get_int(5));
     
         var ct = System.current_time();
         

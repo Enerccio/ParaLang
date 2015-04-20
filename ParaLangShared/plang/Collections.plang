@@ -1,5 +1,6 @@
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLangHashSet;
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLangList;
+import java.util.HashSet as __JHashSet;
+import java.util.ArrayList;
+import cz.upol.vanusanik.paralang.runtime.wrappers.CollectionsUtils;
 
 module Collections {
 
@@ -7,16 +8,17 @@ module Collections {
 		var wrappedSet;
 	
 		defn init(){
-			inst.wrappedSet = PLangHashSet->PLangHashSet();
+			inst.wrappedSet = __JHashSet->__JHashSet();
 		}
 		
 		defn restricted insert(o){
-			wrappedSet->insert(o);
+			return wrappedSet->add(o);
 		}
 		
 		defn push(o){
 			var set = new HashSet();
-			wrappedSet->push(o, set.wrappedSet);
+			set.wrappedSet->addAll(wrappedSet);
+            set.wrappedSet->add(o);
 			return set;
 		}
 		
@@ -37,7 +39,7 @@ module Collections {
 		}
 		
 		defn __str(){
-			return wrappedSet;
+			return "Set=" + wrappedSet;
 		}
 	}
 	
@@ -45,7 +47,7 @@ module Collections {
 		var wrappedList;
 		
 		defn init(){
-			wrappedList = PLangList->PLangList();
+			wrappedList = ArrayList->ArrayList();
 		}
 		
 		defn restricted add(o){
@@ -54,18 +56,20 @@ module Collections {
 		
 		defn append(o){
 			var list = new List();
-			wrappedList->append(o, list.wrappedList);
-			return list;
+            list.wrappedList->addAll(wrappedList);
+            list.wrappedList->add(o);
+            return list;
 		}
 		
 		defn restricted insert(o, index){
-			return wrappedList->insert(o);
+			return wrappedList->add(index, o);
 		}
 		
 		defn appendAt(o, index){
 			var list = new List();
-			wrappedList->appendAt(o, index, list.innerList);
-			return list;
+            list.wrappedList->addAll(wrappedList);
+            list.wrappedList->add(index, o);
+            return list;
 		}
 		
 		defn restricted remove(o){
@@ -73,11 +77,11 @@ module Collections {
 		}
 		
 		defn restricted removeAt(o){
-			return wrappedList->removeAt(o);
+			return CollectionsUtils->removeAt(wrappedList, o);
 		}
         
         defn restricted setAt(index, o){
-            return wrappedList->setAt(index, o);
+            return wrappedList->set(index, o);
         }
 		
 		defn get(index){
@@ -85,7 +89,7 @@ module Collections {
 		}
 		
 		defn find(o){
-			return wrappedList->find(o);
+			return wrappedList->indexOf(o);
 		}
 		
 		defn restricted clear(){

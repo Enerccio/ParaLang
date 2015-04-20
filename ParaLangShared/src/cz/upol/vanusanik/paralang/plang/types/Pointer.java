@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -78,12 +80,41 @@ public class Pointer extends PLangObject implements Serializable {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public static class PointerMethodIncompatibleException extends Exception {
+		private static final long serialVersionUID = -7762628083995844743L;
+		
+	};
 
 	public PLangObject runMethod(String methodName, PLangObject[] args) throws Throwable {
 		for (Method m : value.getClass().getMethods()){
 			if (m.getName().equals(methodName)){
 				try {
-					return (PLangObject) m.invoke(value, Utils.asObjectArray(args));
+					Class<?> retType = m.getReturnType();
+					Class<?>[] argTypes = m.getParameterTypes();
+					List<Object> constructedArgs = new ArrayList<Object>();
+					
+					if (argTypes.length != args.length)
+						continue;
+					
+					int it = 0;
+					for (Class<?> aType : argTypes){
+						if (aType.isAssignableFrom(args[it].getClass())){
+							constructedArgs.add(args[it]);
+						} else {
+							constructedArgs.add(Utils.asJavaObject(aType, args[it]));
+						}
+						++it;
+					}
+					
+					Object ret = m.invoke(value, constructedArgs.toArray());
+					
+					if (retType.isAssignableFrom(PLangObject.class))
+						return (PLangObject) ret;
+					
+					return Utils.cast(ret, retType);
+				} catch (PointerMethodIncompatibleException ce){
+					continue;
 				} catch (Exception e){
 					throw new RuntimeException(e);
 				}

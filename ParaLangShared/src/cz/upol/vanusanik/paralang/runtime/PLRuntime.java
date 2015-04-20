@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URISyntaxException;
@@ -55,8 +58,9 @@ import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
+import cz.upol.vanusanik.paralang.plang.types.Pointer.PointerMethodIncompatibleException;
 import cz.upol.vanusanik.paralang.plang.types.Str;
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLangList;
+import cz.upol.vanusanik.paralang.utils.Utils;
 
 public class PLRuntime {
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
@@ -373,6 +377,82 @@ public class PLRuntime {
 			throw new RuntimeException(t);
 		}
 	}
+	
+	public PLangObject runJavaStaticMethod(String className, String mname, PLangObject... args){
+		try {
+			Class<?> clazz = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+			
+			for (Method m : clazz.getMethods()){
+				try {
+					if (!Modifier.isStatic(m.getModifiers()))
+						continue;
+					
+					Class<?> retType = m.getReturnType();
+					Class<?>[] argTypes = m.getParameterTypes();
+					List<Object> constructedArgs = new ArrayList<Object>();
+					
+					if (argTypes.length != args.length)
+						continue;
+					
+					int it = 0;
+					for (Class<?> aType : argTypes){
+						if (aType.isAssignableFrom(args[it].getClass())){
+							constructedArgs.add(args[it]);
+						} else {
+							constructedArgs.add(Utils.asJavaObject(aType, args[it]));
+						}
+						++it;
+					}
+					
+					Object ret = m.invoke(null, constructedArgs.toArray());
+					
+					if (retType.isAssignableFrom(PLangObject.class))
+						return (PLangObject) ret;
+					
+					return Utils.cast(ret, retType);
+				} catch (PointerMethodIncompatibleException ce){
+					continue;
+				}
+			}
+		} catch (Exception e) {
+			throw newInstance("System.BaseException", new Str("Failed to create new java instance: " + e.getMessage()));
+		}		
+		throw newInstance("System.BaseException", new Str("No method found for arguments " + args));
+	}
+	
+	public Pointer createJavaWrapper(String className, PLangObject... args){
+		try {
+			Class<?> clazz = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+			
+			for (Constructor<?> c : clazz.getDeclaredConstructors()){
+				try {
+					Class<?>[] argTypes = c.getParameterTypes();
+					List<Object> constructedArgs = new ArrayList<Object>();
+					
+					if (argTypes.length != args.length)
+						continue;
+					
+					int it = 0;
+					for (Class<?> aType : argTypes){
+						if (aType.isAssignableFrom(args[it].getClass())){
+							constructedArgs.add(args[it]);
+						} else {
+							constructedArgs.add(Utils.asJavaObject(aType, args[it]));
+						}
+						++it;
+					}
+					
+					Object o = c.newInstance(constructedArgs.toArray());
+					return new Pointer(o);
+				} catch (PointerMethodIncompatibleException ce){
+					continue;
+				}
+			}
+		} catch (Exception e) {
+			throw newInstance("System.BaseException", new Str("Failed to create new java instance: " + e.getMessage()));
+		}		
+		throw newInstance("System.BaseException", new Str("No constructor found for arguments " + args));
+	}
 
 	public void setRestricted(boolean restricted) {
 		isRestricted = restricted;
@@ -468,7 +548,7 @@ public class PLRuntime {
 			throw newInstance("System.BaseException", new Str("Incorrect number of run count, expected positive integer"));
 		
 		PLClass c = newInstance("Collections.List");
-		List<PLangObject> data = ((PLangList)((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer()).___innerList();
+		List<PLangObject> data = ((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer();
 		
 		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), methodName, tcount);
 		if (r.hasExceptions()){
