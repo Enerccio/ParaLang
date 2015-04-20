@@ -1,5 +1,11 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.ConstantCallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+
 import org.apache.commons.lang3.StringUtils;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
@@ -40,6 +46,20 @@ public class TypeOperations {
 		return true;
 	}
 	
+	public static CallSite binopbootstrap(MethodHandles.Lookup callerClass, String dynMethodName, MethodType dynMethodType)
+			throws Throwable {
+
+		MethodHandle mh = callerClass.findStatic(TypeOperations.class, dynMethodName, dynMethodType);	
+	    return new ConstantCallSite(mh);
+	}
+	
+	public static CallSite unopbootstrap(MethodHandles.Lookup callerClass, String dynMethodName, MethodType dynMethodType)
+			throws Throwable {
+
+		MethodHandle mh = callerClass.findStatic(TypeOperations.class, dynMethodName, dynMethodType);	
+	    return new ConstantCallSite(mh);
+	}
+	
 	public static PLangObject plus(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING){
 			return new Str(a.toString(a) + b.toString(b));
@@ -47,20 +67,126 @@ public class TypeOperations {
 		if (b.___getType() == PlangObjectType.STRING){
 			return new Str(a.toString(a) + b.toString(b));
 		}
-		return operator(a, b, Operator.PLUS);
+		
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.PLUS.classMethod), (PLClass)a, b);
+		}
+		
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va + vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = va + vb;		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject minus(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.MINUS);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.MINUS.classMethod), (PLClass)a, b);
+		}
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va - vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = va - vb;		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject mul(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			return new Str(StringUtils.repeat(a.toString(a), (int) ((Int)b).value));
 		}
-		return operator(a, b, Operator.MUL);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.MUL.classMethod), (PLClass)a, b);
+		}
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va * vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = va * vb;		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject div(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.DIV);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.DIV.classMethod), (PLClass)a, b);
+		}
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va / vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = va / vb;		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject mod(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			int radix = (int) ((Int)b).value;
@@ -68,8 +194,34 @@ public class TypeOperations {
 				throw new RuntimeException("Incorrect radix for string % int operation.");
 			return new Int(Integer.parseInt(a.toString(a), radix));
 		}
-		return operator(a, b, Operator.MOD);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.MOD.classMethod), (PLClass)a, b);
+		}
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va % vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = va % vb;		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject lshift(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			String val = a.toString(a);
@@ -81,8 +233,34 @@ public class TypeOperations {
 			else
 				return new Str(val.substring(lsa, len));
 		}
-		return operator(a, b, Operator.LSHIFT);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.LSHIFT.classMethod), (PLClass)a, b);
+		}
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va << vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = (float) (va.longValue() << vb.longValue());		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject rshift(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			String val = a.toString(a);
@@ -94,8 +272,35 @@ public class TypeOperations {
 			else
 				return new Str(val.substring(0, len-rsa));
 		}
-		return operator(a, b, Operator.RSHIFT);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.RSHIFT.classMethod), (PLClass)a, b);
+		}
+		
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va >> vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = (float) (va.longValue() >> vb.longValue());		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject rushift(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.INTEGER){
 			String val = a.toString(a);
@@ -121,24 +326,141 @@ public class TypeOperations {
 			
 			return new Str(sb.toString());
 		}
-		return operator(a, b, Operator.RUSHIFT);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.RUSHIFT.classMethod), (PLClass)a, b);
+		}
+		
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va >>> vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = (float) (va.longValue() >>> vb.longValue());		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject bitor(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.BITOR);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.BITOR.classMethod), (PLClass)a, b);
+		}
+		
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va | vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = (float) (va.longValue() | vb.longValue());		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject bitand(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.BITAND);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.BITAND.classMethod), (PLClass)a, b);
+		}
+		
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va & vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = (float) (va.longValue() & vb.longValue());		
+			return new Flt(result);
+		}
 	}
+	
 	public static PLangObject bitxor(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.BITXOR);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.BITXOR.classMethod), (PLClass)a, b);
+		}
+		
+		if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
+			long va = ((Int)a).value;
+			long vb;
+			
+			if (b instanceof Int)
+				vb = ((Int)b).value;
+			else
+				vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
+			
+			long result = va ^ vb;			
+			return new Int(result);
+		} else {
+			Float va = a.___getNumber(a);
+			Float vb = b.___getNumber(b);
+			
+			if (va == null || vb == null){
+				throw new RuntimeException("One of the arguments was NoValue");
+			}
+			
+
+			Float result = (float) (va.longValue() ^ vb.longValue());		
+			return new Flt(result);
+		}
 	}
 	
 	public static PLangObject eq(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.EQ);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.EQ.classMethod), (PLClass)a, b);
+		}
+		
+		return BooleanValue.fromBoolean(a.___eq(a, b));
 	}
+	
 	public static PLangObject neq(PLangObject a, PLangObject b){
-		return operator(a, b, Operator.NEQ);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.NEQ.classMethod), (PLClass)a, b);
+		}
+		
+		return BooleanValue.fromBoolean(!a.___eq(a, b));
 	}
+	
 	public static PLangObject less(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
 			String sa = a.toString(a);
@@ -146,8 +468,13 @@ public class TypeOperations {
 			int cmp = sa.compareTo(sb);
 			return cmp < 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
-		return operator(a, b, Operator.LESS);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.LESS.classMethod), (PLClass)a, b);
+		}
+		
+		return BooleanValue.fromBoolean(a.___less(a, b, false));
 	}
+	
 	public static PLangObject more(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
 			String sa = a.toString(a);
@@ -155,7 +482,11 @@ public class TypeOperations {
 			int cmp = sa.compareTo(sb);
 			return cmp > 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
-		return operator(a, b, Operator.MORE);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.MORE.classMethod), (PLClass)a, b);
+		}
+		
+		return BooleanValue.fromBoolean(a.___more(a, b, false));
 	}
 	public static PLangObject leq(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
@@ -164,7 +495,11 @@ public class TypeOperations {
 			int cmp = sa.compareTo(sb);
 			return cmp <= 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
-		return operator(a, b, Operator.LEQ);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.LEQ.classMethod), (PLClass)a, b);
+		}
+		
+		return BooleanValue.fromBoolean(a.___less(a, b, true));
 	}
 	public static PLangObject meq(PLangObject a, PLangObject b){
 		if (a.___getType() == PlangObjectType.STRING && b.___getType() == PlangObjectType.STRING){
@@ -173,257 +508,116 @@ public class TypeOperations {
 			int cmp = sa.compareTo(sb);
 			return cmp >= 0 ? BooleanValue.TRUE : BooleanValue.FALSE;
 		}
-		return operator(a, b, Operator.MEQ);
-	}
-
-	@SuppressWarnings("incomplete-switch")
-	private static PLangObject operator(PLangObject a, PLangObject b,
-			Operator o) {
-		
-		if (a instanceof PLClass){
-			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(o.classMethod), (PLClass)a, b);
+		if (a.___getType() == PlangObjectType.CLASS){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.MEQ.classMethod), (PLClass)a, b);
 		}
 		
-		switch (o){
-		case DIV:
-		case MINUS:
-		case MUL:
-		case PLUS:
-		case MOD:
-		case LSHIFT:
-		case RSHIFT:
-		case RUSHIFT:
-		case BITOR:
-		case BITAND:
-		case BITXOR: {
-			if (a instanceof Int && ((b instanceof Int) || (b instanceof BaseInteger))){
-				long va = ((Int)a).value;
-				long vb;
-				
-				if (b instanceof Int)
-					vb = ((Int)b).value;
-				else
-					vb = ((Int)((BaseInteger)b).___getkey(BaseNumber.__valKey)).value;
-				
-				long result = 0;
-				
-				switch(o){
-				case BITAND:
-					result = va & vb;
-					break;
-				case BITOR:
-					result = va | vb;
-					break;
-				case BITXOR:
-					result = va ^ vb;
-					break;
-				case DIV:
-					result = va / vb;
-					break;
-				case LSHIFT:
-					result = va << vb;
-					break;
-				case MINUS:
-					result = va - vb;
-					break;
-				case MOD:
-					result = va % vb;
-					break;
-				case MUL:
-					result = va * vb;
-					break;
-				case PLUS:
-					result = va + vb;
-					break;
-				case RSHIFT:
-					result = va >> vb;
-					break;
-				case RUSHIFT:
-					result = va >>> vb;
-					break;			
-				}
-				
-				return new Int(result);
-			} else {
-				Float va = a.___getNumber(a);
-				Float vb = b.___getNumber(b);
-				Float result = 0f;
-				
-				if (va == null || vb == null){
-					throw new RuntimeException("One of the arguments was NoValue");
-				}
-				
-				switch(o){
-				case BITAND:
-					result = (float) (va.intValue() & vb.intValue());
-					break;
-				case BITOR:
-					result = (float) (va.intValue() | vb.intValue());
-					break;
-				case BITXOR:
-					result = (float) (va.intValue() ^ vb.intValue());
-					break;
-				case DIV:
-					result = va / vb;
-					break;
-				case LSHIFT:
-					result = (float) (va.intValue() << vb.intValue());
-					break;
-				case MINUS:
-					result = va - vb;
-					break;
-				case MOD:
-					result = va % vb;
-					break;
-				case MUL:
-					result = va * vb;
-					break;
-				case PLUS:
-					result = va + vb;
-					break;
-				case RSHIFT:
-					result = (float) (va.intValue() >> vb.intValue());
-					break;
-				case RUSHIFT:
-					result = (float) (va.intValue() >>> vb.intValue());
-					break;			
-				}
-				
-				return new Flt(result);
-			}
-		} 
-		case EQ:
-		case LEQ:
-		case LESS:
-		case MEQ:
-		case MORE:
-		case NEQ:{
-			
-			boolean result = false;
-			
-			switch (o){
-			case EQ:
-				result = a.___eq(a, b);
-				break;
-			case LEQ:
-				result = a.___less(a, b, true);
-				break;
-			case LESS:
-				result = a.___less(a, b, false);
-				break;
-			case MEQ:
-				result = a.___more(a, b, true);
-				break;
-			case MORE:
-				result = a.___more(a, b, false);
-				break;
-			case NEQ:
-				result = !a.___eq(a, b);
-				break;
-			}
-			
-			return BooleanValue.fromBoolean(result);
-		}
-		default:
-			break;
-		
-		
-		}
-		
-		return null;
+		return BooleanValue.fromBoolean(a.___more(a, b, true));
 	}
 	
 	public static PLangObject lplusplus(PLangObject a){
-		return operator(a, Operator.LPLUSPLUS);
-	}
-	
-	public static PLangObject lminusminus(PLangObject a){
-		return operator(a, Operator.LMINUSMINUS);
-	}
-	
-	public static PLangObject uplus(PLangObject a){
-		return operator(a, Operator.UPLUS);
-	}
-	
-	public static PLangObject uminus(PLangObject a){
-		return operator(a, Operator.UMINUS);
-	}
-	
-	public static PLangObject ulneg(PLangObject a){
-		return operator(a, Operator.ULOGNEG);
-	}
-	
-	public static PLangObject ubneg(PLangObject a){
-		return operator(a, Operator.UBINNEG);
-	}
-
-	private static PLangObject operator(PLangObject a, Operator o) {
 		if (a instanceof PLClass){
-			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(o.classMethod), (PLClass)a);
-		}
-		
-		if (o == Operator.ULOGNEG){
-			return BooleanValue.fromBoolean(!BooleanValue.toBoolean(a));
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.LPLUSPLUS.classMethod), (PLClass)a);
 		}
 		
 		if (a instanceof Int){
 			long v = ((Int)a).value;
 			long add = 1;
-			long res;
-			
-			switch (o){
-			case LPLUSPLUS:
-				res = v + add;
-				break;
-			case LMINUSMINUS:
-				res = v - add;
-				break;
-			case UMINUS:
-				res = -v;
-				break;
-			case UPLUS:
-				res = +v;
-				break;
-			case UBINNEG:
-				res = v;
-				break;
-			default:
-				res = -1;
-			}
-			
+			long res = v + add;
 			return new Int(res);
 		}
 		
 		Float v = a.___getNumber(a);
-		Float add = 1.0f;
-		Float res;
-		
 		if (v == null){
 			throw new RuntimeException("NoValue");
 		}
-		
-		switch (o){
-		case LPLUSPLUS:
-			res = v + add;
-			break;
-		case LMINUSMINUS:
-			res = v - add;
-			break;
-		case UMINUS:
-			res = -v;
-			break;
-		case UPLUS:
-			res = +v;
-			break;
-		case UBINNEG:
-			res = (float) ~v.intValue();
-			break;
-		default:
-			res = -1f;
-		}
-		
+		Float add = 1.0f;
+		Float res = v + add;
 		return new Flt(res);
 	}
 	
+	public static PLangObject lminusminus(PLangObject a){
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.LMINUSMINUS.classMethod), (PLClass)a);
+		}
+		
+		if (a instanceof Int){
+			long v = ((Int)a).value;
+			long add = 1;
+			long res = v - add;
+			return new Int(res);
+		}
+		
+		Float v = a.___getNumber(a);
+		if (v == null){
+			throw new RuntimeException("NoValue");
+		}
+		Float add = 1.0f;
+		Float res = v - add;
+		return new Flt(res);
+	}
 	
+	public static PLangObject uplus(PLangObject a){
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.UPLUS.classMethod), (PLClass)a);
+		}
+		
+		if (a instanceof Int){
+			long v = ((Int)a).value;
+			long res = +v;
+			return new Int(res);
+		}
+		
+		Float v = a.___getNumber(a);
+		if (v == null){
+			throw new RuntimeException("NoValue");
+		}
+		Float res = +v;
+		return new Flt(res);
+	}
+	
+	public static PLangObject uminus(PLangObject a){
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.UMINUS.classMethod), (PLClass)a);
+		}
+		
+		if (a instanceof Int){
+			long v = ((Int)a).value;
+			long res = -v;
+			return new Int(res);
+		}
+		
+		Float v = a.___getNumber(a);
+		if (v == null){
+			throw new RuntimeException("NoValue");
+		}
+		Float res = -v;
+		return new Flt(res);
+	}
+	
+	public static PLangObject ulneg(PLangObject a){
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.ULOGNEG.classMethod), (PLClass)a);
+		}
+		return BooleanValue.fromBoolean(!BooleanValue.toBoolean(a));
+	}
+	
+	public static PLangObject ubneg(PLangObject a){
+		if (a instanceof PLClass){
+			return PLRuntime.getRuntime().run(((PLClass)a).___getkey(Operator.UBINNEG.classMethod), (PLClass)a);
+		}
+		
+		if (a instanceof Int){
+			long v = ((Int)a).value;
+			long res = ~v;
+			return new Int(res);
+		}
+		
+		Float v = a.___getNumber(a);
+		if (v == null){
+			throw new RuntimeException("NoValue");
+		}
+		Float res = (float) ~v.longValue();
+		return new Flt(res);
+	}
 }

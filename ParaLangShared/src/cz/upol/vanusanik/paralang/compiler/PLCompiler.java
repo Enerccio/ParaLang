@@ -22,6 +22,7 @@ import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.bytecode.AttributeInfo;
+import javassist.bytecode.BootstrapMethodsAttribute;
 import javassist.bytecode.Bytecode;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.ConstPool;
@@ -200,6 +201,8 @@ public class PLCompiler {
 		// Serialization
 		cls.addInterface(cp.getCtClass(Strings.SERIALIZABLE));
 		
+		genBootstraps();
+		
 		CtField f = new CtField(CtClass.longType, Strings.SERIALIZATION_UID, cls);
 		f.setModifiers(Modifier.STATIC | Modifier.FINAL);
 		cls.addField(f, "" + PLRuntime.getRuntime().getUuid(className));
@@ -280,6 +283,28 @@ public class PLCompiler {
 		return cls.toClass(getClassLoader(), null);
 	}
 	
+	private void genBootstraps() {
+		pool = cls.getClassFile().getConstPool();
+		// 0 binary operation
+		int mRefIdxBin = pool.addMethodrefInfo(pool.addClassInfo(Strings.TYPEOPS), pool.addNameAndTypeInfo("binopbootstrap", 
+				"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+				+ ")Ljava/lang/invoke/CallSite;"));
+		int mHandleIdxBin = pool.addMethodHandleInfo(ConstPool.REF_invokeStatic, mRefIdxBin);
+		// 1 unary operation
+		int mRefIdxUn = pool.addMethodrefInfo(pool.addClassInfo(Strings.TYPEOPS), pool.addNameAndTypeInfo("unopbootstrap", 
+				"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+				+ ")Ljava/lang/invoke/CallSite;"));
+		int mHandleIdxUn = pool.addMethodHandleInfo(ConstPool.REF_invokeStatic, mRefIdxUn);
+		
+		/* create bootstrap methods attribute; there can only be one per class file! */
+		BootstrapMethodsAttribute.BootstrapMethod[] bms = new BootstrapMethodsAttribute.BootstrapMethod[] {
+				new BootstrapMethodsAttribute.BootstrapMethod(mHandleIdxBin, new int[] {}),
+				new BootstrapMethodsAttribute.BootstrapMethod(mHandleIdxUn, new int[] {})
+		};
+		BootstrapMethodsAttribute bmsAttribute = new BootstrapMethodsAttribute(pool, bms);
+		cls.getClassFile().addAttribute(bmsAttribute);
+	}
+
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
 		compilingClass = true;
 		distributed.clear();
@@ -293,7 +318,6 @@ public class PLCompiler {
 		
 		cls = cp.makeClass(className);
 		cls.setSuperclass(cp.getCtClass(Strings.CLASS_BASE_CLASS));
-		// cls.getClassFile().setMajorVersion(ClassFile.JAVA_6);
 		
 		String superClass = null;
 		if (classDeclaration.type() != null)
@@ -305,6 +329,8 @@ public class PLCompiler {
 		CtField f = new CtField(CtClass.longType, Strings.SERIALIZATION_UID, cls);
 		f.setModifiers(Modifier.STATIC | Modifier.FINAL);
 		cls.addField(f, "" + PLRuntime.getRuntime().getUuid(className));
+		
+		genBootstraps();
 		
 		CtConstructor ct = CtNewConstructor.defaultConstructor(cls);
 		cls.addConstructor(ct);
@@ -1624,8 +1650,8 @@ public class PLCompiler {
 		case "~": method = Strings.TYPEOPS__UNARY_BNEG; break;
 		}
 		
-		bc.addInvokestatic(Strings.TYPEOPS, method, 
-				"("+ Strings.PLANGOBJECT_L +")" + Strings.PLANGOBJECT_L);
+		bc.addInvokedynamic(1, method, 
+				"("+ Strings.PLANGOBJECT_L + ")" + Strings.PLANGOBJECT_L);
 		
 		if (compilingMethod){
 			bc.add(Opcode.DUP);
@@ -1665,8 +1691,7 @@ public class PLCompiler {
 		case ">=": method = Strings.TYPEOPS__MEQ; break;
 		}
 		
-		bc.addInvokestatic(Strings.TYPEOPS, method, 
-				"("+ Strings.PLANGOBJECT_L + Strings.PLANGOBJECT_L + ")" + Strings.PLANGOBJECT_L);
+		bc.addInvokedynamic(0, method, "(" + Strings.PLANGOBJECT_L + Strings.PLANGOBJECT_L + ")" + Strings.PLANGOBJECT_L);
 		
 		if (compilingMethod){
 			bc.add(Opcode.DUP);
