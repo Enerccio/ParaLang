@@ -135,18 +135,54 @@ localVariableDeclaration
 
 statement
     :   block
-    |   'if' parExpression statement ('else' statement)?
-    |   'throw' expression ';'
-    |   'try' block (catchClause+ finallyBlock? | finallyBlock)
-    |   'for' '(' forControl ')' statement
-    |   'while' parExpression statement
-    |   'do' statement 'while' parExpression ';'
-    |   'return' expression? ';'
-    |   'break' ';'
-    |   'continue' ';'
+    |   ifStatement
+    |   throwStatement
+    |   tryStatement
+    |   forStatement
+    |   whileStatement
+    |   doStatement
+    |   returnStatement
+    |   breakStatement
+    |   continueStatement
     |   ';'
     |   statementExpression ';'
     ;
+    
+continueStatement
+	:	'continue' ';'
+	;
+    
+breakStatement
+	:	'break' ';'
+	;
+    
+forStatement
+	:	'for' '(' forControl ')' statement
+	;
+    
+whileStatement
+	:	'while' parExpression statement
+	;
+    
+doStatement
+	:	'do' statement 'while' parExpression ';'
+	;
+    
+tryStatement
+	:	'try' block (catchClause+ finallyBlock? | finallyBlock)
+	;
+    
+returnStatement
+	:	'return' expression? ';'
+	;
+    
+throwStatement 
+	:	'throw' expression ';'
+	;
+    
+ifStatement
+	:	'if' parExpression statement ('else' statement)?
+	;
     
 catchClause
     :   'catch' '(' type Identifier ')' block

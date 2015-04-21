@@ -66,13 +66,16 @@ public class NodeList {
 		
 		List<Node> nodeList = new ArrayList<Node>(reqNodeNum);
 		
-		for (int i=0; i<reqNodeNum; i++){
-			Collections.sort(ncl);
+		try {
+			for (int i=0; i<reqNodeNum; i++){
+				Collections.sort(ncl);
+				
+				nodeList.add(ncl.get(ncl.size()-1).n);
+				--ncl.get(ncl.size()-1).val;
+			}
+		} catch (Exception e){
 			
-			nodeList.add(ncl.get(ncl.size()-1).n);
-			--ncl.get(ncl.size()-1).val;
 		}
-		
 		return nodeList;
 	}
 	
@@ -81,6 +84,11 @@ public class NodeList {
 		boolean hasFreeNodes = false;
 		Node n;
 		do {
+			try {
+				Thread.sleep(0, 10);
+			} catch (InterruptedException e1) {
+				
+			}
 			n = nList.get(r.nextInt(nList.size()));
 			try {
 				hasFreeNodes = getFreeNodes(n) > 0;

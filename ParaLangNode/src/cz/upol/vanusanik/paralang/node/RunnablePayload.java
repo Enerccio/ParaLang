@@ -8,7 +8,7 @@ package cz.upol.vanusanik.paralang.node;
  */
 public abstract class RunnablePayload<T> implements Runnable {
 
-	private volatile boolean finished = false;
+	protected volatile boolean finished = false;
 	private T result;
 	
 	/**

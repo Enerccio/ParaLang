@@ -2,6 +2,9 @@ package cz.upol.vanusanik.paralang.runtime;
 
 import java.io.Serializable;
 
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
@@ -26,5 +29,25 @@ public class SystemModule extends PLModule implements Serializable {
 	
 	public PLangObject currentTime(){
 		return new Int(System.currentTimeMillis());
+	}
+	
+
+	@Override
+	public JsonValue ___toObject() {
+		PLRuntime runtime = PLRuntime.getRuntime();
+		JsonObject metaData = new JsonObject().add("metaObjectType", ___getType().toString());
+		if (runtime.isAlreadySerialized(this)){
+			metaData.add("link", true)
+					.add("linkId", ___getObjectId());
+		} else {
+			runtime.setAsAlreadySerialized(this);
+			metaData.add("isBaseClass", false)
+					.add("link", false)
+					.add("isInited", ___isInited)
+					.add("thisLink", ___getObjectId())
+					.add("className", "System")
+					.add("fields", ___getFields());
+		}
+		return metaData;
 	}
 }

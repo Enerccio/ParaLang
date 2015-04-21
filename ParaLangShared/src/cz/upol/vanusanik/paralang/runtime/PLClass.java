@@ -50,7 +50,10 @@ public abstract class PLClass extends BaseCompiledStub {
 	}
 	
 	public void ___setDerivedClass(PLClass derived){
+		boolean prev = ___restrictedOverride;
+		___restrictedOverride = true;
 		___setkey(___derivedKey, derived);
+		___restrictedOverride = prev;
 	}
 	
 	@Override

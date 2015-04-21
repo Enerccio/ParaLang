@@ -28,7 +28,7 @@ module Math {
             return matrix.get(i).get(j);
         }
         
-        defn restricted set(i, j, v){
+        defn set(i, j, v){
             matrix.get(i).setAt(j, v);
         }
     
@@ -50,17 +50,24 @@ module Math {
         
         defn __mul(other){
             if (other instanceof Matrix){
-            
+                return mul_matrix(other);
             } else {
-                mul_scalar(other);
-                return inst;
+                return mul_scalar(other);
             }
         }
         
         defn mul_scalar(scalar){
+            var nm = new Matrix(n, m);
             for (var i=0; i<n; i++)
-                    for (var j=0; j<m; j++)
-                        set(i, j, get(i, j) * scalar);
+                    for (var j=0; j<m; j++){
+                        nm.set(i, j, get(i, j) * scalar);
+                    }
+            return nm;
+        }
+        
+        defn mul_matrix(b){
+            if (m != b.n)
+                throw new MathException("Incompatible matrices");
         }
     }
 

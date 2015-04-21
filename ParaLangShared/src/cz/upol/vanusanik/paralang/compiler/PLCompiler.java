@@ -353,7 +353,7 @@ public class PLCompiler {
 		for (ClassBodyDeclarationContext cbd : cbdList){
 			if (cbd.memberDeclaration().functionDeclaration() != null){
 				FunctionDeclarationContext fcx = cbd.memberDeclaration().functionDeclaration();
-				boolean restricted = fcx.getChild(1).getText().startsWith("restricted");
+				boolean restricted = fcx.getChild(1).getText().equals("restricted");
 				String name = restricted ? fcx.getChild(2).getText() : fcx.getChild(1).getText();
 				if (methods.contains(name))
 					throw new CompilationException("Already containing function " + name);
@@ -507,7 +507,9 @@ public class PLCompiler {
 		
 		if (restricted){
 			addGetRuntime();
-			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CHECK_RESTRICTED_ACCESS, "()V");
+			bc.addAload(0);
+			bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+			bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CHECK_RESTRICTED_ACCESS, "(" + Strings.BASE_COMPILED_STUB_L + ")V");
 		}
 		
 		fbcList = new LinkedList<FinallyBlockProtocol>();
@@ -591,7 +593,7 @@ public class PLCompiler {
 	private void compileStatement(final StatementContext statement) throws Exception {
 		markLine(bc.currentPc(), statement.start.getLine());
 		
-		if (statement.getText().equals("continue")){
+		if (statement.continueStatement() != null){
 			if (continueStack.empty())
 				throw new CompilationException("Continue not inside any loop");
 			
@@ -614,7 +616,7 @@ public class PLCompiler {
 			
 			return;
 		}
-		if (statement.getText().equals("break")){
+		if (statement.breakStatement() != null){
 			if (breakStack.empty())
 				throw new CompilationException("Break not inside any loop");
 			
@@ -637,8 +639,8 @@ public class PLCompiler {
 			
 			return;
 		}
-		if (statement.getText().startsWith("for ")){
-			ForControlContext fcc = statement.forControl();
+		if (statement.forStatement() != null){
+			ForControlContext fcc = statement.forStatement().forControl();
 			
 			int loopStart = counter++;
 			int loopEnd = counter++;
@@ -703,7 +705,7 @@ public class PLCompiler {
 			breakStack.add(loopEnd);
 			continueStack.add(continueLoop);
 			fbcLoopList.add(null);
-			compileStatement(statement.statement(0));
+			compileStatement(statement.forStatement().statement());
 			fbcLoopList.remove(fbcLoopList.size()-1);
 			breakStack.pop();
 			continueStack.pop();
@@ -742,14 +744,14 @@ public class PLCompiler {
 			
 			return;
 		}
-		if (statement.getText().startsWith("while ")){
+		if (statement.whileStatement() != null){
 			
 			int loopStart = counter++;
 			int loopEnd = counter++;
 			
 			setLabelPos(loopStart);
 			isStatementExpression.add(false);
-			compileExpression(statement.parExpression().expression(), false, -1);
+			compileExpression(statement.whileStatement().parExpression().expression(), false, -1);
 			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
@@ -769,7 +771,7 @@ public class PLCompiler {
 			breakStack.add(loopEnd);
 			
 			fbcLoopList.add(null);
-			compileStatement(statement.statement(0));
+			compileStatement(statement.whileStatement().statement());
 			fbcLoopList.remove(fbcLoopList.size()-1);
 			addLabel(new LabelInfo(){
 
@@ -793,7 +795,7 @@ public class PLCompiler {
 			bc.add(Opcode.NOP);
 			return;
 		}
-		if (statement.getText().startsWith("do ")){
+		if (statement.doStatement() != null){
 			
 			int loopStart = counter++;
 			int loopEnd = counter++;
@@ -805,7 +807,7 @@ public class PLCompiler {
 			breakStack.add(loopEnd);
 			
 			fbcLoopList.add(null);
-			compileStatement(statement.statement(0));
+			compileStatement(statement.doStatement().statement());
 			fbcLoopList.remove(fbcLoopList.size()-1);
 			addLabel(new LabelInfo(){
 
@@ -827,7 +829,7 @@ public class PLCompiler {
 			
 			setLabelPos(loopStart);
 			isStatementExpression.add(false);
-			compileExpression(statement.parExpression().expression(), false, -1);
+			compileExpression(statement.doStatement().parExpression().expression(), false, -1);
 			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
@@ -846,9 +848,9 @@ public class PLCompiler {
 			bc.add(Opcode.NOP);
 			return;
 		}
-		if (statement.getText().startsWith("try ")){
+		if (statement.tryStatement() != null){
 			int endLabel = counter++;
-			boolean hasFinally = statement.finallyBlock() != null;
+			boolean hasFinally = statement.tryStatement().finallyBlock() != null;
 			
 			final int finallyStack = stacker.acquire();
 			final int throwableStack = stacker.acquire();
@@ -857,7 +859,7 @@ public class PLCompiler {
 				
 				@Override
 				public void doCompile() throws Exception {
-					compileBlock(statement.finallyBlock().block());
+					compileBlock(statement.tryStatement().finallyBlock().block());
 				}
 			};
 			
@@ -867,7 +869,7 @@ public class PLCompiler {
 				fbcList.add(fbc);
 				fbcLoopList.add(fbcList.get(fbcList.size()-1));
 			}
-			compileBlock(statement.block());
+			compileBlock(statement.tryStatement().block());
 			if (hasFinally){
 				fbcList.remove(fbcList.size()-1);
 				fbcLoopList.remove(fbcLoopList.size()-1);
@@ -875,7 +877,7 @@ public class PLCompiler {
 			
 			int end = bc.currentPc();
 			if (hasFinally){
-				compileBlock(statement.finallyBlock().block());
+				compileBlock(statement.tryStatement().finallyBlock().block());
 			}
 			
 			addLabel(new LabelInfo(){
@@ -895,12 +897,12 @@ public class PLCompiler {
 			
 			int prevKey = -1;
 			
-			if (statement.catchClause() != null){
+			if (statement.tryStatement().catchClause() != null){
 				int throwLabel = counter++;
 				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.BASE_COMPILED_STUB);
 				bc.addAstore(throwableStack); // save old exception
 				
-				Iterator<CatchClauseContext> ccit = statement.catchClause().iterator();
+				Iterator<CatchClauseContext> ccit = statement.tryStatement().catchClause().iterator();
 				while (ccit.hasNext()){
 					CatchClauseContext ccc = ccit.next();
 					String type = ccc.type().getText();
@@ -975,7 +977,7 @@ public class PLCompiler {
 					if (hasFinally){
 						bc.addExceptionHandler(sstart, ssend, bc.currentPc(), Strings.THROWABLE);
 						bc.addAstore(finallyStack);
-						compileBlock(statement.finallyBlock().block());
+						compileBlock(statement.tryStatement().finallyBlock().block());
 						bc.addAload(finallyStack);
 						bc.add(Opcode.ATHROW);
 					}
@@ -983,7 +985,7 @@ public class PLCompiler {
 				}
 				setLabelPos(throwLabel);
 				if (hasFinally)
-					compileBlock(statement.finallyBlock().block());
+					compileBlock(statement.tryStatement().finallyBlock().block());
 				bc.addAload(throwableStack);
 				bc.add(Opcode.ATHROW);
 				addLabel(new LabelInfo(){
@@ -1002,11 +1004,11 @@ public class PLCompiler {
 				}, endLabel);			
 			}
 			
-			if (statement.finallyBlock() != null){
+			if (statement.tryStatement().finallyBlock() != null){
 				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.THROWABLE);
 				bc.addAstore(finallyStack); // save throwable exception on stack
 				
-				compileBlock(statement.finallyBlock().block());
+				compileBlock(statement.tryStatement().finallyBlock().block());
 				
 				bc.addAload(finallyStack);
 				bc.add(Opcode.ATHROW);
@@ -1026,13 +1028,13 @@ public class PLCompiler {
 			return;
 		}
 		
-		if (statement.getText().startsWith("return")){
+		if (statement.returnStatement() != null){
 			
 			int local = stacker.acquire();
 			
-			if (statement.expression() != null){
+			if (statement.returnStatement().expression() != null){
 				isStatementExpression.add(false);
-				compileExpression(statement.expression(), false, -1);
+				compileExpression(statement.returnStatement().expression(), false, -1);
 				isStatementExpression.pop();
 			} else {
 				addNil();
@@ -1048,9 +1050,9 @@ public class PLCompiler {
 			return;
 		}
 		
-		if (statement.getText().startsWith("throw")){
+		if (statement.throwStatement() != null){
 			isStatementExpression.add(false);
-			compileExpression(statement.expression(), false, -1);
+			compileExpression(statement.throwStatement().expression(), false, -1);
 			isStatementExpression.pop();
 			bc.add(Opcode.ATHROW);
 			return;
@@ -1060,14 +1062,14 @@ public class PLCompiler {
 			isStatementExpression.add(true);
 			compileExpression(statement.statementExpression().expression(), false, -1);
 			isStatementExpression.pop();
-		} else if (statement.getText().startsWith("if")){
-			ExpressionContext e = statement.parExpression().expression();
+		} else if (statement.ifStatement() != null){
+			ExpressionContext e = statement.ifStatement().parExpression().expression();
 			isStatementExpression.add(false);
 			compileExpression(e, false, -1);
 			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
-			boolean hasElse = statement.getChildCount() == 5;
+			boolean hasElse = statement.ifStatement().getChildCount() == 5;
 			int key = counter++;
 			addLabel(new LabelInfo(){
 
@@ -1081,7 +1083,7 @@ public class PLCompiler {
 			}, key);
 			int key2 = -1;
 			
-			compileStatement((StatementContext) statement.getChild(2));
+			compileStatement((StatementContext) statement.ifStatement().getChild(2));
 			if (hasElse){
 				key2 = counter++;
 				addLabel(new LabelInfo(){
@@ -1103,7 +1105,7 @@ public class PLCompiler {
 			setLabelPos(key);
 			
 			if (hasElse){
-				compileStatement((StatementContext) statement.getChild(4));
+				compileStatement((StatementContext) statement.ifStatement().getChild(4));
 				setLabelPos(key2);
 			}
 			bc.add(Opcode.NOP);
@@ -2165,6 +2167,17 @@ public class PLCompiler {
 		private boolean isStartPos = false;
 	}
 	
+	private static class ExceptionData {
+		private int s, e, h, t;
+		public ExceptionData(int s, int e, int h, int t) {
+			super();
+			this.s = s;
+			this.e = e;
+			this.h = h;
+			this.t = t;
+		}
+	}
+	
 	public void pruneDeadCode() throws Exception {
 		byte[] bytecode = bc.get();
 		ExceptionTable etable = bc.getExceptionTable();
@@ -2178,11 +2191,11 @@ public class PLCompiler {
 			ehi.bcLink = counter++;
 			linkMap.put(ehi.bcLink, new IntegerLink(etable.handlerPc(i)));
 			ehi.startLink = counter++;
-			IntegerLink startLink = new IntegerLink(etable.endPc(i));
+			IntegerLink startLink = new IntegerLink(etable.startPc(i));
 			linkMap.put(ehi.startLink, startLink);
 			startLink.isStartPos  = true;
 			ehi.endLink = counter++;
-			linkMap.put(ehi.endLink, new IntegerLink(etable.startPc(i)));
+			linkMap.put(ehi.endLink, new IntegerLink(etable.endPc(i)));
 			ehi.type = etable.catchType(i);
 			eh.add(ehi);
 		}	
@@ -2192,7 +2205,7 @@ public class PLCompiler {
 		
 		markDeadCode(insts, iPosList, etable);
 		
-		ExceptionTable copy = new ExceptionTable(pool);
+		List<ExceptionData> copy = new ArrayList<ExceptionData>();
 		List<Instruction> prunned = new ArrayList<Instruction>();
 		BidiMultiMap<Integer, IntegerLink> cpyMap = new BidiMultiHashMap<Integer, IntegerLink>(linkMap);
 		for (Instruction i : insts){
@@ -2212,7 +2225,7 @@ public class PLCompiler {
 		
 		for (ExceptionHandler ehi : eh){
 			if (linkMap.get(ehi.startLink) != null)
-				copy.add(linkMap.get(ehi.startLink).i, linkMap.get(ehi.endLink).i, linkMap.get(ehi.bcLink).i, ehi.type);
+				copy.add(new ExceptionData(linkMap.get(ehi.startLink).i, linkMap.get(ehi.endLink).i, linkMap.get(ehi.bcLink).i, ehi.type));
 		}
 		
 		recalculateJumps(prunned);
@@ -2226,7 +2239,7 @@ public class PLCompiler {
 		}
 		
 		for (int i=0; i<copy.size(); i++)
-			bc.addExceptionHandler(copy.startPc(i), copy.endPc(i), copy.startPc(i), copy.catchType(i));
+			bc.addExceptionHandler(copy.get(i).s, copy.get(i).e, copy.get(i).h, copy.get(i).t);
 	}
 
 	private void recalculateJumps(List<Instruction> prunned) {
@@ -2271,7 +2284,7 @@ public class PLCompiler {
 		for (int i=0; i<etable.size(); i++){
 			int startPc = etable.startPc(i);
 			if (iPosList.get(startPc).visited)
-				markFrom(insts, etable.handlerPc(i));
+				markFrom(insts, insts.indexOf(iPosList.get(etable.handlerPc(i))));
 		}
 	}
 
@@ -2295,6 +2308,7 @@ public class PLCompiler {
 			case 0xaf:
 			case 0xae:
 			case 0xa7:
+			case 0xbf:
 				return; // is return
 				
 			}

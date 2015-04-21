@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -176,14 +177,17 @@ public class NodeController {
 			}
 		}
 		storage.runtime.runtime.prepareForDeserialization(input.get("runtimeData").asObject().get("serialVersionUIDs").asArray());
+		Map<Long, Long> ridxMap;
 		try {
-			storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray());
+			ridxMap = storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray(), input.get("runtimeData").asObject().get("currentCaller").asObject());
+			
 		} catch (Exception e){
 			sendError(s, payload, Protocol.ERROR_DESERIALIZATION_FAILURE, e.getMessage());
 			storage.runtime = null;
 			return;
 		}
 		
+		final Map<Long, Long> transMap = ridxMap;
 		storage.runtime.runtime.setRestricted(true);
 		storage.exception = null;
 		
@@ -194,10 +198,13 @@ public class NodeController {
 
 				try {
 					storage.runtime.runtime.setAsCurrent();
-					return storage.runtime.runtime.runByObjectId(input.getLong("runnerId", 0), input.getString("methodName", ""), new Int(input.getInt("id", 0)));	
+					return storage.runtime.runtime.runByObjectId(transMap.get(input.getLong("runnerId", 0)), input.getString("methodName", ""), new Int(input.getInt("id", 0)));	
 				} catch (PLClass e){
 					storage.exception = e;
 					return null;
+				} catch (Throwable t){
+					finished = true;
+					throw t;
 				}
 			}
 			
@@ -228,9 +235,10 @@ public class NodeController {
 	}
 
 	private void sendError(Socket s, JsonObject payload, long ecode, String dmesg) throws Exception {
-		payload.add("error", true);
-		payload.add("errorCode", ecode);
-		payload.add("errorDetails", dmesg);
+		payload.add("payload", new JsonObject().
+									add("error", true).
+									add("errorCode", ecode).
+									add("errorDetails", dmesg));
 		Protocol.send(s.getOutputStream(), payload);
 	}
 

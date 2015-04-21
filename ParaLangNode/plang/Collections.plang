@@ -21,7 +21,7 @@ module Collections {
             return iter->hasNext();
         }
         
-        defn restricted remove(){
+        defn remove(){
             return iter->remove();
         }
     
@@ -41,7 +41,7 @@ module Collections {
 	class HashSet {
 		var wrappedSet = __JHashSet->__JHashSet();
 		
-		defn restricted insert(o){
+		defn insert(o){
 			return wrappedSet->add(o);
 		}
 		
@@ -56,11 +56,11 @@ module Collections {
 			return wrappedSet->contains(o);
 		}
 		
-		defn restricted remove(o){
+		defn remove(o){
 			return wrappedSet->remove(o);
 		}
 		
-		defn restricted clear(){
+		defn clear(){
 			wrappedSet->clear();
 		}
 		
@@ -80,7 +80,7 @@ module Collections {
 	class List {
 		var wrappedList = ArrayList->ArrayList();
 		
-		defn restricted add(o){
+		defn add(o){
 			return wrappedList->add(o);
 		}
 		
@@ -91,7 +91,7 @@ module Collections {
             return list;
 		}
 		
-		defn restricted insert(o, index){
+		defn insert(index, o){
 			return wrappedList->add(index, o);
 		}
 		
@@ -102,15 +102,15 @@ module Collections {
             return list;
 		}
 		
-		defn restricted remove(o){
+		defn remove(o){
 			return wrappedList->remove(o);
 		}
 		
-		defn restricted removeAt(o){
+		defn removeAt(o){
 			return CollectionsUtils->removeAt(wrappedList, o);
 		}
         
-        defn restricted setAt(index, o){
+        defn setAt(index, o){
             return wrappedList->set(index, o);
         }
 		
@@ -122,7 +122,7 @@ module Collections {
 			return wrappedList->indexOf(o);
 		}
 		
-		defn restricted clear(){
+		defn clear(){
 			wrappedList->clear();
 		}
 		
@@ -143,7 +143,7 @@ module Collections {
     
         var wrappedMap = HashMap->HashMap(32);
         
-        defn restricted put(key, value){
+        defn put(key, value){
             return wrappedMap->put(key, value);
         }
         
@@ -170,7 +170,7 @@ module Collections {
             return wrappedMap->containsValue(value);
         }
         
-        defn restricted remove(key){
+        defn remove(key){
             return wrappedMap->remove(key);
         }
         
@@ -190,7 +190,7 @@ module Collections {
             return wrappedMap->size();
         }
         
-        defn restricted clear(){
+        defn clear(){
             wrappedMap->clear();
         }
         

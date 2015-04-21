@@ -1235,6 +1235,15 @@ public class BidiMultiHashMap<K, V> extends AbstractBidiMultiMap<K, V> implement
      */
     @Override
     public V get(Object key) {
+    	key = (key == null ? (K) NULL : key);
+        int hashCode = hash(key);
+        HashEntry<K, V> entry = this.keys[hashIndex(hashCode, this.keys.length)];
+        while (entry != null) {
+            if (entry.keyHashCode == hashCode && isEqualKey(key, entry.key)) {
+                return entry.value;
+            }
+            entry = entry.keyNext;
+        }
         return null;
     }
 

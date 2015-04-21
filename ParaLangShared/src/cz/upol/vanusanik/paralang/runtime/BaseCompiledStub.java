@@ -62,7 +62,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements PLang
 			___init_class();
 		
 		if (!___restrictedOverride)
-			PLRuntime.getRuntime().checkRestrictedAccess();
+			PLRuntime.getRuntime().checkRestrictedAccess(this);
 
 		___fieldsAndMethods.put(key, var);
 		
@@ -87,7 +87,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements PLang
 		return metaData;
 	}
 
-	private JsonArray ___getFields() {
+	protected JsonArray ___getFields() {
 		JsonArray array = new JsonArray();
 		for (String field : ___fieldsAndMethods.keySet()){
 			JsonObject f = new JsonObject();

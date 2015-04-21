@@ -1,14 +1,29 @@
 using IO;
 using System;
+using Math.Matrix;
+using Random;
 
 module Main {
     
-    defn restricted calculate(a, b){
-        var ct = System.current_time();
-    
-        for (var i=0; i<1000000; i++) ;
+    class X {
+        var x;
         
-        IO.out.println(System.current_time() - ct);
+        defn restricted calculate(a, b){
+            var ct = System.current_time();
+        
+            x = Math.random_matrix(a, b, Random.random, 50);
+            IO.out.println(x );
+            
+            var z = (dist (4) { return  x * run_id; });
+            
+            IO.out.println(z);
+            
+            IO.out.println(System.current_time() - ct);
+        }
+    
     }
     
+    defn restricted calculate(a, b){
+        new X().calculate(a, b);
+    }
 };

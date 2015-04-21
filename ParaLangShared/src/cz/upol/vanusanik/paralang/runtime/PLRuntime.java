@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.io.OutputStream;
+import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -329,7 +331,7 @@ public class PLRuntime {
 		}
 	}
 	
-	public void checkRestrictedAccess(){
+	public void checkRestrictedAccess(BaseCompiledStub object){
 		if (isRestricted)
 			throw new RuntimeException("Restricted mode");
 	}
@@ -350,14 +352,17 @@ public class PLRuntime {
 			FunctionWrapper wrapper = (FunctionWrapper)runner;
 			try {
 				return wrapper.run(currentRunner, args);
+			} catch (WrongMethodTypeException e){
+				throw newInstance("System.BaseException", new Str("Wrong number of arguments."));
 			} catch (RuntimeException e){
 				throw e;
+				//throw newInstance("System.BaseException", new Str("Error while invocating method: " + e.getMessage()));
 			} catch (InvocationTargetException e){
 				if (e.getCause() instanceof RuntimeException){
 					throw (RuntimeException)e.getCause();
 				} 
 				throw new RuntimeException(e);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		} else if (runner.___getType() == PlangObjectType.CLASS){
@@ -464,10 +469,14 @@ public class PLRuntime {
 	private ThreadLocal<HashSet<Object>> serializedObjects = new ThreadLocal<HashSet<Object>>();
 	
 	public void setAsAlreadySerialized(BaseCompiledStub baseCompiledStub) {
+		if (serializedObjects.get() == null) return;
 		serializedObjects.get().add(baseCompiledStub);
 	}
 
 	public boolean isAlreadySerialized(BaseCompiledStub baseCompiledStub) {
+		if (serializedObjects.get() == null){
+			serializedObjects.set(new HashSet<Object>());
+		}
 		return serializedObjects.get().contains(baseCompiledStub);
 	}
 	
@@ -553,7 +562,7 @@ public class PLRuntime {
 		PLClass c = newInstance("Collections.List");
 		List<PLangObject> data = ((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer();
 		
-		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), methodName, tcount);
+		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), runner, methodName, tcount);
 		if (r.hasExceptions()){
 			NetworkException e = (NetworkException) newInstance("System.NetworkException", new Str("Failed distributed network call because of remote exception(s)"));
 			for (PLangObject o : r.exceptions)
@@ -571,14 +580,14 @@ public class PLRuntime {
 		return c;
 	}
 
-	private NetworkExecutionResult executeDistributed(final long ___getObjectId,
+	private NetworkExecutionResult executeDistributed(final long ___getObjectId, final BaseCompiledStub caller, 
 			final String methodName, int tcount) {
 		
 		List<Thread> tList = new ArrayList<Thread>();
 		final NetworkExecutionResult result = new NetworkExecutionResult();
 		result.results = new PLangObject[tcount];
 		result.exceptions = new PLangObject[tcount];
-		final JsonObject serializedRuntimeContent = serializeRuntimeContent();
+		final JsonObject serializedRuntimeContent = serializeRuntimeContent(caller);
 		
 		List<Node> nnodes;
 		try {
@@ -595,7 +604,13 @@ public class PLRuntime {
 
 				@Override
 				public void run() {
-					handleDistributedCall(tId, result, nodes.get(tId), ___getObjectId, methodName, serializedRuntimeContent);
+					handleDistributedCall(tId, result, getOrFail(nodes, tId), ___getObjectId, methodName, serializedRuntimeContent);
+				}
+
+				private Node getOrFail(List<Node> nodes, int tId) {
+					if (tId < nodes.size())
+						return nodes.get(tId);
+					return null;
 				}
 				
 			}));
@@ -670,7 +685,6 @@ public class PLRuntime {
 				
 				executed = true;
 			} catch (Exception e){
-				e.printStackTrace();
 				node = NodeList.getRandomNode(); // Refresh node since error might have been node related
 				executed = false;
 			} finally {
@@ -689,6 +703,8 @@ public class PLRuntime {
 		JsonArray a = new JsonArray();
 		
 		for (String module : moduleBytecodeData.keySet()){
+			if (module.equals("System")) continue;
+			
 			JsonObject m = new JsonObject();
 			m.add("name", module);
 			m.add("content", moduleBytecodeData.get(module));
@@ -697,6 +713,8 @@ public class PLRuntime {
 		}
 		
 		for (String moduleName : classBytecodeData.keySet()){
+			if (moduleName.equals("System")) continue;
+			
 			for (String className  : classBytecodeData.get(moduleName).keySet()){
 				JsonObject c = new JsonObject();
 				c.add("name", className);
@@ -726,12 +744,12 @@ public class PLRuntime {
 	/*
 	 * Only serializes the actual content, not class definitions
 	 */
-	public void serializeRuntimeContent(OutputStream os) throws Exception {
-		JsonObject root = serializeRuntimeContent();
+	public void serializeRuntimeContent(OutputStream os, BaseCompiledStub currentCaller) throws Exception {
+		JsonObject root = serializeRuntimeContent(currentCaller);
 		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
 	}
 
-	private JsonObject serializeRuntimeContent() {
+	private JsonObject serializeRuntimeContent(BaseCompiledStub currentCaller) {
 		serializedObjects.set(new HashSet<Object>());
 		
 		JsonObject root = new JsonObject();
@@ -751,6 +769,7 @@ public class PLRuntime {
 		}
 		
 		root.add("modules", modules);
+		root.add("currentCaller", currentCaller.___toObject());
 		
 		serializedObjects.get().clear();
 		return root;
@@ -766,15 +785,19 @@ public class PLRuntime {
 		}
 	}
 	
-	public void deserialize(JsonArray modules) throws Exception {
+	public Map<Long, Long> deserialize(JsonArray modules, JsonObject caller) throws Exception {
 		Map<Long, Long> ridxMap = new HashMap<Long, Long>();
 		for (JsonValue v : modules){
 			buildInstanceMap(v.asObject().get("module").asObject(), ridxMap);
 		}
+		buildInstanceMap(caller, ridxMap);
 		
 		for (JsonValue v : modules){
 			deserialize(v.asObject().get("module").asObject(), ridxMap);
 		}
+		deserialize(caller, ridxMap);
+		
+		return ridxMap;
 	}
 
 	public PLangObject deserialize(JsonObject o, Map<Long, Long> ridxMap) throws Exception {
@@ -811,7 +834,18 @@ public class PLRuntime {
 			String encoded = o.getString("value", "");
 			byte[] decoded = Base64.decodeBase64(encoded);
 			ByteArrayInputStream is = new ByteArrayInputStream(decoded);
-			ObjectInputStream serstream = new ObjectInputStream(is);
+			ObjectInputStream serstream = new ObjectInputStream(is){
+				protected Class<?> resolveClass(ObjectStreamClass desc)
+				        throws IOException, ClassNotFoundException
+			    {
+			        String name = desc.getName();
+			        try {
+			            return Class.forName(name, false, classLoader);
+			        } catch (ClassNotFoundException ex) {
+			        	return super.resolveClass(desc);
+			        }
+			    }
+			};
 			Object value = serstream.readObject();
 			return new Pointer(value);
 		case NOVALUE:
@@ -867,6 +901,7 @@ public class PLRuntime {
 	
 	public void setAsCurrent(){
 		localRuntime.set(this);
+		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 
 	public RuntimeAccessListener getRuntimeAccessListener() {

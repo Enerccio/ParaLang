@@ -20,17 +20,17 @@ module Random {
             inst.seed = seed;
         }
         
-        defn restricted get_int(max){
+        defn get_int(max){
             seed = Math.abs(1103515245 * seed + 12345);
             return seed % max;
         }
         
-        defn restricted get_float(a){
+        defn get_float(a){
             var r = get_int(2147483647);
             return Math.abs(r / 2147483647.0 * a);
         }
         
-        defn restricted get_clamp(){
+        defn get_clamp(){
             return get_float(1.0);
         }
     }
@@ -45,7 +45,7 @@ module Random {
                 wrappedObject = __JRandom->__JRandom(seed);
         }
         
-        defn restricted get_int(max){
+        defn get_int(max){
             return wrappedObject->nextLong() % max;
         }
     }
@@ -57,7 +57,7 @@ module Random {
             wrappedObject = __JSecureRandom->__JSecureRandom();
         }
     
-        defn restricted get_int(max){
+        defn get_int(max){
             return wrappedObject->nextLong() % max;
         }
     }

@@ -337,43 +337,12 @@ public class GenerateMarkdown {
 
 			@Override
 			public Void visitStatement(StatementContext ctx) {
-				if (ctx.getText().startsWith("return") || ctx.getText().startsWith("for") || 
-						ctx.getText().startsWith("while") || ctx.getText().startsWith("do") ||
-						ctx.getText().startsWith("break") || ctx.getText().startsWith("continue") ||
-						ctx.getText().startsWith("throw") || ctx.getText().startsWith("try") || 
-						ctx.getText().startsWith("if")){
-					String text = ctx.getChild(0).getText();
-					String[] arr = text.split(" ");
-					int start = ctx.start.getStartIndex();
-					int end = arr[0].length() + start;
-					Block b = new Block();
-					b.index = start;
-					b.value = "<span class=\"pl-k\">";
-					blocks.add(b);
-					b = new Block();
-					b.index = end;
-					b.value = "</span>";
-					blocks.add(b);
-				}
 				
-				if (ctx.getText().startsWith("do")){
-					int start = ctx.statement().get(0).getStop().getStopIndex()+1;
-					int end = ctx.parExpression().getStart().getStartIndex();
-					Block b = new Block();
-					b.index = start;
-					b.value = "<span class=\"pl-k\">";
-					blocks.add(b);
-					b = new Block();
-					b.index = end;
-					b.value = "</span>";
-					blocks.add(b);
-				}
-				
-				if (ctx.getText().startsWith("if")){
-					if (ctx.statement().size() == 2){
+				if (ctx.ifStatement() != null){
+					if (ctx.ifStatement().statement().size() == 2){
 						// has else
-						int start = ctx.statement().get(0).getStop().getStopIndex()+1;
-						int end =  ctx.statement().get(1).getStart().getStartIndex();
+						int start = ctx.ifStatement().statement().get(0).getStop().getStopIndex()+1;
+						int end =  ctx.ifStatement().statement().get(1).getStart().getStartIndex();
 						Block b = new Block();
 						b.index = start;
 						b.value = "<span class=\"pl-k\">";
