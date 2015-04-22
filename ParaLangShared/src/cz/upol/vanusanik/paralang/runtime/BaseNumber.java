@@ -13,6 +13,7 @@ import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 public abstract class BaseNumber extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523234L;
 	public static final String __valKey = "__val";
+	public static final String __toInt = "__to_int";
 	
 	@Override
 	protected void ___init_internal_datafields(BaseCompiledStub self) {

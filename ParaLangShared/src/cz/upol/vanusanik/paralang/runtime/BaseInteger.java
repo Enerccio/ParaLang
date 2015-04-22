@@ -22,6 +22,7 @@ public class BaseInteger extends BaseNumber {
 		}
 		this.___restrictedOverride = true;
 		___setkey(__valKey, new Int(iv.___getNumber(iv).intValue()));
+		___setkey(__toInt, new FunctionWrapper("__toInt", this, true));
 		___setkey(Operator.UBINNEG.classMethod, new FunctionWrapper("__ubn_base", this, true));
 		___setkey("sqrt", new FunctionWrapper("sqrt", this, true));
 		this.___restrictedOverride = false;
@@ -42,5 +43,10 @@ public class BaseInteger extends BaseNumber {
 		Int value = (Int)___getkey(__valKey);
 		Flt result = new Flt((float) Math.sqrt(value.getValue()));
 		return asObject(result);
+	}
+	
+	public PLangObject toInt(PLangObject self){
+		Int value = (Int)___getkey(__valKey);
+		return value;
 	}
 }

@@ -472,9 +472,9 @@ public class PLCompiler {
 			compilingInit = false;
 		String methArgsSign;
 		if (compilingClass)
-			methArgsSign = Strings.PLANGOBJECT_N + " inst, " + Strings.PLANGOBJECT_N + " run_id";
+			methArgsSign = Strings.PLANGOBJECT_N + " inst, " + Strings.PLANGOBJECT_N + " run_id, " + Strings.PLANGOBJECT_N + " passed_arg";
 		else
-			methArgsSign = Strings.PLANGOBJECT_N + " run_id";
+			methArgsSign = Strings.PLANGOBJECT_N + " run_id, " + Strings.PLANGOBJECT_N + " passed_arg";
 		methArgsSign = StringUtils.removeEnd(methArgsSign, ", ");
 		String methodSignature = "public " + Strings.PLANGOBJECT_N + " " + name + "(" + methArgsSign + "){ return null; }";
 		
@@ -488,6 +488,7 @@ public class PLCompiler {
 					varStack.addVariable("inst", VariableType.LOCAL_VARIABLE, stacker.acquire());
 				}
 				varStack.addVariable("run_id", VariableType.LOCAL_VARIABLE, stacker.acquire());
+				varStack.addVariable("passed_arg", VariableType.LOCAL_VARIABLE, stacker.acquire());
 				compileFunction(bd.b, restricted);
 				varStack.popStack();
 			}
@@ -1310,19 +1311,26 @@ public class PLCompiler {
 				
 				distributed.add(bd);
 				addGetRuntime();
-				bc.addIconst(NumberUtils.toInt(expression.IntegerLiteral().getText()));
+				isStatementExpression.add(false);
+				compileExpression(expression.expression(0), false, -1);
+				isStatementExpression.pop();
 				bc.addLdc(cacheStrings(methodName));
+				if (expression.expression().size() > 1){
+					isStatementExpression.add(false);
+					compileExpression(expression.expression(1), false, -1);
+					isStatementExpression.pop();
+				} else {
+					addNil();
+				}
 				bc.addAload(0);
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN_DISTRIBUTED, 
-						"(I" + Strings.STRING_L + Strings.BASE_COMPILED_STUB_L + ")" + Strings.PLANGOBJECT_L);
+						"(" + Strings.PLANGOBJECT_L + Strings.STRING_L + Strings.PLANGOBJECT_L +  Strings.BASE_COMPILED_STUB_L + ")" + Strings.PLANGOBJECT_L);
 				return;
 			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("?")){
 				compileTernaryOperator((ExpressionContext)expression.getChild(0), 
 						(ExpressionContext)expression.getChild(2), (ExpressionContext)expression.getChild(4), compilingMethodCall, storeVar);
 				return;
 			} else if (expression.getChildCount() > 2 && expression.getChild(1).getText().equals("->")){
-				
-				
 				if (!PLRuntime.getRuntime().isSafeContext())
 					throw new CompilationException("Java method call being compiled under unsafe context.");
 				
@@ -1361,7 +1369,6 @@ public class PLCompiler {
 						bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__CREATE_JAVA_WRAPPER, 
 								"(" + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L +")" + Strings.POINTER_L);
 					} else {
-						// TODO
 						addGetRuntime();
 						bc.addLdc(cacheStrings(fqName));
 						bc.addLdc(cacheStrings(mname));
@@ -1453,6 +1460,25 @@ public class PLCompiler {
 						bc.addLdc(cacheStrings(identifier));			// load string from constants
 						bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
 								"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
+						
+						int kkey = counter++;
+						bc.add(Opcode.DUP);
+						addLabel(new LabelInfo(){
+
+							@Override
+							protected void add(Bytecode bc) throws CompilationException {
+								int offset = getValue(poskey) - bcpos;
+								bc.write(bcpos, Opcode.IFNONNULL); 
+								bc.write16bit(bcpos+1, offset);
+							}
+							
+						}, kkey);
+
+						bc.add(Opcode.POP);
+						addThrow("Unknown field: " + identifier);
+						
+						setLabelPos(kkey);
+						bc.add(Opcode.NOP);
 					}	
 				}
 			} else if (expression.getChild(0) instanceof ExtendedContext && rightOperators.contains(expression.getChild(1).getText())){
@@ -1460,6 +1486,7 @@ public class PLCompiler {
 				final int st = stacker.acquire();
 				final boolean add = expression.getChild(1).getText().equals("++");
 				
+				isStatementExpression.add(false);
 				new CompileSetOperator(lvalue, false, false, -1){
 					
 					@Override
@@ -1477,10 +1504,16 @@ public class PLCompiler {
 					}
 					
 				}.compileSetOperator();
+				isStatementExpression.pop();
 				
 				if (compilingMethodCall){
 					bc.addAload(st);
 					bc.addAstore(storeVar);
+				} 
+				
+				if (!isStatementExpression.peek()){
+					bc.addOpcode(Opcode.POP);
+					bc.addAload(st);
 				} 
 				stacker.release();
 			} else if (expression.getChild(0).getText().equals("new")){
@@ -2027,7 +2060,7 @@ public class PLCompiler {
 					@Override
 					protected void add(Bytecode bc) throws CompilationException {
 						int offset = getValue(poskey) - bcpos;
-						bc.write(bcpos, Opcode.IFNONNULL); // jump to else if true or to the next bytecode if not 
+						bc.write(bcpos, Opcode.IFNONNULL); 
 						bc.write16bit(bcpos+1, offset);
 					}
 					
@@ -2056,6 +2089,24 @@ public class PLCompiler {
 		
 	}
 	
+	private void addThrow(String string) throws Exception {
+		addGetRuntime();
+		bc.addLdc(cacheStrings("System.BaseException"));
+		bc.addAnewarray(cp.getCtClass(Strings.PLANGOBJECT_N), 1);
+		bc.add(Opcode.DUP);
+		bc.addIconst(0);
+		bc.addNew(Strings.STRING_TYPE);
+		bc.add(Opcode.DUP);
+		bc.addLdc(cacheStrings(Utils.removeStringQuotes(string)));
+		bc.addInvokespecial(Strings.STRING_TYPE, 
+				"<init>", "(" + Strings.STRING_L + ")V");
+		bc.add(Opcode.AASTORE);
+		bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_INSTANCE, 
+				"(" + Strings.STRING_L + "[" + Strings.PLANGOBJECT_L + ")" + Strings.PL_CLASS_L);
+		bc.addCheckcast(Strings.PL_CLASS);
+		bc.add(Opcode.ATHROW);
+	}
+
 	private boolean isSystemCompiler = false;
 	
 	public void setSystemCompiler(){

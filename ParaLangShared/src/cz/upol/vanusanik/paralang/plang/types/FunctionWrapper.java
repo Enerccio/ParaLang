@@ -1,9 +1,10 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,42 +53,42 @@ public class FunctionWrapper extends PrimitivePLangObject implements Serializabl
 		public Method m;
 		public BaseCompiledStub o;
 	}
+	
+	private transient WeakHashMap<BaseCompiledStub, MethodAccessor> accessorCache
+		= new WeakHashMap<BaseCompiledStub, MethodAccessor>();
 
 	public PLangObject run(BaseCompiledStub owner, PLangObject... arguments) throws Throwable{
-		for (MethodAccessor ma : getAllMethods(owner)){
-			if (ma.m.getName().equals(methodName)){
-				return run(ma, owner, arguments);
+		MethodAccessor ma = accessorCache.get(owner);
+		if (ma == null){
+			for (MethodAccessor maa : getAllMethods(owner)){
+				if (maa.m.getName().equals(methodName)){
+					ma = maa;
+					accessorCache.put(owner, ma);
+					break;
+				}
 			}
+			if (ma == null)
+				throw new RuntimeException("Unknown method: " + methodName);
 		}
-		throw new RuntimeException("Unknown method: " + methodName);
+		return run(ma, owner, arguments);
 	}
 
-	private transient SoftReference<List<MethodAccessor>> cache; 
 	private List<MethodAccessor> getAllMethods(BaseCompiledStub owner) {
-		if (cache != null && cache.get() != null){
-			return cache.get();
-		}
-		
 		List<MethodAccessor> mList = new ArrayList<MethodAccessor>();
-		if (mList.size() != 0)
-			return mList;
 		
 		do {
 			for (Method m : owner.getClass().getMethods()){
 				MethodAccessor ma = new MethodAccessor();
 				ma.m = m;
-				ma.m.setAccessible(true);
 				ma.o = owner;
 				mList.add(ma);
 			}
 			owner = owner.___getParent();
 		} while (owner != null);
 		
-		cache = new SoftReference<List<MethodAccessor>>(mList);
-		
-		return cache.get();
+		return mList;
 	}
-	
+
 	private static WeakHashMap<Method, MethodHandle> methodHandles
 		= new WeakHashMap<Method, MethodHandle>();
 
@@ -198,4 +199,10 @@ public class FunctionWrapper extends PrimitivePLangObject implements Serializabl
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
+    }
 }

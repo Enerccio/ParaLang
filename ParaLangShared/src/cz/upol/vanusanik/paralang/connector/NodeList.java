@@ -121,4 +121,15 @@ public class NodeList {
 		
 		return c;
 	}
+
+	public static synchronized int expectNumberOfNodes(){
+		int sum = 0;
+		for (Node n : nList)
+			try {
+				sum += getFreeNodes(n);
+			} catch (Exception e){
+				
+			}
+		return sum;
+	}
 }

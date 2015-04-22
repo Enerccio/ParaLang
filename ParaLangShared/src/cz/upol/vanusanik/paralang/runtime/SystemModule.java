@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
@@ -19,6 +20,7 @@ public class SystemModule extends PLModule implements Serializable {
 		
 		___setkey("init", new FunctionWrapper("__init", this, false));
 		___setkey("current_time", new FunctionWrapper("currentTime", this, false));
+		___setkey("free_nodes", new FunctionWrapper("freeNodes", this, false));
 		
 		this.___restrictedOverride = false;
 	}
@@ -31,6 +33,9 @@ public class SystemModule extends PLModule implements Serializable {
 		return new Int(System.currentTimeMillis());
 	}
 	
+	public PLangObject freeNodes(){
+		return new Int(NodeList.expectNumberOfNodes());
+	}
 
 	@Override
 	public JsonValue ___toObject() {

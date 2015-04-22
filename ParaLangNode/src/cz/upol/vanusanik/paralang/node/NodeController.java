@@ -25,6 +25,7 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
+import cz.upol.vanusanik.paralang.runtime.PLRuntime.DeserializationResult;
 
 /**
  * NodeController is main class of the ParaLang Node. 
@@ -178,9 +179,13 @@ public class NodeController {
 		}
 		storage.runtime.runtime.prepareForDeserialization(input.get("runtimeData").asObject().get("serialVersionUIDs").asArray());
 		Map<Long, Long> ridxMap;
+		PLangObject arg;
 		try {
-			ridxMap = storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray(), input.get("runtimeData").asObject().get("currentCaller").asObject());
-			
+			DeserializationResult r = storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray(), 
+					input.get("runtimeData").asObject().get("currentCaller").asObject(),
+					input.get("runtimeData").asObject().get("callerArg").asObject());
+			ridxMap = r.ridxMap;
+			arg = r.cobject;
 		} catch (Exception e){
 			sendError(s, payload, Protocol.ERROR_DESERIALIZATION_FAILURE, e.getMessage());
 			storage.runtime = null;
@@ -188,6 +193,7 @@ public class NodeController {
 		}
 		
 		final Map<Long, Long> transMap = ridxMap;
+		final PLangObject farg = arg;
 		storage.runtime.runtime.setRestricted(true);
 		storage.exception = null;
 		
@@ -197,8 +203,12 @@ public class NodeController {
 			protected PLangObject executePayload() {
 
 				try {
+					long argId = input.getLong("argId", 0);
 					storage.runtime.runtime.setAsCurrent();
-					return storage.runtime.runtime.runByObjectId(transMap.get(input.getLong("runnerId", 0)), input.getString("methodName", ""), new Int(input.getInt("id", 0)));	
+					return storage.runtime.runtime.runByObjectId(transMap.get(input.getLong("runnerId", 0)), 
+							input.getString("methodName", ""), 
+							new Int(input.getInt("id", 0)),
+							farg, argId > 0 ? transMap.get(argId) : argId);	
 				} catch (PLClass e){
 					storage.exception = e;
 					return null;
@@ -295,7 +305,7 @@ public class NodeController {
 	
 	/**
 	 * Initializes this NodeController via NodeOptions. Also creates the handling thread pools and 
-	 * RuntimeMemoryCleaningThread cleaning thread that is immediatelly started.
+	 * RuntimeMemoryCleaningThread cleaning thread that is immediately started.
 	 * @param no initialization values.
 	 * @throws Exception
 	 */

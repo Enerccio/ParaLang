@@ -1,4 +1,8 @@
 using Collections.List;
+using Collections.Map;
+using IO;
+
+import cz.upol.vanusanik.paralang.runtime.wrappers.Matrix as __MatrixData;
 
 module Math {
 
@@ -15,21 +19,16 @@ module Math {
         defn init(n, m){
             inst.n = n;
             inst.m = m;
-            matrix = new List();
-            for (var i=0; i<n; i++){
-                var mcol = new List();
-                for (var j=0; j<m; j++)
-                    mcol.add(0);
-                matrix.add(mcol);
-            }
+            matrix = __MatrixData->__MatrixData(n, m);
+            
         }   
         
         defn get(i, j){
-            return matrix.get(i).get(j);
+            return matrix->get(i, j);
         }
         
         defn set(i, j, v){
-            matrix.get(i).setAt(j, v);
+            matrix->set(i, j, v);
         }
     
         defn __str(){
@@ -40,9 +39,8 @@ module Math {
             var pp = "[";
             for (var i=0; i<n; i++){
                 pp += "[";
-                var mcol = matrix.get(i);
                 for (var j=0; j<m; j++)
-                    pp += mcol.get(j) + (j == m-1 ? "" : " ");
+                    pp += get(i, j) + (j == m-1 ? "" : " ");
                 pp += "]";
             }
             return pp + "]";
@@ -66,8 +64,44 @@ module Math {
         }
         
         defn mul_matrix(b){
-            if (m != b.n)
+            if (n != b.m)
                 throw new MathException("Incompatible matrices");
+            
+            var nm = new Matrix(n, n);
+            for (var row=0; row<n; row++){
+                for (var col=0; col<n; col++){
+                    var sum = 0;
+                
+                    for (var i=0; i<m; i++){
+                        sum += get(row, i) * b.get(i, col);
+                    }
+                    
+                    nm.set(row, col, sum);
+                }
+            }
+            
+            return nm;
+        }
+    }
+    
+    class __MatrixMulHelper {
+        var matrix;
+        var task_map = new Map();
+        
+        defn set_task(rid, colb, rowa){
+            task_map.put(rid, new __MatrixMulHelperTask(colb, rowa));
+        }
+        
+        defn get_task(rid){
+            return task_map.get(rid);
+        }
+    }
+    
+    class __MatrixMulHelperTask {
+        var colb, rowa;
+        defn init(cb, ra){
+            colb = cb;
+            rowa = ra;
         }
     }
 

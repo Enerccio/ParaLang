@@ -4,9 +4,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -95,6 +98,9 @@ public class Pointer extends BaseCompiledStub implements Serializable  {
 		}
 		
 	};
+	
+	private static WeakHashMap<Method, MethodHandle> methodHandles
+		= new WeakHashMap<Method, MethodHandle>();
 
 	public PLangObject runMethod(String methodName, PLangObject[] args) throws Throwable {
 		if (value == null)
@@ -120,8 +126,15 @@ public class Pointer extends BaseCompiledStub implements Serializable  {
 						++it;
 					}
 					
-					m.setAccessible(true);
-					Object ret = m.invoke(value, constructedArgs.toArray());
+					MethodHandle genHandle = methodHandles.get(m);
+					
+					if (genHandle == null){
+						genHandle = MethodHandles.lookup().unreflect(m);
+						methodHandles.put(m, genHandle);
+					}
+					
+					MethodHandle handle = genHandle.bindTo(value);
+					Object ret = handle.invokeWithArguments(constructedArgs.toArray());
 					
 					if (ret == null)
 						return NoValue.NOVALUE;
@@ -133,7 +146,7 @@ public class Pointer extends BaseCompiledStub implements Serializable  {
 				} catch (PointerMethodIncompatibleException ce){
 					continue;
 				} catch (Exception e){
-					throw new RuntimeException(e);
+					throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("Failed to execute java method: " + e.getMessage()));
 				}
 			}
 		}

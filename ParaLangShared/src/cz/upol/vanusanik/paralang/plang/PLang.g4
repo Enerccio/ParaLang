@@ -223,7 +223,7 @@ constantExpression
 
 expression
     :   primary 
-    |   '(' 'dist' '(' IntegerLiteral ')' block ')'
+    |   '(' 'dist' '(' expression (',' expression)? ')' block ')'
     |   expression '.' Identifier
     |   expression '->' Identifier '(' expressionList? ')'
     |   Identifier '->' Identifier '(' expressionList? ')'

@@ -92,10 +92,14 @@ module Collections {
 		}
 		
 		defn insert(index, o){
+            if (index < 0 || index >= size())
+                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
 			return wrappedList->add(index, o);
 		}
 		
 		defn appendAt(o, index){
+            if (index < 0 || index >= size())
+                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
 			var list = new List();
             list.wrappedList->addAll(wrappedList);
             list.wrappedList->add(index, o);
@@ -106,16 +110,22 @@ module Collections {
 			return wrappedList->remove(o);
 		}
 		
-		defn removeAt(o){
-			return CollectionsUtils->removeAt(wrappedList, o);
+		defn removeAt(index){
+            if (index < 0 || index >= size())
+                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
+			return CollectionsUtils->removeAt(wrappedList, index);
 		}
         
         defn setAt(index, o){
+            if (index < 0 || index >= size())
+                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
             return wrappedList->set(index, o);
         }
 		
 		defn get(index){
-			return wrappedList->get(index);
+            if (index < 0 || index >= size())
+                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
+            return wrappedList->get(index);
 		}
 		
 		defn find(o){

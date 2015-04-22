@@ -2,23 +2,61 @@ using IO;
 using System;
 using Math.Matrix;
 using Random;
+using Collections.List;
 
 module Main {
     
     class X {
-        var x;
+        var itc = 8000;
+        var fnodes;
         
-        defn restricted calculate(a, b){
+        defn restricted calculate(a, b){ 
+            var ct = 0;
+            var etime = 0;
+            fnodes = System.free_nodes();
+            
+            IO.out.println("Generating random matrices");
+            
+            IO.out.print("[");
+            var list = new List();
+            for (var i=0; i<itc; i++){
+                list.add(Math.random_matrix(10, 10, Random.random, 100));
+                if (i % (itc/100) == 0)
+                    IO.out.print(".");
+            }
+            IO.out.println("]");
+            
+            IO.out.println("Calculating multiplication of " + itc + " matrices.");
+            
+            IO.out.println("  Normally");
+            ct = System.current_time();
+            var mat = list.get(0);
+            for (var i=1; i<list.size(); i++){
+                mat *= list.get(i);
+            }
+            etime = (System.current_time() - ct);
+            IO.out.println("    Result: " + mat);
+            IO.out.println("    Run time: " + etime);
+            
+            IO.out.println("  Distributed");
+            IO.out.println("     Expected node count -  " + fnodes);            
             var ct = System.current_time();
-        
-            x = Math.random_matrix(a, b, Random.random, 50);
-            IO.out.println(x );
-            
-            var z = (dist (4) { return  x * run_id; });
-            
-            IO.out.println(z);
-            
-            IO.out.println(System.current_time() - ct);
+            var rl = (dist (fnodes, list) {
+                var start = (itc/fnodes) * run_id;
+                var end = (itc/fnodes) * (run_id + 1);
+                var res = passed_arg.get(start);
+                for (var i=start + 1; i<end; i++){
+                    res *= passed_arg.get(i);
+                }
+                return res;
+            });
+            mat = rl.get(0);
+            for (var i=1; i<rl.size(); i++){
+                mat *= rl.get(i);
+            }            
+            var etime = (System.current_time() - ct);
+            IO.out.println("    Result: " + mat);
+            IO.out.println("    Run time: " + etime);
         }
     
     }

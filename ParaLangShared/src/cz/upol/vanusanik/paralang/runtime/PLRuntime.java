@@ -555,14 +555,25 @@ public class PLRuntime {
 		return BooleanValue.FALSE;
 	}
 	
-	public PLangObject runDistributed(int tcount, String methodName, BaseCompiledStub runner) {
+	public PLangObject runDistributed(PLangObject tcounto, String methodName, PLangObject arg, BaseCompiledStub runner) {
+		int tcount = 0;
+		try {
+			if (tcounto instanceof Int){
+				tcount = (int) ((Int) tcounto).getValue();
+			} else if (tcounto instanceof BaseCompiledStub){
+				tcount = (int) ((Int) PLRuntime.getRuntime().run(((PLClass)tcounto).___getkey(BaseNumber.__toInt), (BaseCompiledStub)tcounto)).getValue();
+			}
+		} catch (Exception e){
+			// do nothing, 0 will override error anyways
+		}
+		
 		if (tcount<=0)
 			throw newInstance("System.BaseException", new Str("Incorrect number of run count, expected positive integer"));
 		
 		PLClass c = newInstance("Collections.List");
 		List<PLangObject> data = ((Pointer) c.___fieldsAndMethods.get("wrappedList")).getPointer();
 		
-		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), runner, methodName, tcount);
+		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(), runner, methodName, tcount, arg);
 		if (r.hasExceptions()){
 			NetworkException e = (NetworkException) newInstance("System.NetworkException", new Str("Failed distributed network call because of remote exception(s)"));
 			for (PLangObject o : r.exceptions)
@@ -581,13 +592,13 @@ public class PLRuntime {
 	}
 
 	private NetworkExecutionResult executeDistributed(final long ___getObjectId, final BaseCompiledStub caller, 
-			final String methodName, int tcount) {
+			final String methodName, int tcount, final PLangObject arg) {
 		
 		List<Thread> tList = new ArrayList<Thread>();
 		final NetworkExecutionResult result = new NetworkExecutionResult();
 		result.results = new PLangObject[tcount];
 		result.exceptions = new PLangObject[tcount];
-		final JsonObject serializedRuntimeContent = serializeRuntimeContent(caller);
+		final JsonObject serializedRuntimeContent = serializeRuntimeContent(caller, arg);
 		
 		List<Node> nnodes;
 		try {
@@ -604,7 +615,8 @@ public class PLRuntime {
 
 				@Override
 				public void run() {
-					handleDistributedCall(tId, result, getOrFail(nodes, tId), ___getObjectId, methodName, serializedRuntimeContent);
+					handleDistributedCall(tId, result, getOrFail(nodes, tId), ___getObjectId, methodName,
+							serializedRuntimeContent, (arg instanceof BaseCompiledStub) ? ((BaseCompiledStub) arg).___getObjectId() : -1);
 				}
 
 				private Node getOrFail(List<Node> nodes, int tId) {
@@ -629,7 +641,8 @@ public class PLRuntime {
 		return result;
 	}
 
-	protected void handleDistributedCall(int tId, NetworkExecutionResult result, Node node, long oid, String methodName, JsonObject serializedRuntimeContent) {
+	protected void handleDistributedCall(int tId, NetworkExecutionResult result, Node node, long oid, 
+			String methodName, JsonObject serializedRuntimeContent, long arg) {
 		boolean executed = false;
 		Socket s = null;
 		
@@ -655,6 +668,7 @@ public class PLRuntime {
 		     		    	.add("runtimeFiles", buildRuntimeFiles())
 		     		    	.add("runtimeData", serializedRuntimeContent)
 		     		    	.add("runnerId", oid)
+		     		    	.add("argId", arg)
 		     		    	.add("id", tId)
 		     		    	.add("methodName", methodName));
 				Protocol.send(s.getOutputStream(), payload);
@@ -744,12 +758,12 @@ public class PLRuntime {
 	/*
 	 * Only serializes the actual content, not class definitions
 	 */
-	public void serializeRuntimeContent(OutputStream os, BaseCompiledStub currentCaller) throws Exception {
-		JsonObject root = serializeRuntimeContent(currentCaller);
+	public void serializeRuntimeContent(OutputStream os, BaseCompiledStub currentCaller, PLangObject arg) throws Exception {
+		JsonObject root = serializeRuntimeContent(currentCaller, arg);
 		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
 	}
 
-	private JsonObject serializeRuntimeContent(BaseCompiledStub currentCaller) {
+	private JsonObject serializeRuntimeContent(BaseCompiledStub currentCaller, PLangObject arg) {
 		serializedObjects.set(new HashSet<Object>());
 		
 		JsonObject root = new JsonObject();
@@ -770,6 +784,7 @@ public class PLRuntime {
 		
 		root.add("modules", modules);
 		root.add("currentCaller", currentCaller.___toObject());
+		root.add("callerArg", arg.___toObject());
 		
 		serializedObjects.get().clear();
 		return root;
@@ -785,19 +800,26 @@ public class PLRuntime {
 		}
 	}
 	
-	public Map<Long, Long> deserialize(JsonArray modules, JsonObject caller) throws Exception {
-		Map<Long, Long> ridxMap = new HashMap<Long, Long>();
+	public static class DeserializationResult {
+		public Map<Long, Long> ridxMap;
+		public PLangObject cobject;
+	}
+	public DeserializationResult deserialize(JsonArray modules, JsonObject caller, JsonObject arg) throws Exception {
+		DeserializationResult r = new DeserializationResult();
+		r.ridxMap = new HashMap<Long, Long>();
 		for (JsonValue v : modules){
-			buildInstanceMap(v.asObject().get("module").asObject(), ridxMap);
+			buildInstanceMap(v.asObject().get("module").asObject(), r.ridxMap);
 		}
-		buildInstanceMap(caller, ridxMap);
+		buildInstanceMap(caller, r.ridxMap);
+		buildInstanceMap(arg, r.ridxMap);
 		
 		for (JsonValue v : modules){
-			deserialize(v.asObject().get("module").asObject(), ridxMap);
+			deserialize(v.asObject().get("module").asObject(), r.ridxMap);
 		}
-		deserialize(caller, ridxMap);
+		deserialize(caller, r.ridxMap);
+		r.cobject = deserialize(arg, r.ridxMap);
 		
-		return ridxMap;
+		return r;
 	}
 
 	public PLangObject deserialize(JsonObject o, Map<Long, Long> ridxMap) throws Exception {
@@ -912,8 +934,8 @@ public class PLRuntime {
 		this.runtimeAccessListener = runtimeAccessListener;
 	}
 
-	public PLangObject runByObjectId(long oid, String methodName, Int arg0) {
-		return run(instanceInternalMap.get(oid).___getkey(methodName), instanceInternalMap.get(oid), arg0);
+	public PLangObject runByObjectId(long oid, String methodName, Int arg0, PLangObject arg, long argId) {
+		return run(instanceInternalMap.get(oid).___getkey(methodName), instanceInternalMap.get(oid), arg0, argId < 0 ? arg : instanceInternalMap.get(argId));
 	}
 
 	

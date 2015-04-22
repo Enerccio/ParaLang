@@ -988,7 +988,7 @@
             
             <table>
                 <tr><td width="40%"><b>Expression</b></td></td><td width="10%"><b>method call</b></td><td width="50%"><b>description</b></td><tr>
-                <tr><td width="40%"><code>'(' dist '(' IntegerLiterar ')' block ')'</code><td width="10%">N/A</td><td width="50%">Calls the block code distributively and waits for the execution to complete. This expression returns <code>Collections.List</code> instance or throws <code>System.NetworkException</code> on failure.</td><tr>
+                <tr><td width="40%"><code>'(' dist '(' IntegerLiterar (',' expression)? ')' block ')'</code><td width="10%">N/A</td><td width="50%">Calls the block code distributively and waits for the execution to complete. Block has <code>run_id</code> accessible and result of passed expression is also reachable as <code>passed_arg</code> This expression returns <code>Collections.List</code> instance or throws <code>System.NetworkException</code> on failure.</td><tr>
                 <tr><td width="40%"><code>expression '.' Identifier</code></td><td width="10%">N/A</td><td width="50%">Returns the value stored in module/instance field identified by Identifier.</td><tr>
                 <tr><td width="40%"><code>expression '->' Identifier '(' parameters ')'</code></td><td width="10%">N/A</td><td width="50%">Calls java method identified by Identifier of Pointer value returned by expression.*</td><tr>
                 <tr><td width="40%"><code>Identifier '->' Identifier '(' parameters ')'</code></td><td width="10%">N/A</td><td width="50%">Creates new Pointer instance with new java class instance identified by Identifier. The identifiers must be equal!*</td><tr>
@@ -1082,6 +1082,7 @@
             <table>
                 <tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
                 <tr><td width="10%"><code>current_time</code></td><td width="20%">0</td><td width="10%"><code>integer</code></td><td width="60%">Returns integer with current unix time of the local machine this code is running in.</td></tr>
+                <tr><td width="10%"><code>free_nodes</code></td><td width="20%">0</td><td width="10%"><code>integer >= 0</code></td><td width="60%">Returns number of available workers across all nodes. This information is however only approximate!</td></tr>
             </table>
             
             <h4 id="doc-sl-system-BaseClass">Class: BaseClass</h4>
