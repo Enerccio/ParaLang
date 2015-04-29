@@ -1,4 +1,3 @@
-
 import cz.upol.vanusanik.paralang.runtime.wrappers.PrintStreamWrapper;
 
 module IO {

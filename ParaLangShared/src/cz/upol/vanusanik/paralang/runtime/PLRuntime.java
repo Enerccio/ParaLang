@@ -133,17 +133,17 @@ public class PLRuntime {
 	private String packageTarget = "";
 	private PLCompiler compiler = new PLCompiler();
 	
-	public PLRuntime(){		
+	public PLRuntime() throws Exception{		
 		cp.appendSystemPath();
 		initialize(false);
 	}
 	
-	PLRuntime(boolean miniinit){
+	PLRuntime(boolean miniinit) throws Exception{
 		cp.appendSystemPath();
 		initialize(miniinit);
 	}
 	
-	public static PLRuntime createEmptyRuntime(){
+	public static PLRuntime createEmptyRuntime() throws Exception{
 		return new PLRuntime(true);
 	}
 	
@@ -199,7 +199,7 @@ public class PLRuntime {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void initialize(boolean miniinit){
+	public void initialize(boolean miniinit) throws Exception {
 		setSafeContext(true);
 		setRestricted(false);
 		
@@ -212,33 +212,20 @@ public class PLRuntime {
 		if (!miniinit){
 			String path = "plang";
 			if(jarFile.isFile()) {  
-			    JarFile jar = null;
-				try {
-					jar = new JarFile(jarFile);
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+			    JarFile jar = new JarFile(jarFile);
 			    final Enumeration<JarEntry> entries = jar.entries(); 
 			    while(entries.hasMoreElements()) {
 			    	JarEntry e = entries.nextElement();
 			        String name = e.getName();
 			        if (name.startsWith(path + "/")) { //filter according to the path
-			            try {
-							InputStream is = jar.getInputStream(jar.getEntry(name));
-							StringDesignator sd = new StringDesignator();
-							sd.setSource(name.replace(path + "/", ""));
-							sd.setClassDef(IOUtils.toString(is, "utf-8"));
-							compileSource(sd);
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
+						InputStream is = jar.getInputStream(jar.getEntry(name));
+						StringDesignator sd = new StringDesignator();
+						sd.setSource(name.replace(path + "/", ""));
+						sd.setClassDef(IOUtils.toString(is, "utf-8"));
+						compileSource(sd);
 			        }
 			    }
-			    try {
-					jar.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				jar.close();
 			} else { // Run with IDE
 			    URL url = null;
 				try {
@@ -250,11 +237,7 @@ public class PLRuntime {
 			        try {
 			            final File ffs = new File(url.toURI());
 			            for (File ff : ffs.listFiles()) {
-			            	try {
-								compileSource(new DiskFileDesignator(ff));
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
+			            	compileSource(new DiskFileDesignator(ff));
 			            }
 			        } catch (URISyntaxException ex) {
 			            // never happens

@@ -33,7 +33,11 @@ import javassist.bytecode.Opcode;
 import javassist.bytecode.SourceFileAttribute;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -71,33 +75,53 @@ import cz.upol.vanusanik.paralang.runtime.PLModule;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
+/**
+ * Main compiler. Compiles source file designator into java modules bound to current runtime.
+ * Needs a bound runtime via PLRuntime.setAsCurrent()
+ * @author Enerccio
+ *
+ */
 public class PLCompiler {
 	
+	/** Holds the references to a simple type, ie String -> Reference */
 	private Map<String, Reference> referenceMap = new HashMap<String, Reference>();
-	private boolean restrictions = true;
+	/** Source file name */
 	private String source;
+	/** Current module name */
 	private String moduleName;
 	
-	public String compile(FileDesignator in){
+	/**
+	 * Compiles file and loads it into current runtime
+	 * @param in
+	 * @return
+	 * @throws Exception 
+	 */
+	public String compile(FileDesignator in) throws Exception{
 		try {
 			return compileFile(in);
 		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+			throw e;
 		}
 	}
 	
 	private String compileFile(FileDesignator in) throws Exception {
+		// Parse the input into AST
 		CompilationUnitContext ctx = parse(in);
 		
+		// build all references so compilation knows where to look for types
 		buildReferenced(ctx);
-		System.err.println();
+		
 		source = in.getSource();
 		
+		// compile the module and load it into runtime
 		compileModule(ctx, in);
 		return moduleName;
 	}
 
+	/**
+	 * Loads the references from the header of file into map
+	 * @param ctx
+	 */
 	private void buildReferenced(CompilationUnitContext ctx) {
 		moduleName = ctx.moduleDeclaration().getChild(1).getText();
 		varStack = new VariableScopeStack();
@@ -108,6 +132,7 @@ public class PLCompiler {
 			Reference r = null;
 				String name = null;
 				if (id.getText().startsWith("import")){
+					// Java import references
 					String qId = id.qualifiedName().getText();
 					name = qId;
 					if (qId.contains("."))
@@ -116,6 +141,7 @@ public class PLCompiler {
 						name = id.Identifier().getText();
 					r = new Reference(qId, name, true);
 				} else {
+					// PLang import references (using keyword)
 					String qId = id.singleQualifiedName().getText();
 					name = qId;
 					if (qId.contains("."))
@@ -128,6 +154,7 @@ public class PLCompiler {
 			}
 		}
 		
+		// Add all classes declared in this module into references for self references to it's own types
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				String name = mdc.classDeclaration().children.get(1).getText();
@@ -136,45 +163,86 @@ public class PLCompiler {
 			}
 		}
 		
+		// System classes are always referenced 
 		for (String cn : PLRuntime.SYSTEM_CLASSES.keySet()){
 			Reference r = new Reference("System." + cn, cn, false);
 			referenceMap.put(cn, r);
 		}
 	}
+	
+	private class ThrowingErrorListener extends BaseErrorListener {
+		   @Override
+		   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
+		      throws ParseCancellationException {
+		         throw new ParseCancellationException("file " + source + " line " + line + ":" + charPositionInLine + " " + msg);
+		   }
+	}
 
-	private CompilationUnitContext parse(FileDesignator in) throws Exception{
+	/**
+	 * Parses FileDesignator into AST
+	 * @param in
+	 * @return
+	 * @throws Exception
+	 */
+	private CompilationUnitContext parse(FileDesignator in) throws Exception {
 		ANTLRInputStream is = new ANTLRInputStream(in.getStream());
 		PLangLexer lexer = new PLangLexer(is);
+		lexer.removeErrorListeners();
+		lexer.addErrorListener(new ThrowingErrorListener());
 		CommonTokenStream stream = new CommonTokenStream(lexer);
 		PLangParser parser = new PLangParser(stream);
+		parser.removeErrorListeners();
+		parser.addErrorListener(new ThrowingErrorListener());
 		return parser.compilationUnit();
 	}
 
+	/**
+	 * Compiles module and class declarations
+	 * @param ctx
+	 * @param in
+	 * @throws Exception
+	 */
 	@SuppressWarnings("unchecked")
 	private void compileModule(CompilationUnitContext ctx, FileDesignator in) throws Exception{
 		
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
+				// Compile class definition
 				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
 				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 			}
 		}
 		
+		// Compile module definition
 		Class<?> klazz = compileModuleClass(ctx, in);
 		PLRuntime.getRuntime().addModule(moduleName, (Class<? extends PLModule>) klazz);
 	}
 	
-	private int counter;
+	/* Label handling, labelCounter provides unique label ids, then map maps it into current bytecode */
+	/** Unique label counter generator */
+	private int labelCounter;
+	/** Map of label ids -> bytecode */
 	private Map<Integer, Integer> labelMap;
+	
+	/** Whether it is currently class being compiled */
 	private boolean compilingClass = false;
+	/** Class pool */
 	private ClassPool cp;
+	/** Line numbers are written into this stream as bytes */
 	private DataOutputStream lineNumberStream;
-	private CtClass cls;
-	private Bytecode bc;
-	private ConstPool pool; 
-	private AutoIntStacker stacker;
+	/** Last line written into the lineNumberStream */
 	private int lastLineWritten;
+	/** CtClass of the class/module being compiled */
+	private CtClass cls;
+	/** Current bytecode being created */
+	private Bytecode bc;
+	/** Const pool of currently compiled object */
+	private ConstPool pool; 
+	/** Local variables stacker providing how many locals are being used and reused */
+	private AutoIntStacker stacker;
+	/** String cache caching strings into consts */
 	private HashMap<String, Integer> cache;
+	/** Variable Scope is decided by this stack, decides whether variable is local, class or module */
 	private VariableScopeStack varStack;
 	private enum RestrictedTo { CLASS, MODULE };
 	private RestrictedTo isRestrictedMethodQualifier;
@@ -183,8 +251,17 @@ public class PLCompiler {
 		public BlockContext b;
 		public String mn;
 	}
+	
+	/** List of blocks of codes that are in the distributed expression, which will be later compiled into auxiliary methods */
 	private List<BlockDescription> distributed = new ArrayList<BlockDescription>();
 	
+	/**
+	 * Compiles module into java class
+	 * @param ctx
+	 * @param in
+	 * @return
+	 * @throws Exception
+	 */
 	private Class<?> compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
 		String moduleName = ctx.moduleDeclaration().children.get(1).getText();
 		compilingClass = false;
@@ -260,6 +337,7 @@ public class PLCompiler {
 			}
 		}
 		
+		// Compile distributed auxiliary methods
 		for (BlockDescription bd : distributed){
 			methods.add(compileFunction(bd));
 		}
@@ -283,28 +361,15 @@ public class PLCompiler {
 		return cls.toClass(getClassLoader(), null);
 	}
 	
-	private void genBootstraps() {
-		pool = cls.getClassFile().getConstPool();
-		// 0 binary operation
-		int mRefIdxBin = pool.addMethodrefInfo(pool.addClassInfo(Strings.TYPEOPS), pool.addNameAndTypeInfo("binopbootstrap", 
-				"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
-				+ ")Ljava/lang/invoke/CallSite;"));
-		int mHandleIdxBin = pool.addMethodHandleInfo(ConstPool.REF_invokeStatic, mRefIdxBin);
-		// 1 unary operation
-		int mRefIdxUn = pool.addMethodrefInfo(pool.addClassInfo(Strings.TYPEOPS), pool.addNameAndTypeInfo("unopbootstrap", 
-				"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
-				+ ")Ljava/lang/invoke/CallSite;"));
-		int mHandleIdxUn = pool.addMethodHandleInfo(ConstPool.REF_invokeStatic, mRefIdxUn);
-		
-		/* create bootstrap methods attribute; there can only be one per class file! */
-		BootstrapMethodsAttribute.BootstrapMethod[] bms = new BootstrapMethodsAttribute.BootstrapMethod[] {
-				new BootstrapMethodsAttribute.BootstrapMethod(mHandleIdxBin, new int[] {}),
-				new BootstrapMethodsAttribute.BootstrapMethod(mHandleIdxUn, new int[] {})
-		};
-		BootstrapMethodsAttribute bmsAttribute = new BootstrapMethodsAttribute(pool, bms);
-		cls.getClassFile().addAttribute(bmsAttribute);
-	}
 
+	/**
+	 * Compile plang class into java class
+	 * @param moduleName
+	 * @param classDeclaration
+	 * @param in
+	 * @return
+	 * @throws Exception
+	 */
 	private Class<?> compileClassDefinition(String moduleName, ClassDeclarationContext classDeclaration, FileDesignator in) throws Exception {
 		compilingClass = true;
 		distributed.clear();
@@ -399,8 +464,41 @@ public class PLCompiler {
 		PLRuntime.getRuntime().addClassBytedata(moduleName, clsName, bytedata);
 		return cls.toClass(getClassLoader(), null);
 	}
+	
+	/**
+	 * Generates handlers for boostrap for dynamic methods of operators. 
+	 * Needed to be created once per java class
+	 */
+	private void genBootstraps() {
+		pool = cls.getClassFile().getConstPool();
+		// 0 binary operation
+		int mRefIdxBin = pool.addMethodrefInfo(pool.addClassInfo(Strings.TYPEOPS), pool.addNameAndTypeInfo("binopbootstrap", 
+				"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+				+ ")Ljava/lang/invoke/CallSite;"));
+		int mHandleIdxBin = pool.addMethodHandleInfo(ConstPool.REF_invokeStatic, mRefIdxBin);
+		// 1 unary operation
+		int mRefIdxUn = pool.addMethodrefInfo(pool.addClassInfo(Strings.TYPEOPS), pool.addNameAndTypeInfo("unopbootstrap", 
+				"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+				+ ")Ljava/lang/invoke/CallSite;"));
+		int mHandleIdxUn = pool.addMethodHandleInfo(ConstPool.REF_invokeStatic, mRefIdxUn);
+		
+		/* create bootstrap methods attribute; there can only be one per class file! */
+		BootstrapMethodsAttribute.BootstrapMethod[] bms = new BootstrapMethodsAttribute.BootstrapMethod[] {
+				new BootstrapMethodsAttribute.BootstrapMethod(mHandleIdxBin, new int[] {}),
+				new BootstrapMethodsAttribute.BootstrapMethod(mHandleIdxUn, new int[] {})
+		};
+		BootstrapMethodsAttribute bmsAttribute = new BootstrapMethodsAttribute(pool, bms);
+		cls.getClassFile().addAttribute(bmsAttribute);
+	}
 
+	/** Whether init method is being compiled */
 	private boolean compilingInit;
+	/**
+	 * Compiles function/method of module/class.
+	 * @param fcx
+	 * @return
+	 * @throws Exception
+	 */
 	private String compileFunction(final FunctionDeclarationContext fcx) throws Exception{
 		final boolean restricted = fcx.getChild(1).getText().startsWith("restricted");
 		String name = restricted ? fcx.getChild(2).getText() : fcx.getChild(1).getText();
@@ -414,7 +512,7 @@ public class PLCompiler {
 		
 		FormalParametersContext fpx = fcx.formalParameters();
 		final List<String> args = new ArrayList<String>();
-		if (compilingClass)
+		if (compilingClass) // if class is being compiled, it's method have implicit "inst" (this)
 			args.add("inst");
 		if (fpx.formalParameterList() != null){
 			for (FormalParameterContext fpcx : fpx.formalParameterList().formalParameter()){
@@ -643,9 +741,9 @@ public class PLCompiler {
 		if (statement.forStatement() != null){
 			ForControlContext fcc = statement.forStatement().forControl();
 			
-			int loopStart = counter++;
-			int loopEnd = counter++;
-			int continueLoop = counter++;
+			int loopStart = labelCounter++;
+			int loopEnd = labelCounter++;
+			int continueLoop = labelCounter++;
 			
 			varStack.pushNewStack();
 			int pushCount = 0;
@@ -747,8 +845,8 @@ public class PLCompiler {
 		}
 		if (statement.whileStatement() != null){
 			
-			int loopStart = counter++;
-			int loopEnd = counter++;
+			int loopStart = labelCounter++;
+			int loopEnd = labelCounter++;
 			
 			setLabelPos(loopStart);
 			isStatementExpression.add(false);
@@ -798,9 +896,9 @@ public class PLCompiler {
 		}
 		if (statement.doStatement() != null){
 			
-			int loopStart = counter++;
-			int loopEnd = counter++;
-			int loopBegin = counter++;
+			int loopStart = labelCounter++;
+			int loopEnd = labelCounter++;
+			int loopBegin = labelCounter++;
 			
 			setLabelPos(loopBegin);
 			
@@ -850,7 +948,7 @@ public class PLCompiler {
 			return;
 		}
 		if (statement.tryStatement() != null){
-			int endLabel = counter++;
+			int endLabel = labelCounter++;
 			boolean hasFinally = statement.tryStatement().finallyBlock() != null;
 			
 			final int finallyStack = stacker.acquire();
@@ -899,7 +997,7 @@ public class PLCompiler {
 			int prevKey = -1;
 			
 			if (statement.tryStatement().catchClause() != null){
-				int throwLabel = counter++;
+				int throwLabel = labelCounter++;
 				bc.addExceptionHandler(start, end, bc.currentPc(), Strings.BASE_COMPILED_STUB);
 				bc.addAstore(throwableStack); // save old exception
 				
@@ -933,7 +1031,7 @@ public class PLCompiler {
 						prevKey = throwLabel;
 					} else {
 						// else should go to next key pos
-						prevKey = counter++;
+						prevKey = labelCounter++;
 					}
 					addLabel(new LabelInfo(){
 
@@ -1071,7 +1169,7 @@ public class PLCompiler {
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 			boolean hasElse = statement.ifStatement().getChildCount() == 5;
-			int key = counter++;
+			int key = labelCounter++;
 			addLabel(new LabelInfo(){
 
 				@Override
@@ -1086,7 +1184,7 @@ public class PLCompiler {
 			
 			compileStatement((StatementContext) statement.ifStatement().getChild(2));
 			if (hasElse){
-				key2 = counter++;
+				key2 = labelCounter++;
 				addLabel(new LabelInfo(){
 
 					@Override
@@ -1461,7 +1559,7 @@ public class PLCompiler {
 						bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__GETKEY, 
 								"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 						
-						int kkey = counter++;
+						int kkey = labelCounter++;
 						bc.add(Opcode.DUP);
 						addLabel(new LabelInfo(){
 
@@ -1563,7 +1661,7 @@ public class PLCompiler {
 		isStatementExpression.pop();
 		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
-		int key = counter++;
+		int key = labelCounter++;
 		addLabel(new LabelInfo(){
 
 			@Override
@@ -1578,7 +1676,7 @@ public class PLCompiler {
 		
 		compileExpression(et, false, -1);
 		
-		key2 = counter++;
+		key2 = labelCounter++;
 		addLabel(new LabelInfo(){
 
 			@Override
@@ -1618,8 +1716,8 @@ public class PLCompiler {
 		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 		
-		int shortCut = counter++;
-		int reminder = counter++;
+		int shortCut = labelCounter++;
+		int reminder = labelCounter++;
 		addLabel(new LabelInfo(){
 
 			@Override
@@ -2054,7 +2152,7 @@ public class PLCompiler {
 						"(" + Strings.STRING_L +")" + Strings.PLANGOBJECT_L);
 				bc.add(Opcode.DUP);
 				
-				int key = counter++;
+				int key = labelCounter++;
 				addLabel(new LabelInfo(){
 
 					@Override
@@ -2143,7 +2241,7 @@ public class PLCompiler {
 		public void compileMethod() throws Exception{
 			lastLineWritten = -1;
 			stacker = new AutoIntStacker(1);
-			counter = 0;
+			labelCounter = 0;
 			labelMap = new HashMap<Integer, Integer>();
 			labelList = new ArrayList<LabelInfo>();
 			bcToLineMap = new HashMap<Integer, Integer>();
@@ -2183,10 +2281,6 @@ public class PLCompiler {
 		}
 		
 		protected abstract void compileDataSources() throws Exception;
-	}
-
-	public boolean getRestrictions() {
-		return restrictions;
 	}
 
 	private static class Instruction {
@@ -2695,10 +2789,6 @@ public class PLCompiler {
 		}
 		
 		return iList;
-	}
-
-	public void setRestrictions(boolean restrictions) {
-		this.restrictions = restrictions;
 	}
 
 	public ClassLoader getClassLoader() {
