@@ -166,6 +166,8 @@ public class NodeController {
 		final JsonObject input = m.get("payload").asObject();
 		
 		storage.runtime = new RuntimeStoreContainer();
+		
+		/* Initialize the runtime */
 		storage.runtime.runtime = PLRuntime.createEmptyRuntime();
 		storage.runtime.runtime.setAsCurrent();
 		JsonArray sources = input.get("runtimeFiles").asArray();
@@ -180,6 +182,7 @@ public class NodeController {
 		storage.runtime.runtime.prepareForDeserialization(input.get("runtimeData").asObject().get("serialVersionUIDs").asArray());
 		Map<Long, Long> ridxMap;
 		PLangObject arg;
+		/* Deserializes the json content back to the objects */
 		try {
 			DeserializationResult r = storage.runtime.runtime.deserialize(input.get("runtimeData").asObject().get("modules").asArray(), 
 					input.get("runtimeData").asObject().get("currentCaller").asObject(),
@@ -197,6 +200,7 @@ public class NodeController {
 		storage.runtime.runtime.setRestricted(true);
 		storage.exception = null;
 		
+		/* Runtime is prepared to resume from last call */
 		RunnablePayload<PLangObject> run = new RunnablePayload<PLangObject>(){
 
 			@Override
@@ -204,7 +208,9 @@ public class NodeController {
 
 				try {
 					long argId = input.getLong("argId", 0);
+					// binds to current thread
 					storage.runtime.runtime.setAsCurrent();
+					// runs the current object and method asked
 					return storage.runtime.runtime.runByObjectId(transMap.get(input.getLong("runnerId", 0)), 
 							input.getString("methodName", ""), 
 							new Int(input.getInt("id", 0)),
@@ -213,6 +219,7 @@ public class NodeController {
 					storage.exception = e;
 					return null;
 				} catch (Throwable t){
+					// cancel unlimited running because throwing will go behind the usual end of run mechanics
 					finished = true;
 					throw t;
 				}
@@ -220,14 +227,17 @@ public class NodeController {
 			
 		};
 		
+		// Runs the code 
 		storage.reservedNode.setNewPayload(run);
 		
+		// Wait for the payload to finish with active waiting 
 		while (!run.hasFinished()){
 			Thread.sleep(10);
 		}
 		
 		PLangObject result = run.getResult();
 		
+		// serialize the return value back to the caller
 		JsonObject p = new JsonObject();
 		if (result != null){
 			p.add("hasResult", true);
@@ -241,9 +251,20 @@ public class NodeController {
 		
 		localStorage.set(null);
 		
+		// send the payload back to the requesting client
 		Protocol.send(s.getOutputStream(), payload);
 	}
 
+	/**
+	 * Sends the error back to the client.
+	 * 
+	 * This is not used to send back exception, instead it is used to send when error happened prior to the running of the runtime.
+	 * @param s
+	 * @param payload
+	 * @param ecode
+	 * @param dmesg
+	 * @throws Exception
+	 */
 	private void sendError(Socket s, JsonObject payload, long ecode, String dmesg) throws Exception {
 		payload.add("payload", new JsonObject().
 									add("error", true).
@@ -328,6 +349,7 @@ public class NodeController {
 			}
 		}
 		
+		// Set up the keystores for ssl/tsl communication
 		System.setProperty("javax.net.ssl.keyStore", no.keystore);
 	    System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
 	}

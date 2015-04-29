@@ -82,6 +82,7 @@ module Math {
             
             return nm;
         }
+        
     }
     
     class __MatrixMulHelper {

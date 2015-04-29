@@ -6,6 +6,11 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
+/**
+ * Options for CLI version of the program
+ * @author Enerccio
+ *
+ */
 public class ParaLangCLIOptions {
 
 	@Parameter(names = {"-sd", "--source-directory"}, description="Directory where are source files that will be compiled. Default is cwd")
