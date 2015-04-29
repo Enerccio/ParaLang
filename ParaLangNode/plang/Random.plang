@@ -4,13 +4,38 @@ import java.util.Random as __JRandom;
 using Utils.Time;
 using Math;
 
+###
+    Random module provides various random generator classes.
+###
 module Random {
+    ###
+        PLang random initialized to random seed.
+        *type Random
+        *init Random instance
+    ###
     var random = new Random(NoValue);
+    ###
+        Java random initialized to random seed.
+        *type JavaRandom
+        *init JavaRandom instance
+    ###
     var java_random = new JavaRandom(NoValue);
+    ###
+        Secure random initialized to random seed.
+        *type SecureRandom
+        *init SecureRandom instance
+    ###
     var secure_random = new SecureRandom();
     
+    ###
+        Native PLang implementation of random generator.
+    ###
     class Random {
     
+        ###
+            Active seed
+            *type integer
+        ###
         var seed;
     
         defn init(seed){
@@ -20,45 +45,71 @@ module Random {
             inst.seed = seed;
         }
         
+        ###
+            Returns random integer up to max value
+            *ret integer
+        ###
         defn get_int(max){
             seed = Math.abs(1103515245 * seed + 12345);
             return seed % max;
         }
         
+        ###
+            Returns random float.
+            *ret float
+        ###
         defn get_float(a){
             var r = get_int(2147483647);
             return Math.abs(r / 2147483647.0 * a);
         }
         
+        ###
+            Returns random float between 0 and 1
+            *ret float
+        ###
         defn get_clamp(){
             return get_float(1.0);
         }
     }
-
+    
+    ###
+        Random generator wrapping java Random generator.
+    ###
     class JavaRandom > Random {
-        var wrappedObject;
+        var __wrappedObject;
         
         defn init(seed){
             if (seed == NoValue)
-                wrappedObject = __JRandom->__JRandom();
+                __wrappedObject = __JRandom->__JRandom();
             else
-                wrappedObject = __JRandom->__JRandom(seed);
+                __wrappedObject = __JRandom->__JRandom(seed);
         }
         
+        ###
+            Returns random integer up to max value
+            *ret integer
+        ###
         defn get_int(max){
-            return wrappedObject->nextLong() % max;
+            return __wrappedObject->nextLong() % max;
         }
     }
     
+    ###
+        Random generator wrapping java SecureRandom generator.
+    ###
     class SecureRandom > Random {
-        var wrappedObject;
+        var __wrappedObject;
         
         defn init(){
-            wrappedObject = __JSecureRandom->__JSecureRandom();
+            __wrappedObject = __JSecureRandom->__JSecureRandom();
         }
     
+        ###
+            Returns random integer up to max value
+            *ret integer
+        ###
         defn get_int(max){
-            return wrappedObject->nextLong() % max;
+            return __wrappedObject->nextLong() % max;
         }
     }
 };

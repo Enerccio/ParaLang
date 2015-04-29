@@ -1,19 +1,32 @@
 import java.util.Date;
 
+###
+    Utility module providing utility functions and classes.
+###
 module Utils {
 
+    ###
+        Time instance encapsulates unix time. 
+    ###
     class Time {
-        var date;
+        var __date;
         
+        ### 
+            Creates new Time instance. If provided value is NoValue, it is initialized into current time, otherwise passed argument must be integer.
+        ###
         defn init(unixTime){
             if (unixTime == NoValue)
-                date = Date->Date();
+                __date = Date->Date();
             else
-                date = Date->Date(unixTime);
+                __date = Date->Date(unixTime);
         }
         
+        ###
+            Returns unix time value as integer.
+            *ret integer
+        ###
         defn get_time(){
-            return date->getTime();
+            return __date->getTime();
         }
     }
 

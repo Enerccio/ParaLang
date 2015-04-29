@@ -4,31 +4,57 @@ using IO;
 
 import cz.upol.vanusanik.paralang.runtime.wrappers.Matrix as __MatrixData;
 
+###
+    Math module contains classes and functions related to math.
+###
 module Math {
 
+    ###
+        Encapsulates exceptions that happens in this module.
+    ###
     class MathException > BaseException {
         defn init(message){
             parent.init(message);
         }
     }
     
+    ###
+        Matrix class. Encapsulates any sized dense matrix.
+    ###
     class Matrix {
     
-        var matrix, n, m;
+        var __matrix;
+        ###
+            Number of rows
+            *type integer
+        ###
+        var n;
+        ###
+            Number of columns
+            *type integer
+        ###
+        var m;
         
         defn init(n, m){
             inst.n = n;
             inst.m = m;
-            matrix = __MatrixData->__MatrixData(n, m);
+            __matrix = __MatrixData->__MatrixData(n, m);
             
         }   
         
+        ###
+            Returns value at i, j.
+            *ret number
+        ###
         defn get(i, j){
-            return matrix->get(i, j);
+            return __matrix->get(i, j);
         }
         
+        ###
+            Sets the value at i, j to v
+        ###
         defn set(i, j, v){
-            matrix->set(i, j, v);
+            __matrix->set(i, j, v);
         }
     
         defn __str(){
@@ -54,6 +80,10 @@ module Math {
             }
         }
         
+        ###
+            Multiplies this matrix by scalar value as new copy.
+            *ret Matrix
+        ###
         defn mul_scalar(scalar){
             var nm = new Matrix(n, m);
             for (var i=0; i<n; i++)
@@ -63,6 +93,12 @@ module Math {
             return nm;
         }
         
+        ###
+            Multiplies this matrix by other matrix as new matrix.
+            
+            Throws MathException if matrices are incompatible.
+            *ret Matrix
+        ###
         defn mul_matrix(b){
             if (n != b.m)
                 throw new MathException("Incompatible matrices");
@@ -106,6 +142,9 @@ module Math {
         }
     }
 
+    ###
+        SquareMatrix is Matrix that can be inited only with single argument n and is squared (n == m).
+    ###
     class SquareMatrix > Matrix {
         
         defn init(n){
@@ -114,6 +153,10 @@ module Math {
     
     }
     
+    ###
+        Returns random matrix of size i, j. Random data is provided via r random generator's get_int and maxv is max value passed to get_int.
+        *ret Matrix
+    ###
     defn random_matrix(i, j, r, maxv){
         var m = new Matrix(i, j);
         for (i=0; i<m.n; i++)
@@ -122,22 +165,42 @@ module Math {
         return m;
     }
     
+    ###
+        Returns absolute value of passed number.
+        *ret number
+    ###
     defn abs(a){
         return a >= 0 ? a : -a;
     }
     
+    ###
+        Returns maximum of a and b.
+        *ret number
+    ###
     defn max(a, b){
         return a >= b ? a : b;
     }
     
+    ###
+        Returns minimum of a and b.
+        *ret number
+    ###
     defn min(a, b){
         return a <= b? a : b;
     }
     
+    ###
+        Returns a to the power of 2.
+        *ret number
+    ###
     defn sqr(a){
         return a * a;
     }
     
+    ###
+        Returns square root of a.
+        *ret number
+    ###
     defn sqrt(a){
         if (!(a instanceof number)) 
             throw new MathException("Argument must be a number!");

@@ -76,6 +76,12 @@ public class GenerateMarkdown {
 		System.out.println(output);
 	}
 	
+	public String run(String content) throws Exception{
+		String output = "<!-- " + content + "-->\n";
+		output += format(content);
+		return output;
+	}
+	
 	private class Block implements Comparable<Block> {
 		private int index;
 		private String value;

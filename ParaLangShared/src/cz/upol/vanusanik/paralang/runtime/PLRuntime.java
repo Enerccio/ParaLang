@@ -266,7 +266,8 @@ public class PLRuntime {
 		String[] components = fqname.split("\\.");
 		if (components.length != 2) 
 			throw new RuntimeException("Malformed name of the class!");
-		if (!classMap.containsKey(components[0])) throw new RuntimeException("Unknown module!");
+		if (!classMap.containsKey(components[0])) 
+			throw new RuntimeException("Unknown module!");
 		if (!classMap.get(components[0]).containsKey(components[1])) throw new RuntimeException("Unknown class!");
 		try {
 			PLClass instance = (PLClass) classMap.get(components[0]).get(components[1]).newInstance();

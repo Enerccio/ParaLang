@@ -1,7 +1,7 @@
 grammar PLang;
 
 compilationUnit
-    :   importDeclaration* moduleDeclaration EOF
+    :   importDeclaration* docComment? moduleDeclaration EOF
     ;
 
 importDeclaration
@@ -16,9 +16,9 @@ moduleDeclaration
 	; 
 	
 moduleDeclarations 
-	: functionDeclaration
-	| fieldDeclaration
-	| classDeclaration 
+	: docComment? functionDeclaration
+	| docComment? fieldDeclaration
+	| docComment? classDeclaration 
 	;
 
 classDeclaration 
@@ -33,7 +33,7 @@ classBody
 
 classBodyDeclaration
     :   ';'
-    |   memberDeclaration
+    |   docComment? memberDeclaration
     ;
 
 
@@ -639,6 +639,14 @@ JavaLetterOrDigit
 
 WS  :  [ \t\r\n\u000C]+ -> skip
     ;
+    
+docComment
+    :   DOCCOMMENT
+    ;
+    
+DOCCOMMENT
+	: '###' .*? '###' 
+	;
 
 COMMENT
     :   '/*' .*? '*/' -> skip

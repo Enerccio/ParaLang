@@ -123,7 +123,7 @@ public class PLCompiler {
 	 * @param ctx
 	 */
 	private void buildReferenced(CompilationUnitContext ctx) {
-		moduleName = ctx.moduleDeclaration().getChild(1).getText();
+		moduleName = ctx.moduleDeclaration().Identifier().getText();
 		varStack = new VariableScopeStack();
 		
 		List<ImportDeclarationContext> idc = ctx.importDeclaration();
@@ -208,7 +208,7 @@ public class PLCompiler {
 		for (ModuleDeclarationsContext mdc : ctx.moduleDeclaration().moduleDeclarations()){
 			if (mdc.classDeclaration() != null){
 				// Compile class definition
-				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().children.get(1).getText(), mdc.classDeclaration(), in);
+				Class<?> klazz = compileClassDefinition(ctx.moduleDeclaration().Identifier().getText(), mdc.classDeclaration(), in);
 				PLRuntime.getRuntime().registerClass(moduleName, mdc.classDeclaration().children.get(1).getText(), klazz);
 			}
 		}
@@ -263,7 +263,7 @@ public class PLCompiler {
 	 * @throws Exception
 	 */
 	private Class<?> compileModuleClass(CompilationUnitContext ctx, FileDesignator in) throws Exception {
-		String moduleName = ctx.moduleDeclaration().children.get(1).getText();
+		String moduleName = ctx.moduleDeclaration().Identifier().getText();
 		compilingClass = false;
 		distributed.clear();
 		
