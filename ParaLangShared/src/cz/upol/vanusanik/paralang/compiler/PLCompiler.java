@@ -171,6 +171,10 @@ public class PLCompiler {
 	}
 	
 	private class ThrowingErrorListener extends BaseErrorListener {
+		private String source;
+		public ThrowingErrorListener(String loc){
+			this.source = loc;
+		}
 		   @Override
 		   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
 		      throws ParseCancellationException {
@@ -188,11 +192,11 @@ public class PLCompiler {
 		ANTLRInputStream is = new ANTLRInputStream(in.getStream());
 		PLangLexer lexer = new PLangLexer(is);
 		lexer.removeErrorListeners();
-		lexer.addErrorListener(new ThrowingErrorListener());
+		lexer.addErrorListener(new ThrowingErrorListener(in.getSource()));
 		CommonTokenStream stream = new CommonTokenStream(lexer);
 		PLangParser parser = new PLangParser(stream);
 		parser.removeErrorListeners();
-		parser.addErrorListener(new ThrowingErrorListener());
+		parser.addErrorListener(new ThrowingErrorListener(in.getSource()));
 		return parser.compilationUnit();
 	}
 
@@ -698,20 +702,7 @@ public class PLCompiler {
 			
 			breakContinueExitProtocol();
 			int label = continueStack.peek();
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					if (Math.abs(offset) > (65535/2)){
-						throw new CompilationException("Too long jump. Please reformate the code!");
-					} else {
-						bc.write(bcpos, Opcode.GOTO);
-						bc.write16bit(bcpos+1, offset);
-					}
-				}
-				
-			}, label);
+			addLabel(new JumpLabelInfo(), label);
 			
 			return;
 		}
@@ -721,20 +712,7 @@ public class PLCompiler {
 			
 			breakContinueExitProtocol();
 			int label = breakStack.peek();
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					if (Math.abs(offset) > (65535/2)){
-						throw new CompilationException("Too long jump. Please reformate the code!");
-					} else {
-						bc.write(bcpos, Opcode.GOTO);
-						bc.write16bit(bcpos+1, offset);
-					}
-				}
-				
-			}, label);
+			addLabel(new JumpLabelInfo(), label);
 			
 			return;
 		}
@@ -789,16 +767,7 @@ public class PLCompiler {
 				isStatementExpression.pop();
 				bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 						"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
-				addLabel(new LabelInfo(){
-
-					@Override
-					protected void add(Bytecode bc) throws CompilationException {
-						int offset = getValue(poskey) - bcpos;
-						bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
-						bc.write16bit(bcpos+1, offset);
-					}
-					
-				}, loopEnd);
+				addLabel(new IfEqJumpLabelInfo(), loopEnd);
 			}
 			
 			breakStack.add(loopEnd);
@@ -819,20 +788,7 @@ public class PLCompiler {
 				}
 			}
 			
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					if (Math.abs(offset) > (65535/2)){
-						throw new CompilationException("Too long jump. Please reformate the code!");
-					} else {
-						bc.write(bcpos, Opcode.GOTO);
-						bc.write16bit(bcpos+1, offset);
-					}
-				}
-				
-			}, loopStart);
+			addLabel(new JumpLabelInfo(), loopStart);
 			
 			while (pushCount-- != 0)
 				stacker.release();
@@ -854,16 +810,7 @@ public class PLCompiler {
 			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
-					bc.write16bit(bcpos+1, offset);
-				}
-				
-			}, loopEnd);
+			addLabel(new IfEqJumpLabelInfo(), loopEnd);
 			
 			
 			continueStack.add(loopStart);
@@ -872,20 +819,7 @@ public class PLCompiler {
 			fbcLoopList.add(null);
 			compileStatement(statement.whileStatement().statement());
 			fbcLoopList.remove(fbcLoopList.size()-1);
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					if (Math.abs(offset) > (65535/2)){
-						throw new CompilationException("Too long jump. Please reformate the code!");
-					} else {
-						bc.write(bcpos, Opcode.GOTO);
-						bc.write16bit(bcpos+1, offset);
-					}
-				}
-				
-			}, loopStart);
+			addLabel(new JumpLabelInfo(), loopStart);
 			
 			continueStack.pop();
 			breakStack.pop();
@@ -908,20 +842,7 @@ public class PLCompiler {
 			fbcLoopList.add(null);
 			compileStatement(statement.doStatement().statement());
 			fbcLoopList.remove(fbcLoopList.size()-1);
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					if (Math.abs(offset) > (65535/2)){
-						throw new CompilationException("Too long jump. Please reformate the code!");
-					} else {
-						bc.write(bcpos, Opcode.GOTO);
-						bc.write16bit(bcpos+1, offset);
-					}
-				}
-				
-			}, loopStart);
+			addLabel(new JumpLabelInfo(), loopStart);
 			
 			continueStack.pop();
 			breakStack.pop();
@@ -932,16 +853,7 @@ public class PLCompiler {
 			isStatementExpression.pop();
 			bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					bc.write(bcpos, Opcode.IFNE); // jump to else if true or to the next bytecode if not 
-					bc.write16bit(bcpos+1, offset);
-				}
-				
-			}, loopBegin);
+			addLabel(new IfNeJumpLabelInfo(), loopBegin);
 			
 			setLabelPos(loopEnd);
 			bc.add(Opcode.NOP);
@@ -979,20 +891,7 @@ public class PLCompiler {
 				compileBlock(statement.tryStatement().finallyBlock().block());
 			}
 			
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					if (Math.abs(offset) > (65535/2)){
-						throw new CompilationException("Too long jump. Please reformate the code!");
-					} else {
-						bc.write(bcpos, Opcode.GOTO);
-						bc.write16bit(bcpos+1, offset);
-					}
-				}
-				
-			}, endLabel);
+			addLabel(new JumpLabelInfo(), endLabel);
 			
 			int prevKey = -1;
 			
@@ -1033,16 +932,7 @@ public class PLCompiler {
 						// else should go to next key pos
 						prevKey = labelCounter++;
 					}
-					addLabel(new LabelInfo(){
-
-						@Override
-						protected void add(Bytecode bc) throws CompilationException {
-							int offset = getValue(poskey) - bcpos;
-							bc.write(bcpos, Opcode.IFEQ);
-							bc.write16bit(bcpos+1, offset);
-						}
-						
-					}, prevKey);
+					addLabel(new IfEqJumpLabelInfo(), prevKey);
 					
 					varStack.addVariable(ccc.Identifier().getText(), VariableType.LOCAL_VARIABLE, throwableStack);
 					int sstart = bc.currentPc();
@@ -1058,20 +948,7 @@ public class PLCompiler {
 					}
 					
 					int ssend = bc.currentPc();
-					addLabel(new LabelInfo(){
-
-						@Override
-						protected void add(Bytecode bc) throws CompilationException {
-							int offset = getValue(poskey) - bcpos;
-							if (Math.abs(offset) > (65535/2)){
-								throw new CompilationException("Too long jump. Please reformate the code!");
-							} else {
-								bc.write(bcpos, Opcode.GOTO);
-								bc.write16bit(bcpos+1, offset);
-							}
-						}
-						
-					}, endLabel);
+					addLabel(new JumpLabelInfo(), endLabel);
 					
 					if (hasFinally){
 						bc.addExceptionHandler(sstart, ssend, bc.currentPc(), Strings.THROWABLE);
@@ -1087,20 +964,7 @@ public class PLCompiler {
 					compileBlock(statement.tryStatement().finallyBlock().block());
 				bc.addAload(throwableStack);
 				bc.add(Opcode.ATHROW);
-				addLabel(new LabelInfo(){
-
-					@Override
-					protected void add(Bytecode bc) throws CompilationException {
-						int offset = getValue(poskey) - bcpos;
-						if (Math.abs(offset) > (65535/2)){
-							throw new CompilationException("Too long jump. Please reformate the code!");
-						} else {
-							bc.write(bcpos, Opcode.GOTO);
-							bc.write16bit(bcpos+1, offset);
-						}
-					}
-					
-				}, endLabel);			
+				addLabel(new JumpLabelInfo(), endLabel);			
 			}
 			
 			if (statement.tryStatement().finallyBlock() != null){
@@ -1170,35 +1034,13 @@ public class PLCompiler {
 					"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 			boolean hasElse = statement.ifStatement().getChildCount() == 5;
 			int key = labelCounter++;
-			addLabel(new LabelInfo(){
-
-				@Override
-				protected void add(Bytecode bc) throws CompilationException {
-					int offset = getValue(poskey) - bcpos;
-					bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
-					bc.write16bit(bcpos+1, offset);
-				}
-				
-			}, key);
+			addLabel(new IfEqJumpLabelInfo(), key);
 			int key2 = -1;
 			
 			compileStatement((StatementContext) statement.ifStatement().getChild(2));
 			if (hasElse){
 				key2 = labelCounter++;
-				addLabel(new LabelInfo(){
-
-					@Override
-					protected void add(Bytecode bc) throws CompilationException {
-						int offset = getValue(poskey) - bcpos;
-						if (Math.abs(offset) > (65535/2)){
-							throw new CompilationException("Too long jump. Please reformate the code!");
-						} else {
-							bc.write(bcpos, Opcode.GOTO);
-							bc.write16bit(bcpos+1, offset);
-						}
-					}
-					
-				}, key2);
+				addLabel(new JumpLabelInfo(), key2);
 			}
 			
 			setLabelPos(key);
@@ -1561,16 +1403,7 @@ public class PLCompiler {
 						
 						int kkey = labelCounter++;
 						bc.add(Opcode.DUP);
-						addLabel(new LabelInfo(){
-
-							@Override
-							protected void add(Bytecode bc) throws CompilationException {
-								int offset = getValue(poskey) - bcpos;
-								bc.write(bcpos, Opcode.IFNONNULL); 
-								bc.write16bit(bcpos+1, offset);
-							}
-							
-						}, kkey);
+						addLabel(new IfNotNullJumpLabelInfo(), kkey);
 
 						bc.add(Opcode.POP);
 						addThrow("Unknown field: " + identifier);
@@ -1662,35 +1495,13 @@ public class PLCompiler {
 		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 		int key = labelCounter++;
-		addLabel(new LabelInfo(){
-
-			@Override
-			protected void add(Bytecode bc) throws CompilationException {
-				int offset = getValue(poskey) - bcpos;
-				bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
-				bc.write16bit(bcpos+1, offset);
-			}
-			
-		}, key);
+		addLabel(new IfEqJumpLabelInfo(), key);
 		int key2 = -1;
 		
 		compileExpression(et, false, -1);
 		
 		key2 = labelCounter++;
-		addLabel(new LabelInfo(){
-
-			@Override
-			protected void add(Bytecode bc) throws CompilationException {
-				int offset = getValue(poskey) - bcpos;
-				if (Math.abs(offset) > (65535/2)){
-					throw new CompilationException("Too long jump. Please reformate the code!");
-				} else {
-					bc.write(bcpos, Opcode.GOTO);
-					bc.write16bit(bcpos+1, offset);
-				}
-			}
-			
-		}, key2);
+		addLabel(new JumpLabelInfo(), key2);
 		
 		setLabelPos(key);	
 		
@@ -1736,20 +1547,7 @@ public class PLCompiler {
 		bc.addInvokestatic(Strings.TYPEOPS, Strings.TYPEOPS__CONVERT_TO_BOOLEAN, 
 				"("+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 		
-		addLabel(new LabelInfo(){
-
-			@Override
-			protected void add(Bytecode bc) throws CompilationException {
-				int offset = getValue(poskey) - bcpos;
-				if (Math.abs(offset) > (65535/2)){
-					throw new CompilationException("Too long jump. Please reformate the code!");
-				} else {
-					bc.write(bcpos, Opcode.GOTO);
-					bc.write16bit(bcpos+1, offset);
-				}
-			}
-			
-		}, reminder);
+		addLabel(new JumpLabelInfo(), reminder);
 		
 		setLabelPos(shortCut);
 		
@@ -2153,16 +1951,7 @@ public class PLCompiler {
 				bc.add(Opcode.DUP);
 				
 				int key = labelCounter++;
-				addLabel(new LabelInfo(){
-
-					@Override
-					protected void add(Bytecode bc) throws CompilationException {
-						int offset = getValue(poskey) - bcpos;
-						bc.write(bcpos, Opcode.IFNONNULL); 
-						bc.write16bit(bcpos+1, offset);
-					}
-					
-				}, key);
+				addLabel(new IfNotNullJumpLabelInfo(), key);
 				bc.add(Opcode.POP);
 				addGetRuntime();
 				bc.addLdc(cacheStrings(moduleName));			// load string from constants
@@ -2226,6 +2015,54 @@ public class PLCompiler {
 		public int poskey;
 		
 		protected abstract void add(Bytecode bc) throws CompilationException;
+	}
+	
+	private class JumpLabelInfo extends LabelInfo{
+
+		@Override
+		protected void add(Bytecode bc) throws CompilationException {
+			int offset = getValue(poskey) - bcpos;
+			if (Math.abs(offset) > (65535/2)){
+				throw new CompilationException("Too long jump. Please reformate the code!");
+			} else {
+				bc.write(bcpos, Opcode.GOTO);
+				bc.write16bit(bcpos+1, offset);
+			}
+		}
+		
+	};
+	
+	private class IfEqJumpLabelInfo extends LabelInfo{
+
+		@Override
+		protected void add(Bytecode bc) throws CompilationException {
+			int offset = getValue(poskey) - bcpos;
+			bc.write(bcpos, Opcode.IFEQ); // jump to else if true or to the next bytecode if not 
+			bc.write16bit(bcpos+1, offset);
+		}
+		
+	}
+	
+	private class IfNeJumpLabelInfo extends LabelInfo{
+
+		@Override
+		protected void add(Bytecode bc) throws CompilationException {
+			int offset = getValue(poskey) - bcpos;
+			bc.write(bcpos, Opcode.IFNE); // jump to else if true or to the next bytecode if not 
+			bc.write16bit(bcpos+1, offset);
+		}
+		
+	}
+	
+	private class IfNotNullJumpLabelInfo extends LabelInfo{
+
+		@Override
+		protected void add(Bytecode bc) throws CompilationException {
+			int offset = getValue(poskey) - bcpos;
+			bc.write(bcpos, Opcode.IFNONNULL); 
+			bc.write16bit(bcpos+1, offset);
+		}
+		
 	}
 	
 	private List<LabelInfo> labelList;

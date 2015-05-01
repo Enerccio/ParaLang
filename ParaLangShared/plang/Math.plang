@@ -19,7 +19,7 @@ module Math {
     }
     
     ###
-        Matrix class. Encapsulates any sized dense matrix.
+        Matrix class. Encapsulates any sized dense matrix. You can multiply matrix by simply using * operator with either compatible matrix or scalar number.
     ###
     class Matrix {
     
@@ -119,27 +119,6 @@ module Math {
             return nm;
         }
         
-    }
-    
-    class __MatrixMulHelper {
-        var matrix;
-        var task_map = new Map();
-        
-        defn set_task(rid, colb, rowa){
-            task_map.put(rid, new __MatrixMulHelperTask(colb, rowa));
-        }
-        
-        defn get_task(rid){
-            return task_map.get(rid);
-        }
-    }
-    
-    class __MatrixMulHelperTask {
-        var colb, rowa;
-        defn init(cb, ra){
-            colb = cb;
-            rowa = ra;
-        }
     }
 
     ###
