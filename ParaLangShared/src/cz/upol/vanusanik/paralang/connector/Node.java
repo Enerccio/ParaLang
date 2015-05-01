@@ -1,5 +1,11 @@
 package cz.upol.vanusanik.paralang.connector;
 
+/**
+ * Node class holds address and port.
+ * 
+ * @author Enerccio
+ *
+ */
 public class Node {
 
 	private final String address;

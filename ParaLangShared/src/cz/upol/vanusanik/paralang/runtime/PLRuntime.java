@@ -64,12 +64,25 @@ import cz.upol.vanusanik.paralang.plang.types.Pointer.PointerMethodIncompatibleE
 import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
+/**
+ * ParaLang runtime class. Holds all the information of runtime in it. All code
+ * is executed in the runtime.
+ * 
+ * @author Enerccio
+ *
+ */
 public class PLRuntime {
+	/** Local instance bound to the thread. */
 	private static final ThreadLocal<PLRuntime> localRuntime = new ThreadLocal<PLRuntime>();
+	/** System classes names and class objects stored here. */
 	private static final HashMap<String, Class<? extends PLClass>> __SYSTEM_CLASSES = new HashMap<String, Class<? extends PLClass>>();
+	/** Map of JavaType -> PLangType */
 	private static final HashMap<String, String> __SYSTEM_CLASSES_N = new HashMap<String, String>();
+	/** System classes names and class objects stored here. */
 	public static final Map<String, Class<? extends PLClass>> SYSTEM_CLASSES;
+	/** Base types are stored here */
 	private static final Set<String> __BASE_TYPES = new HashSet<String>();
+	/** Base types are stored here */
 	public static final Set<String> BASE_TYPES;
 
 	static {
@@ -104,58 +117,115 @@ public class PLRuntime {
 				.unmodifiableSet(__BASE_TYPES));
 	}
 
+	/**
+	 * Returns runtime bound to current thread
+	 * 
+	 * @return
+	 */
 	public static final PLRuntime getRuntime() {
 		PLRuntime r = localRuntime.get();
-		r.wasAccessed();
 		return r;
 	}
 
+	/** tracks all object creations */
 	private long objectIdCounter = 0;
+	/** jar file this is located in, if any */
 	private final File jarFile = new File(getClass().getProtectionDomain()
 			.getCodeSource().getLocation().getPath());
 
+	/** Maps object id into plang objects */
 	private Map<Long, BaseCompiledStub> instanceInternalMap = new HashMap<Long, BaseCompiledStub>();
 
+	/**
+	 * Register object whenever it is created
+	 * 
+	 * @param object
+	 *            object to be registered
+	 * @return object id
+	 */
 	public long registerObject(BaseCompiledStub object) {
 		long id = objectIdCounter++;
 		instanceInternalMap.put(id, object);
 		return id;
 	}
 
+	/** Class loader bound to this runtime */
 	private ParalangClassLoader classLoader = new ParalangClassLoader();
+	/** Modules that can be accessed but haven't been yet */
 	private Map<String, Class<? extends PLModule>> preloadedModuleMap = new HashMap<String, Class<? extends PLModule>>();
+	/** Actually instanced modules */
 	private Map<String, PLModule> moduleMap = new HashMap<String, PLModule>();
+	/** PLang classes, ModuleName -> ClassName -> PLClass */
 	private Map<String, Map<String, Class<?>>> classMap = new HashMap<String, Map<String, Class<?>>>();
+	/** Map of uids for classes */
 	private Map<String, Long> uuidMap = new HashMap<String, Long>();
 
+	/** Stored bytedata for plang classes */
 	private Map<String, Map<String, String>> classBytecodeData = new HashMap<String, Map<String, String>>();
+	/** Stored bytedata for plang modules */
 	private Map<String, String> moduleBytecodeData = new HashMap<String, String>();
 
+	/** Whether this runtime is in safe context or not */
 	private boolean isSafeContext = false;
+	/** Whether this runtime is in restricted context or not */
 	private boolean isRestricted = true;
+	/** Package target */
 	private String packageTarget = "";
+	/** Compiler used in this runtime */
 	private PLCompiler compiler = new PLCompiler();
 
+	/**
+	 * Creates new PLRuntime with standard plang system library.
+	 * 
+	 * @throws Exception
+	 */
 	public PLRuntime() throws Exception {
 		cp.appendSystemPath();
 		initialize(false);
 	}
 
+	/**
+	 * Internal constructor that allows not to have standard plang system
+	 * library.
+	 * 
+	 * @param miniinit
+	 * @throws Exception
+	 */
 	PLRuntime(boolean miniinit) throws Exception {
 		cp.appendSystemPath();
 		initialize(miniinit);
 	}
 
+	/**
+	 * Creates new PLRuntime without plang system library.
+	 * 
+	 * @return new PLRuntime
+	 * @throws Exception
+	 */
 	public static PLRuntime createEmptyRuntime() throws Exception {
 		return new PLRuntime(true);
 	}
 
+	/**
+	 * Add PLang class bytedata to this runtime
+	 * 
+	 * @param moduleName
+	 * @param className
+	 * @param bytedata
+	 */
 	public synchronized void addClassBytedata(String moduleName,
 			String className, byte[] bytedata) {
 		addClassBytedata(moduleName, className,
 				Base64.encodeBase64String(bytedata));
 	}
 
+	/**
+	 * Adds PLang class bytedata to this runtime from string
+	 * 
+	 * @param moduleName
+	 * @param className
+	 * @param bytedata
+	 */
 	public synchronized void addClassBytedata(String moduleName,
 			String className, String bytedata) {
 		if (!classBytecodeData.containsKey(moduleName))
@@ -163,29 +233,67 @@ public class PLRuntime {
 		classBytecodeData.get(moduleName).put(className, bytedata);
 	}
 
+	/**
+	 * Add module bytedata to this runtime
+	 * 
+	 * @param moduleName
+	 * @param bytedata
+	 */
 	public synchronized void addModuleBytedata(String moduleName,
 			byte[] bytedata) {
 		addModuleBytedata(moduleName, Base64.encodeBase64String(bytedata));
 	}
 
+	/**
+	 * Add module bytedata to this runtime from string
+	 * 
+	 * @param moduleName
+	 * @param bytedata
+	 */
 	public synchronized void addModuleBytedata(String moduleName,
 			String bytedata) {
 		moduleBytecodeData.put(moduleName, bytedata);
 	}
 
+	/**
+	 * Compile source from this FileDesignator
+	 * 
+	 * @param fd
+	 *            source to be compiled
+	 * @throws Exception
+	 */
 	public void compileSource(FileDesignator fd) throws Exception {
 		setAsCurrent();
 		compiler.compile(fd);
 	}
 
+	/**
+	 * Returns class loader
+	 * 
+	 * @return
+	 */
 	public ClassLoader getClassLoader() {
 		return classLoader;
 	}
 
+	/**
+	 * Add uuid for type into map.
+	 * 
+	 * @param fqName
+	 *            fully qualified type
+	 * @param uuid
+	 *            long uid for serialization
+	 */
 	public void addUuidMap(String fqName, Long uuid) {
 		uuidMap.put(fqName, uuid);
 	}
 
+	/**
+	 * Returns module from module name
+	 * 
+	 * @param moduleName
+	 * @return
+	 */
 	public PLModule resolveModule(String moduleName) {
 		return moduleMap.get(moduleName);
 	}
@@ -200,6 +308,13 @@ public class PLRuntime {
 		}
 	}
 
+	/**
+	 * Returns serialization uid from fully qualified name
+	 * 
+	 * @param fqName
+	 *            fully qualified name
+	 * @return uid
+	 */
 	public Long getUuid(String fqName) {
 		if (!uuidMap.containsKey(fqName)) {
 			addUuidMap(fqName, prng.nextLong());
@@ -207,6 +322,13 @@ public class PLRuntime {
 		return uuidMap.get(fqName);
 	}
 
+	/**
+	 * Initializes runtime. Adds all system classes
+	 * 
+	 * @param miniinit
+	 *            whether to skip plang system library
+	 * @throws Exception
+	 */
 	public void initialize(boolean miniinit) throws Exception {
 		setSafeContext(true);
 		setRestricted(false);
@@ -217,7 +339,7 @@ public class PLRuntime {
 			registerClass("System", cn, SYSTEM_CLASSES.get(cn));
 		}
 
-		if (!miniinit) {
+		if (!miniinit) { // run from jar
 			String path = "plang";
 			if (jarFile.isFile()) {
 				JarFile jar = new JarFile(jarFile);
@@ -259,16 +381,46 @@ public class PLRuntime {
 		setSafeContext(false);
 	}
 
+	/**
+	 * Register class to class name, module name.
+	 * 
+	 * @param module
+	 *            module name
+	 * @param className
+	 *            class name
+	 * @param cls
+	 *            class object
+	 */
 	public void registerClass(String module, String className, Class<?> cls) {
 		if (!classMap.containsKey(module))
 			classMap.put(module, new HashMap<String, Class<?>>());
 		classMap.get(module).put(className, cls);
 	}
 
+	/**
+	 * Creates new instance of fully qualified string
+	 * 
+	 * @param fqname
+	 *            fully qualified name of the object
+	 * @param inits
+	 *            initial arguments passed to init method of the instance
+	 * @return new object instance
+	 */
 	public PLClass newInstance(String fqname, PLangObject... inits) {
 		return newInstance(fqname, false, inits);
 	}
 
+	/**
+	 * Creates new instance of fully qualified string
+	 * 
+	 * @param fqname
+	 *            fully qualified name of the object
+	 * @param skipInit
+	 *            skip initialization of the object (init is not called)
+	 * @param inits
+	 *            initial arguments passed to init method of the instance
+	 * @return new object instance
+	 */
 	public PLClass newInstance(String fqname, boolean skipInit,
 			PLangObject... inits) {
 		if (__SYSTEM_CLASSES_N.containsKey(fqname)) {
@@ -294,14 +446,38 @@ public class PLRuntime {
 		}
 	}
 
+	/**
+	 * Add new module to the runtime
+	 * 
+	 * @param fqName
+	 *            name of the module
+	 * @param module
+	 *            module class
+	 */
 	public void addModule(String fqName, Class<? extends PLModule> module) {
 		preloadedModuleMap.put(fqName, module);
 	}
 
+	/**
+	 * Returns module for the module name
+	 * 
+	 * @param moduleName
+	 *            name of the module
+	 * @return PLModule
+	 */
 	public PLModule getModule(String moduleName) {
 		return getModule(moduleName, false);
 	}
 
+	/**
+	 * Returns module for the module name, creates if it was not created yet
+	 * 
+	 * @param moduleName
+	 *            name of the module
+	 * @param skipInit
+	 *            skip init method of the module
+	 * @return PLModule
+	 */
 	public PLModule getModule(String moduleName, boolean skipInit) {
 		if (!moduleMap.containsKey(moduleName)) {
 			if (!preloadedModuleMap.containsKey(moduleName))
@@ -322,6 +498,19 @@ public class PLRuntime {
 		return moduleMap.get(moduleName);
 	}
 
+	/**
+	 * Run function of the module
+	 * 
+	 * @param module
+	 *            name of the module
+	 * @param runnable
+	 *            name of the function
+	 * @param args
+	 *            arguments to the function call
+	 * @return result of the call to this function
+	 * @throws PLException
+	 *             if any exception happened during the run
+	 */
 	public PLangObject run(String module, String runnable, PLangObject... args)
 			throws PLException {
 		PLModule mod = getModule(module);
@@ -333,25 +522,54 @@ public class PLRuntime {
 		}
 	}
 
+	/**
+	 * Checks restricted access for the object
+	 * 
+	 * @param object
+	 */
 	public void checkRestrictedAccess(BaseCompiledStub object) {
 		if (isRestricted)
 			throw new RuntimeException("Restricted mode");
 	}
 
+	/**
+	 * Returns true if it is safe context or not
+	 * 
+	 * @return
+	 */
 	public boolean isSafeContext() {
 		return isSafeContext;
 	}
 
+	/**
+	 * Sets the state of safety of context
+	 * 
+	 * @param sc
+	 */
 	public void setSafeContext(boolean sc) {
 		isSafeContext = sc;
 	}
 
+	/**
+	 * Runs the method/function runner with self object currentRunner and
+	 * arguments args
+	 * 
+	 * @param runner
+	 *            Function/method wrapper
+	 * @param currentRunner
+	 *            instance that is running this runner
+	 * @param args
+	 *            arguments of this run
+	 * @return result of the call to this runner
+	 */
 	public PLangObject run(PLangObject runner, BaseCompiledStub currentRunner,
 			PLangObject... args) {
 		if (runner == null)
+			// null means no such method actually happened
 			throw new NullPointerException("No such method!");
 
 		if (runner.___getType() == PlangObjectType.FUNCTION) {
+			// function wrapper runner
 			FunctionWrapper wrapper = (FunctionWrapper) runner;
 			try {
 				return wrapper.run(currentRunner, args);
@@ -360,8 +578,6 @@ public class PLRuntime {
 						"Wrong number of arguments."));
 			} catch (RuntimeException e) {
 				throw e;
-				// throw newInstance("System.BaseException", new
-				// Str("Error while invocating method: " + e.getMessage()));
 			} catch (InvocationTargetException e) {
 				if (e.getCause() instanceof RuntimeException) {
 					throw (RuntimeException) e.getCause();
@@ -371,15 +587,28 @@ public class PLRuntime {
 				throw new RuntimeException(e);
 			}
 		} else if (runner.___getType() == PlangObjectType.CLASS) {
+			// class runner, ie runner with __apply method
 			PLClass c = (PLClass) runner;
 			PLangObject callableMethod = c.___getkey(Function.__applyMethod);
 			if (callableMethod != null) {
 				return run(callableMethod, c, args);
 			}
 		}
+		// anything else
 		throw new RuntimeException(runner + " cannot be run!");
 	}
 
+	/**
+	 * Running java pointer wrapper.
+	 * 
+	 * @param runner
+	 *            java pointer
+	 * @param mname
+	 *            method name
+	 * @param args
+	 *            arguments
+	 * @return result of the run
+	 */
 	public PLangObject runJavaWrapper(Pointer runner, String mname,
 			PLangObject... args) {
 		try {
@@ -389,6 +618,17 @@ public class PLRuntime {
 		}
 	}
 
+	/**
+	 * Running java static method
+	 * 
+	 * @param className
+	 *            fully qualified class name
+	 * @param mname
+	 *            method name
+	 * @param args
+	 *            arguments
+	 * @return result of the run
+	 */
 	public PLangObject runJavaStaticMethod(String className, String mname,
 			PLangObject... args) {
 		try {
@@ -439,6 +679,15 @@ public class PLRuntime {
 				"No method found for arguments " + args));
 	}
 
+	/**
+	 * Creates new instance of class and wraps it into pointer
+	 * 
+	 * @param className
+	 *            fully qualified class name
+	 * @param args
+	 *            arguments to pass to the constructor
+	 * @return wrapper java class into Pointer
+	 */
 	public Pointer createJavaWrapper(String className, PLangObject... args) {
 		try {
 			Class<?> clazz = Class.forName(className, true, Thread
@@ -481,14 +730,22 @@ public class PLRuntime {
 		isRestricted = restricted;
 	}
 
+	/** Set of all serialized objects so far */
 	private ThreadLocal<HashSet<Object>> serializedObjects = new ThreadLocal<HashSet<Object>>();
 
+	/**
+	 * Marks object as already serialized, so only link is serialized, not the
+	 * whole object
+	 */
 	public void setAsAlreadySerialized(BaseCompiledStub baseCompiledStub) {
 		if (serializedObjects.get() == null)
 			return;
 		serializedObjects.get().add(baseCompiledStub);
 	}
 
+	/**
+	 * Checks whether object is already serialized or not
+	 */
 	public boolean isAlreadySerialized(BaseCompiledStub baseCompiledStub) {
 		if (serializedObjects.get() == null) {
 			serializedObjects.set(new HashSet<Object>());
@@ -496,10 +753,24 @@ public class PLRuntime {
 		return serializedObjects.get().contains(baseCompiledStub);
 	}
 
+	/**
+	 * Wraps java object as Pointer object
+	 * 
+	 * @param object
+	 *            object to be wrapped
+	 * @return Pointer instance
+	 */
 	public PLangObject wrapJavaObject(Object object) {
 		return new Pointer(object);
 	}
 
+	/**
+	 * Returns java class name guessed from fully qualified name
+	 * 
+	 * @param fqName
+	 *            fully qualified name
+	 * @return java class name
+	 */
 	public String getClassNameOrGuess(String fqName) {
 		if (BASE_TYPES.contains(fqName))
 			return fqName;
@@ -516,6 +787,15 @@ public class PLRuntime {
 				.getCanonicalName();
 	}
 
+	/**
+	 * Checks whether object is of that exception plang type
+	 * 
+	 * @param o
+	 *            object to be checked
+	 * @param className
+	 *            exception fully qualified name
+	 * @return if it is that exception type or not
+	 */
 	public boolean checkExceptionHierarchy(PLangObject o, String className) {
 		if (o.getClass().getName().equals(className))
 			return true;
@@ -530,6 +810,15 @@ public class PLRuntime {
 		return false;
 	}
 
+	/**
+	 * Instance of operation
+	 * 
+	 * @param o
+	 *            object to be checked
+	 * @param className
+	 *            type to check
+	 * @return whether it is instance or not of that type
+	 */
 	public PLangObject checkInstanceOf(PLangObject o, String className) {
 		if (className.equals("number")
 				&& (o instanceof Flt || o instanceof Int))
@@ -575,6 +864,19 @@ public class PLRuntime {
 		return BooleanValue.FALSE;
 	}
 
+	/**
+	 * Runs the code distributed
+	 * 
+	 * @param tcounto
+	 *            number of times to be run
+	 * @param methodName
+	 *            name of the auxiliary method or function
+	 * @param arg
+	 *            passed argument
+	 * @param runner
+	 *            running object
+	 * @return result of distributed run
+	 */
 	public PLangObject runDistributed(PLangObject tcounto, String methodName,
 			PLangObject arg, BaseCompiledStub runner) {
 		int tcount = 0;
@@ -620,6 +922,21 @@ public class PLRuntime {
 		return c;
 	}
 
+	/**
+	 * Executed distributed call
+	 * 
+	 * @param ___getObjectId
+	 *            runner's object id
+	 * @param caller
+	 *            runner
+	 * @param methodName
+	 *            auxiliary method/function to be run
+	 * @param tcount
+	 *            number of workers to be run
+	 * @param arg
+	 *            passed argument
+	 * @return result of the distributed call
+	 */
 	private NetworkExecutionResult executeDistributed(
 			final long ___getObjectId, final BaseCompiledStub caller,
 			final String methodName, int tcount, final PLangObject arg) {
@@ -680,6 +997,24 @@ public class PLRuntime {
 		return result;
 	}
 
+	/**
+	 * Handle actual distributed call to single worker
+	 * 
+	 * @param tId
+	 *            id of the worker
+	 * @param result
+	 *            result to store into
+	 * @param node
+	 *            node that will execute the call
+	 * @param oid
+	 *            object id of the runner
+	 * @param methodName
+	 *            auxiliary method/function to be run
+	 * @param serializedRuntimeContent
+	 *            serialized runtime content
+	 * @param arg
+	 *            passed argument object id
+	 */
 	protected void handleDistributedCall(int tId,
 			NetworkExecutionResult result, Node node, long oid,
 			String methodName, JsonObject serializedRuntimeContent, long arg) {
@@ -761,6 +1096,11 @@ public class PLRuntime {
 		} while (!executed);
 	}
 
+	/**
+	 * Builds all the bytedata into array
+	 * 
+	 * @return bytedata in json
+	 */
 	private JsonArray buildRuntimeFiles() {
 		JsonArray a = new JsonArray();
 
@@ -793,20 +1133,16 @@ public class PLRuntime {
 		return a;
 	}
 
-	public interface RuntimeAccessListener {
-		public void wasAccessed();
-	}
-
-	private RuntimeAccessListener runtimeAccessListener;
-
-	private void wasAccessed() {
-		if (runtimeAccessListener != null) {
-			runtimeAccessListener.wasAccessed();
-		}
-	}
-
 	/*
 	 * Only serializes the actual content, not class definitions
+	 */
+	/**
+	 * Serializes runtime content into output stream
+	 * 
+	 * @param os
+	 * @param currentCaller
+	 * @param arg
+	 * @throws Exception
 	 */
 	public void serializeRuntimeContent(OutputStream os,
 			BaseCompiledStub currentCaller, PLangObject arg) throws Exception {
@@ -843,6 +1179,11 @@ public class PLRuntime {
 		return root;
 	}
 
+	/**
+	 * Perpare the runtime into deserialization (load uids)
+	 * 
+	 * @param uuids
+	 */
 	public void prepareForDeserialization(JsonArray uuids) {
 		for (JsonValue v : uuids) {
 			JsonObject o = v.asObject();
@@ -853,11 +1194,31 @@ public class PLRuntime {
 		}
 	}
 
+	/**
+	 * Store deserialization result here
+	 * 
+	 * @author Enerccio
+	 *
+	 */
 	public static class DeserializationResult {
+		/** Map of old object id into new object id */
 		public Map<Long, Long> ridxMap;
+		/** Current runner deserialized */
 		public PLangObject cobject;
 	}
 
+	/**
+	 * Deserialize runtime from json
+	 * 
+	 * @param modules
+	 *            modules containing all the runtime info
+	 * @param caller
+	 *            runner object
+	 * @param arg
+	 *            passed argument object
+	 * @return result of the deserialization
+	 * @throws Exception
+	 */
 	public DeserializationResult deserialize(JsonArray modules,
 			JsonObject caller, JsonObject arg) throws Exception {
 		DeserializationResult r = new DeserializationResult();
@@ -877,6 +1238,16 @@ public class PLRuntime {
 		return r;
 	}
 
+	/**
+	 * Deserialize single JsonObject.
+	 * 
+	 * @param o
+	 *            Object to be deserialized
+	 * @param ridxMap
+	 *            map of old id -> new id
+	 * @return deserialized object
+	 * @throws Exception
+	 */
 	public PLangObject deserialize(JsonObject o, Map<Long, Long> ridxMap)
 			throws Exception {
 		PlangObjectType t = PlangObjectType.valueOf(o.getString(
@@ -943,6 +1314,12 @@ public class PLRuntime {
 		return null;
 	}
 
+	/**
+	 * Builds instance map of id -> object
+	 * 
+	 * @param o
+	 * @param ridxMap
+	 */
 	public void buildInstanceMap(JsonObject o, Map<Long, Long> ridxMap) {
 		PlangObjectType t = PlangObjectType.valueOf(o.getString(
 				"metaObjectType", ""));
@@ -986,20 +1363,30 @@ public class PLRuntime {
 		this.packageTarget = packageTarget;
 	}
 
+	/**
+	 * Binds this runtime to this thread.
+	 */
 	public void setAsCurrent() {
 		localRuntime.set(this);
 		Thread.currentThread().setContextClassLoader(classLoader);
 	}
 
-	public RuntimeAccessListener getRuntimeAccessListener() {
-		return runtimeAccessListener;
-	}
-
-	public void setRuntimeAccessListener(
-			RuntimeAccessListener runtimeAccessListener) {
-		this.runtimeAccessListener = runtimeAccessListener;
-	}
-
+	/**
+	 * Runs method of object with object id oid and method name. Used for
+	 * running auxiliary methods/functions
+	 * 
+	 * @param oid
+	 *            object id
+	 * @param methodName
+	 *            method name
+	 * @param arg0
+	 *            run_id integer
+	 * @param arg
+	 *            passed argument
+	 * @param argId
+	 *            argument id
+	 * @return result of the run
+	 */
 	public PLangObject runByObjectId(long oid, String methodName, Int arg0,
 			PLangObject arg, long argId) {
 		return run(instanceInternalMap.get(oid).___getkey(methodName),
@@ -1007,8 +1394,18 @@ public class PLRuntime {
 						: instanceInternalMap.get(argId));
 	}
 
+	/** Bound class pool */
 	private ClassPool cp = new ClassPool();
 
+	/**
+	 * Loads module from bytecontent
+	 * 
+	 * @param mname
+	 *            module name
+	 * @param bytecontent
+	 *            bytedata in string
+	 * @throws Exception
+	 */
 	@SuppressWarnings("unchecked")
 	public void loadBytecode(String mname, String bytecontent) throws Exception {
 		String clsName = mname;
@@ -1017,6 +1414,17 @@ public class PLRuntime {
 		addModuleBytedata(mname, bytecontent);
 	}
 
+	/**
+	 * Loads class from bytecontent
+	 * 
+	 * @param cname
+	 *            class name
+	 * @param mname
+	 *            module name
+	 * @param bytecontent
+	 *            bytedata
+	 * @throws Exception
+	 */
 	public void loadBytecode(String cname, String mname, String bytecontent)
 			throws Exception {
 		String clsName = mname + "$" + cname;
@@ -1025,6 +1433,16 @@ public class PLRuntime {
 		addClassBytedata(mname, cname, bytecontent);
 	}
 
+	/**
+	 * Loads class from string.
+	 * 
+	 * @param clsName
+	 *            fully qualified class name
+	 * @param bytecontent
+	 *            bytedata serialized as base 64
+	 * @return loaded class
+	 * @throws Exception
+	 */
 	private Class<?> loadClass(String clsName, String bytecontent)
 			throws Exception {
 		CtClass cls = cp.makeClass(new ByteArrayInputStream(Base64

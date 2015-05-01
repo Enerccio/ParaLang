@@ -18,8 +18,23 @@ import cz.upol.vanusanik.paralang.runtime.BaseFloat;
 import cz.upol.vanusanik.paralang.runtime.BaseInteger;
 import cz.upol.vanusanik.paralang.runtime.BaseNumber;
 
+/**
+ * Utility class, providing utility functions
+ * 
+ * @author Enerccio
+ *
+ */
 public class Utils {
 
+	/**
+	 * Adds object to the left of the array, ie x + [a, b] => [x, a, b]
+	 * 
+	 * @param data
+	 *            what to be pushed
+	 * @param array
+	 *            array to be pushed in
+	 * @return new array with object pushed in left
+	 */
 	public static <T> T[] pushLeft(T data, T[] array) {
 		@SuppressWarnings("unchecked")
 		T[] pushed = (T[]) Array.newInstance(array.getClass()
@@ -29,6 +44,12 @@ public class Utils {
 		return pushed;
 	}
 
+	/**
+	 * Returns package name from file designator
+	 * 
+	 * @param in
+	 * @return
+	 */
 	public static String packageName(FileDesignator in) {
 		if (in.isRealFile()) {
 			String path = in.getAbsoluteFile().getParent();
@@ -47,20 +68,51 @@ public class Utils {
 
 	}
 
+	/**
+	 * Converts dot class name into slashed class name. java.lang.String ->
+	 * java/lang/String
+	 * 
+	 * @param fqName
+	 *            fully qualified name
+	 * @return slashified version
+	 */
 	public static String slashify(String fqName) {
 		return StringUtils.replace(fqName, ".", "/");
 	}
 
+	/**
+	 * Removes "" from string, "aaa" -> aaa
+	 * 
+	 * @param text
+	 *            to be removed
+	 * @return
+	 */
 	public static String removeStringQuotes(String text) {
 		if (text.equals(""))
 			return "";
 		return StringUtils.removeEnd(StringUtils.removeStart(text, "\""), "\"");
 	}
 
+	/**
+	 * Stupid method but required by method handle
+	 * 
+	 * @param args
+	 *            args to be casted
+	 * @return passed args
+	 */
 	public static Object[] asObjectArray(PLangObject[] args) {
 		return args;
 	}
 
+	/**
+	 * Casts object of the retType as PLangObject
+	 * 
+	 * @param ret
+	 *            object
+	 * @param retType
+	 *            type of that object
+	 * @return PLangObject version of it
+	 */
 	public static PLangObject cast(Object ret, Class<?> retType) {
 		if (retType == Integer.class || retType == int.class)
 			return new Int(((Integer) ret).longValue());
@@ -79,6 +131,17 @@ public class Utils {
 		return new Pointer(ret);
 	}
 
+	/**
+	 * Converts PLangObject datum into java type of aType.
+	 * 
+	 * @param aType
+	 *            type required
+	 * @param datum
+	 *            PLangObject data
+	 * @return java object
+	 * @throws PointerMethodIncompatibleException
+	 *             if the conversion is not possible
+	 */
 	public static Object asJavaObject(Class<?> aType, PLangObject datum)
 			throws PointerMethodIncompatibleException {
 

@@ -9,6 +9,12 @@ import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
+/**
+ * System.BaseClass class definition
+ * 
+ * @author Enerccio
+ *
+ */
 public class BaseClass extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523232L;
 

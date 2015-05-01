@@ -6,6 +6,12 @@ import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
+/**
+ * PLang class instance
+ * 
+ * @author Enerccio
+ *
+ */
 public abstract class PLClass extends BaseCompiledStub {
 	private static final long serialVersionUID = 715934816813529044L;
 	public static final String ___superKey = "$$__parent__$$";
@@ -39,6 +45,11 @@ public abstract class PLClass extends BaseCompiledStub {
 		return data;
 	}
 
+	/**
+	 * Returns super class if this instance has any
+	 * 
+	 * @return
+	 */
 	public PLClass ___getSuper() {
 		if (!___isInited) {
 			___init_class();
@@ -50,6 +61,11 @@ public abstract class PLClass extends BaseCompiledStub {
 		return (PLClass) ___getkey(___superKey);
 	}
 
+	/**
+	 * Sets the derived class this instance is parent of.
+	 * 
+	 * @param derived
+	 */
 	public void ___setDerivedClass(PLClass derived) {
 		boolean prev = ___restrictedOverride;
 		___restrictedOverride = true;
@@ -91,6 +107,13 @@ public abstract class PLClass extends BaseCompiledStub {
 			return this;
 	}
 
+	/**
+	 * Returns true if this class is exception, ie derives from BaseException.
+	 * 
+	 * @param self
+	 *            this object
+	 * @return
+	 */
 	protected boolean ___isException(PLangObject self) {
 		if (this instanceof BaseException)
 			return true;

@@ -7,6 +7,12 @@ import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Str;
 
+/**
+ * System.BaseException
+ * 
+ * @author Enerccio
+ *
+ */
 public class BaseException extends PLClass implements Serializable {
 	private static final long serialVersionUID = 8923942805591451790L;
 	static final String __messageField = "__message";

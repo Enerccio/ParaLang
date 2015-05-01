@@ -15,8 +15,15 @@ import org.apache.commons.io.IOUtils;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.WriterConfig;
 
+/**
+ * Static class only. Protocol handles communication between client and node.
+ * 
+ * @author Enerccio
+ *
+ */
 public class Protocol {
 
+	// Headers
 	public static final String GET_STATUS_REQUEST = "StatusRequest";
 	public static final String GET_STATUS_RESPONSE = "StatusResponse";
 	public static final String RESERVE_SPOT_REQUEST = "ReserveSpotRequest";
@@ -24,12 +31,15 @@ public class Protocol {
 	public static final String RUN_CODE = "RunCode";
 	public static final String RETURNED_EXECUTION = "ReturnedExecution";
 
+	// Error codes
 	public static final long ERROR_GENERAL_ERROR = 0x0;
 	public static final long ERROR_NO_RESERVED_NODE = 0x1;
 	public static final long ERROR_COMPILATION_FAILURE = 0x2;
 	public static final long ERROR_DESERIALIZATION_FAILURE = 0x3;
 
+	/** Clear bit used to mark next payload */
 	private static byte clearBit = 0x1e;
+	/** Threads used to provide future access */
 	private static ExecutorService executor = Executors
 			.newCachedThreadPool(new ThreadFactory() {
 				public Thread newThread(Runnable r) {
@@ -39,6 +49,14 @@ public class Protocol {
 				}
 			});
 
+	/**
+	 * Receives payload from socket stream
+	 * 
+	 * @param inputStream
+	 *            input socket stream
+	 * @return JsonObject payload
+	 * @throws Exception
+	 */
 	public static JsonObject receive(final InputStream inputStream)
 			throws Exception {
 		int cb = -1;
@@ -70,6 +88,15 @@ public class Protocol {
 		return future.get(15, TimeUnit.SECONDS);
 	}
 
+	/**
+	 * Sends the payload to the socket stream
+	 * 
+	 * @param os
+	 *            Socket stream
+	 * @param payload
+	 *            JsonObject payload
+	 * @throws Exception
+	 */
 	public static void send(OutputStream os, JsonObject payload)
 			throws Exception {
 		os.write(clearBit);

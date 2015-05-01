@@ -9,6 +9,12 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 
+/**
+ * PLang float
+ * 
+ * @author Enerccio
+ *
+ */
 public class Flt extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = -2146628641767169636L;
 
@@ -20,6 +26,7 @@ public class Flt extends PrimitivePLangObject implements Serializable {
 		this.value = value;
 	}
 
+	/** Actual value of this instance */
 	float value;
 
 	@Override

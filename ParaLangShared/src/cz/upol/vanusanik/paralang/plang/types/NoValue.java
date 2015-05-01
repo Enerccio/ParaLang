@@ -9,13 +9,23 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 
-public class NoValue extends PrimitivePLangObject implements Serializable {
+/**
+ * NoValue represents null or no value in PLang
+ * 
+ * @author Enerccio
+ *
+ */
+public final class NoValue extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = 7573052889816332570L;
 
+	/**
+	 * Singleton class, no instantiation
+	 */
 	private NoValue() {
 
 	}
 
+	/** NoValue singleton */
 	public static final NoValue NOVALUE = new NoValue();
 
 	@Override
@@ -48,6 +58,11 @@ public class NoValue extends PrimitivePLangObject implements Serializable {
 		return this == b;
 	}
 
+	/**
+	 * readResolve returns singleton during deserialization
+	 * 
+	 * @return
+	 */
 	private Object readResolve() {
 		return NOVALUE;
 	}

@@ -4,13 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * VarStack is a scope stack that contains information to which variables are legal in this scope.
- * All variables have three types of scopes, MODULE_VARIABLE refers to the module scope (ie semiglobal), 
- * CLASS_VARIABLE is either module variable in functions or class variable in methods. LOCAL_VARIABLE is 
- * local to the block.
+ * VarStack is a scope stack that contains information to which variables are
+ * legal in this scope. All variables have three types of scopes,
+ * MODULE_VARIABLE refers to the module scope (ie semiglobal), CLASS_VARIABLE is
+ * either module variable in functions or class variable in methods.
+ * LOCAL_VARIABLE is local to the block.
  * 
- * This class is a stack, so when block/class is exited, information is popped off the stack thus preserving
- * the access. Inner blocks use this to provide/invalidate local variables.
+ * This class is a stack, so when block/class is exited, information is popped
+ * off the stack thus preserving the access. Inner blocks use this to
+ * provide/invalidate local variables.
+ * 
  * @author Enerccio
  *
  */
@@ -18,6 +21,7 @@ public class VariableScopeStack {
 
 	/**
 	 * Variable stack type
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -27,6 +31,7 @@ public class VariableScopeStack {
 
 	/**
 	 * Variable data containing type and bound local java variable number (1+).
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -37,6 +42,7 @@ public class VariableScopeStack {
 
 	/**
 	 * Stack element. Value is map of string->variable stack data.
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -59,8 +65,11 @@ public class VariableScopeStack {
 
 	/**
 	 * Adds variable with variable type onto current stack height.
-	 * @param variable Identifier to the variable
-	 * @param type type of the variable
+	 * 
+	 * @param variable
+	 *            Identifier to the variable
+	 * @param type
+	 *            type of the variable
 	 * @throws CompilationException
 	 */
 	public void addVariable(String variable, VariableType type)
@@ -69,10 +78,15 @@ public class VariableScopeStack {
 	}
 
 	/**
-	 * Adds variable with variable type onto current stack height with locals number (1+).
-	 * @param variable variable Identifier to the variable
-	 * @param type type of the variable
-	 * @param locals numerical identifier to the locals array
+	 * Adds variable with variable type onto current stack height with locals
+	 * number (1+).
+	 * 
+	 * @param variable
+	 *            variable Identifier to the variable
+	 * @param type
+	 *            type of the variable
+	 * @param locals
+	 *            numerical identifier to the locals array
 	 * @throws CompilationException
 	 */
 	public void addVariable(String variable, VariableType type, int locals)
@@ -88,8 +102,11 @@ public class VariableScopeStack {
 
 	/**
 	 * Returns type of the variable identified by this identifier
-	 * @param variable Identifier of the variable
-	 * @return type of the variable, MODULE_VARIABLE if there is no information of the stack
+	 * 
+	 * @param variable
+	 *            Identifier of the variable
+	 * @return type of the variable, MODULE_VARIABLE if there is no information
+	 *         of the stack
 	 */
 	public VariableType getType(String variable) {
 		ScopeStackElement el = top;
@@ -102,8 +119,11 @@ public class VariableScopeStack {
 	}
 
 	/**
-	 * Returns local number identifier for variable identified by this identifier. 
-	 * @param variable Identifier of the variable
+	 * Returns local number identifier for variable identified by this
+	 * identifier.
+	 * 
+	 * @param variable
+	 *            Identifier of the variable
 	 * @return number to the locals array, or -1 if it is not a local variable
 	 */
 	public int getLocal(String variable) {
@@ -118,6 +138,7 @@ public class VariableScopeStack {
 
 	/**
 	 * Pops the top of the var stack.
+	 * 
 	 * @throws CompilationException
 	 */
 	public void popStack() throws CompilationException {

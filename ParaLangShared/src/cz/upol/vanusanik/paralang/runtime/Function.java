@@ -6,6 +6,12 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 
+/**
+ * System.Function
+ * 
+ * @author Enerccio
+ *
+ */
 public class Function extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523210L;
 	public static final String __applyMethod = "__apply";

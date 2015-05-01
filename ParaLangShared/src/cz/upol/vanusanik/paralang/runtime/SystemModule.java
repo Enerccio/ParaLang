@@ -11,6 +11,12 @@ import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 
+/**
+ * System module
+ * 
+ * @author Enerccio
+ *
+ */
 public class SystemModule extends PLModule implements Serializable {
 	private static final long serialVersionUID = -499503904346523233L;
 

@@ -7,7 +7,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.eclipsesource.json.JsonObject;
@@ -19,6 +21,13 @@ import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
+/**
+ * FunctionWrapper, ie a function/method accessor object. This object is used
+ * when method is called in PLang.
+ * 
+ * @author Enerccio
+ *
+ */
 public class FunctionWrapper extends PrimitivePLangObject implements
 		Serializable {
 
@@ -34,8 +43,11 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		isMethod = ism;
 	}
 
+	/** Whether this is method or a function */
 	private boolean isMethod;
+	/** Java method name */
 	private String methodName;
+	/** Bound object */
 	private BaseCompiledStub owner;
 
 	@Override
@@ -50,13 +62,30 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		return lowest;
 	}
 
+	/**
+	 * MethodAccessor helper class
+	 * 
+	 * @author Enerccio
+	 *
+	 */
 	private class MethodAccessor {
 		public Method m;
 		public BaseCompiledStub o;
 	}
 
+	/**
+	 * All method accessors are cached here.
+	 */
 	private transient WeakHashMap<BaseCompiledStub, MethodAccessor> accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
 
+	/**
+	 * Runs the code with arguments
+	 * 
+	 * @param owner
+	 * @param arguments
+	 * @return
+	 * @throws Throwable
+	 */
 	public PLangObject run(BaseCompiledStub owner, PLangObject... arguments)
 			throws Throwable {
 		MethodAccessor ma = accessorCache.get(owner);
@@ -74,6 +103,12 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		return run(ma, owner, arguments);
 	}
 
+	/**
+	 * Returns all the methods of that owner.
+	 * 
+	 * @param owner
+	 * @return
+	 */
 	private List<MethodAccessor> getAllMethods(BaseCompiledStub owner) {
 		List<MethodAccessor> mList = new ArrayList<MethodAccessor>();
 
@@ -90,8 +125,19 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		return mList;
 	}
 
-	private static WeakHashMap<Method, MethodHandle> methodHandles = new WeakHashMap<Method, MethodHandle>();
+	/** Method handle cache */
+	private static Map<Method, MethodHandle> methodHandles = Collections
+			.synchronizedMap(new WeakHashMap<Method, MethodHandle>());
 
+	/**
+	 * Runs the method accessor with the self and arguments
+	 * 
+	 * @param ma
+	 * @param self
+	 * @param arguments
+	 * @return
+	 * @throws Throwable
+	 */
 	private PLangObject run(MethodAccessor ma, BaseCompiledStub self,
 			PLangObject[] arguments) throws Throwable {
 		MethodHandle genHandle = methodHandles.get(ma.m);
@@ -202,6 +248,14 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		return this == b;
 	}
 
+	/**
+	 * Needs to provide own implementation of accessorCache since it is not
+	 * serialized
+	 * 
+	 * @param in
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
 		in.defaultReadObject();

@@ -11,25 +11,47 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 
+/**
+ * BaseCompiledStub is base class for all PLang classes/modules.
+ * 
+ * @author Enerccio
+ *
+ */
 public abstract class BaseCompiledStub extends RuntimeException implements
 		PLangObject {
 	private static final long serialVersionUID = -2885702496818908285L;
+	/** fields and methods are stored here */
 	protected Map<String, PLangObject> ___fieldsAndMethods;
+	/** id used to serialize/deserialize object */
 	public long ___objectId;
+	/** whether restricted check is ignored or not */
 	protected boolean ___restrictedOverride = false;
 
 	protected BaseCompiledStub() {
 		___objectId = PLRuntime.getRuntime().registerObject(this);
 	}
 
+	/**
+	 * Returns object id of this object
+	 * 
+	 * @return
+	 */
 	public long ___getObjectId() {
 		return ___objectId;
 	}
 
+	/**
+	 * Returns current runtime
+	 * 
+	 * @return
+	 */
 	protected PLRuntime ___get_runtime() {
 		return PLRuntime.getRuntime();
 	}
 
+	/**
+	 * Initializes this class, called only once
+	 */
 	public void ___init_class() {
 		___fieldsAndMethods = new HashMap<String, PLangObject>();
 		___isInited = true;
@@ -38,10 +60,22 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		___restrictedOverride = false;
 	}
 
+	/** Whether this object was initialized or not */
 	protected boolean ___isInited;
 
+	/**
+	 * Internal init method that is added by the PLCompiler
+	 * 
+	 * @param self
+	 */
 	protected abstract void ___init_internal_datafields(BaseCompiledStub self);
 
+	/**
+	 * Returns value for key in fields/methods
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public PLangObject ___getkey(String key) {
 		if (!___isInited) {
 			___init_class();
@@ -54,10 +88,21 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		return data;
 	}
 
+	/**
+	 * Returns this
+	 * 
+	 * @return
+	 */
 	public PLangObject ___getThis() {
 		return this;
 	}
 
+	/**
+	 * Sets the field/method identified by key to value var
+	 * 
+	 * @param key
+	 * @param var
+	 */
 	public void ___setkey(String key, PLangObject var) {
 		if (!___isInited)
 			___init_class();
@@ -87,6 +132,11 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		return metaData;
 	}
 
+	/**
+	 * Serialize all fields
+	 * 
+	 * @return
+	 */
 	protected JsonArray ___getFields() {
 		JsonArray array = new JsonArray();
 		for (String field : ___fieldsAndMethods.keySet()) {
@@ -148,10 +198,23 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		return super.toString();
 	}
 
+	/**
+	 * Returns lowest class instance. Ie, if this object is actually part of the
+	 * class chain, it returns actually lowest class. Ie, if class Foo extends
+	 * Bar, if Bar object bound to that particular Foo is asked for this, it
+	 * returns Foo.
+	 * 
+	 * @return
+	 */
 	public BaseCompiledStub ___getLowestClassInstance() {
 		return null;
 	}
 
+	/**
+	 * Returns parent of this object
+	 * 
+	 * @return
+	 */
 	public BaseCompiledStub ___getParent() {
 		if (!___isInited)
 			___init_class();

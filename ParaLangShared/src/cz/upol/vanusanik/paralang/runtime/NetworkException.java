@@ -4,6 +4,12 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 
+/**
+ * System.NetworkException
+ * 
+ * @author Enerccio
+ *
+ */
 public class NetworkException extends PLClass {
 	private static final long serialVersionUID = -1870114368385241652L;
 

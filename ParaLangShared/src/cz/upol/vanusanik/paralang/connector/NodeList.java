@@ -15,15 +15,29 @@ import org.apache.commons.io.IOUtils;
 
 import com.eclipsesource.json.JsonObject;
 
-public class NodeList {
+/**
+ * Class that manages the nodes. Static class only, cannot be instanced
+ * 
+ * @author Enerccio
+ *
+ */
+public final class NodeList {
 
 	private NodeList() {
 
 	}
 
+	/** Nodes stored as set */
 	private static Set<Node> nodes = new HashSet<Node>();
+	/** Nodes stored as list */
 	private static List<Node> nList = new ArrayList<Node>();
 
+	/**
+	 * Loads nodes from input stream as line delimited address:port
+	 * 
+	 * @param file
+	 * @throws Exception
+	 */
 	public static void loadFile(InputStream file) throws Exception {
 		List<String> lines = IOUtils.readLines(file);
 		for (String line : lines) {
@@ -34,12 +48,24 @@ public class NodeList {
 		}
 	}
 
+	/**
+	 * Adds single node
+	 * 
+	 * @param address
+	 * @param port
+	 */
 	public static void addNode(String address, int port) {
 		Node n = new Node(address, port);
 		nodes.add(n);
 		nList.add(n);
 	}
 
+	/**
+	 * NodeComparator based on the how many free nodes a node has.
+	 * 
+	 * @author Enerccio
+	 *
+	 */
 	private static class NodeComparator implements Comparable<NodeComparator> {
 		public Node n;
 		public int val;
@@ -51,6 +77,13 @@ public class NodeList {
 
 	}
 
+	/**
+	 * Returns list of reserved nodes
+	 * 
+	 * @param reqNodeNum
+	 *            number of reserved nodes requested
+	 * @return
+	 */
 	public static synchronized List<Node> getBestLoadNodes(int reqNodeNum) {
 		List<NodeComparator> ncl = new ArrayList<NodeComparator>();
 		for (Node n : nodes) {
@@ -81,6 +114,11 @@ public class NodeList {
 
 	private static final Random r = new Random();
 
+	/**
+	 * Returns random reserved node
+	 * 
+	 * @return
+	 */
 	public static synchronized Node getRandomNode() {
 		boolean hasFreeNodes = false;
 		Node n;
@@ -100,6 +138,13 @@ public class NodeList {
 		return n;
 	}
 
+	/**
+	 * Returns number of free worker threads for a node
+	 * 
+	 * @param n
+	 * @return
+	 * @throws Exception
+	 */
 	private static int getFreeNodes(Node n) throws Exception {
 		Socket s = SSLSocketFactory.getDefault().createSocket(n.getAddress(),
 				n.getPort());
@@ -125,6 +170,11 @@ public class NodeList {
 		return c;
 	}
 
+	/**
+	 * Returns estimated number of workers available
+	 * 
+	 * @return
+	 */
 	public static synchronized int expectNumberOfNodes() {
 		int sum = 0;
 		for (Node n : nList)

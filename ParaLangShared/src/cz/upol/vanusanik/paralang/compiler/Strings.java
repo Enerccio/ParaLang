@@ -1,5 +1,11 @@
 package cz.upol.vanusanik.paralang.compiler;
 
+/**
+ * String constants used in PLCompiler
+ * 
+ * @author Enerccio
+ *
+ */
 public class Strings {
 
 	public static final String CLASS_BASE_CLASS = "cz.upol.vanusanik.paralang.runtime.PLClass";

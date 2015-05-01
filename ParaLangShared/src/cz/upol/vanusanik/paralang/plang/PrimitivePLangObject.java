@@ -2,6 +2,12 @@ package cz.upol.vanusanik.paralang.plang;
 
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 
+/**
+ * PrimitivePLangObject is base class for primitive types, such as Int, Flt etc.
+ * 
+ * @author Enerccio
+ *
+ */
 public abstract class PrimitivePLangObject implements PLangObject {
 
 	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {

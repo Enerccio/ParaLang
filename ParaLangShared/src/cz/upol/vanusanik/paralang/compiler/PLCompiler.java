@@ -83,9 +83,9 @@ import cz.upol.vanusanik.paralang.utils.Utils;
  *
  */
 public class PLCompiler {
-	
+
 	// static initialization and static variables
-	
+
 	/** Set operators are listed here */
 	private static final Set<String> setOperators = new HashSet<String>();
 	/** Binary operator are listed here */
@@ -175,9 +175,11 @@ public class PLCompiler {
 					+ line + ":" + charPositionInLine + " " + msg);
 		}
 	}
-	
+
 	/**
-	 * BlockDescription container, contains AST of the block and name of the generated method
+	 * BlockDescription container, contains AST of the block and name of the
+	 * generated method
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -185,9 +187,10 @@ public class PLCompiler {
 		public BlockContext b;
 		public String mn;
 	}
-	
+
 	/**
 	 * Helper class containing compilation into class/module field
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -199,13 +202,16 @@ public class PLCompiler {
 		}
 
 		/**
-		 * This method should compile a way to provide data (ie compile expression or add NoValue etc).
+		 * This method should compile a way to provide data (ie compile
+		 * expression or add NoValue etc).
+		 * 
 		 * @throws Exception
 		 */
 		protected abstract void provideSourceValue() throws Exception;
 
 		/**
 		 * Compiles the store to field
+		 * 
 		 * @throws Exception
 		 */
 		public void compile() throws Exception {
@@ -223,9 +229,10 @@ public class PLCompiler {
 							+ Strings.PLANGOBJECT_L + ")V");
 		}
 	}
-	
+
 	/**
 	 * Helper class to compile set operator
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -249,6 +256,7 @@ public class PLCompiler {
 
 		/**
 		 * Compiles set operator
+		 * 
 		 * @throws Exception
 		 */
 		public void compileSetOperator() throws Exception {
@@ -397,13 +405,16 @@ public class PLCompiler {
 
 		/**
 		 * Provide data for the right side of the set operator
+		 * 
 		 * @throws Exception
 		 */
 		public abstract void compileRight() throws Exception;
 	}
-	
+
 	/**
-	 * LabelInfo class holds position to label in bytecode and key to the label it is bound to
+	 * LabelInfo class holds position to label in bytecode and key to the label
+	 * it is bound to
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -413,6 +424,7 @@ public class PLCompiler {
 
 		/**
 		 * Compiles the jump
+		 * 
 		 * @param bc
 		 * @throws CompilationException
 		 */
@@ -421,6 +433,7 @@ public class PLCompiler {
 
 	/**
 	 * Jump variant of the LabelInfo
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -442,6 +455,7 @@ public class PLCompiler {
 
 	/**
 	 * IFEQ variant of the LabelInfo
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -459,6 +473,7 @@ public class PLCompiler {
 
 	/**
 	 * IFNE variant of LabelInfo
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -476,6 +491,7 @@ public class PLCompiler {
 
 	/**
 	 * IFNNONULL variant of LabelInfo
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -489,9 +505,10 @@ public class PLCompiler {
 		}
 
 	}
-	
+
 	/**
 	 * Helper class compiling method, doing all the grunt work of setting it up
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -504,6 +521,7 @@ public class PLCompiler {
 
 		/**
 		 * Compiles method
+		 * 
 		 * @throws Exception
 		 */
 		@SuppressWarnings("unchecked")
@@ -561,19 +579,22 @@ public class PLCompiler {
 
 		/**
 		 * Actually compiles the bytecode
+		 * 
 		 * @throws Exception
 		 */
 		protected abstract void compileDataSources() throws Exception;
 	}
 
 	/**
-	 * Instruction is disected in this class. Contains also visited flag and other various information.
+	 * Instruction is disected in this class. Contains also visited flag and
+	 * other various information.
+	 * 
 	 * @author Enerccio
 	 *
 	 */
 	private static class Instruction {
 		/**
-		 * Whether instruction was visited 
+		 * Whether instruction was visited
 		 */
 		private boolean visited = false;
 		/**
@@ -602,6 +623,7 @@ public class PLCompiler {
 
 	/**
 	 * Exception handler constants are stored here
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -613,7 +635,9 @@ public class PLCompiler {
 	}
 
 	/**
-	 * IntegerLink is class holding integer value and whether it is start position or not
+	 * IntegerLink is class holding integer value and whether it is start
+	 * position or not
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -628,6 +652,7 @@ public class PLCompiler {
 
 	/**
 	 * Full Exception data is stored here
+	 * 
 	 * @author Enerccio
 	 *
 	 */
@@ -643,7 +668,7 @@ public class PLCompiler {
 			this.t = t;
 		}
 	}
-	
+
 	// Fields
 
 	/** Holds the references to a simple type, ie String -> Reference */
@@ -698,20 +723,24 @@ public class PLCompiler {
 	 * List of finally block protocols for loops.
 	 */
 	private List<FinallyBlockProtocol> fbcLoopList;
-	
+
 	/**
-	 * Stack of the statement expressions. Contains true/false. Every time an expression is being compiled,
-	 * either true or false will be on this stack. If it is true, compiler then can optimize out parts of the 
-	 * compilation that would end up with copies of new variables and pops due to no need to store result of the
-	 * expression. If it is false, compiler has to store the result of the expression on the stack. 
+	 * Stack of the statement expressions. Contains true/false. Every time an
+	 * expression is being compiled, either true or false will be on this stack.
+	 * If it is true, compiler then can optimize out parts of the compilation
+	 * that would end up with copies of new variables and pops due to no need to
+	 * store result of the expression. If it is false, compiler has to store the
+	 * result of the expression on the stack.
 	 */
 	private Stack<Boolean> isStatementExpression = new Stack<Boolean>();
 	/**
-	 * Continue stack contains the bytecode position where should continue hop to if it happens.
+	 * Continue stack contains the bytecode position where should continue hop
+	 * to if it happens.
 	 */
 	private Stack<Integer> continueStack = new Stack<Integer>();
 	/**
-	 * Break stack contains the bytecode position where should break hop to if it happens
+	 * Break stack contains the bytecode position where should break hop to if
+	 * it happens
 	 */
 	private Stack<Integer> breakStack = new Stack<Integer>();
 
@@ -720,15 +749,18 @@ public class PLCompiler {
 	 * will be later compiled into auxiliary methods
 	 */
 	private List<BlockDescription> distributed = new ArrayList<BlockDescription>();
-	/** Marks whether we are compiling function wrappers or not, used to determine whether we use this or self */
+	/**
+	 * Marks whether we are compiling function wrappers or not, used to
+	 * determine whether we use this or self
+	 */
 	private boolean cmpInitFuncwraps = false;
 	/** list of labels defined */
 	private List<LabelInfo> labelList;
 	/** links bytecode into line number */
 	private Map<Integer, Integer> bcToLineMap;
-	
-	// Methods 
-	
+
+	// Methods
+
 	/**
 	 * Compiles file and loads it into current runtime
 	 * 
@@ -867,8 +899,10 @@ public class PLCompiler {
 	/**
 	 * Compiles module into java class
 	 * 
-	 * @param ctx CompilationUnitContext AST
-	 * @param in FileDesignator of the source
+	 * @param ctx
+	 *            CompilationUnitContext AST
+	 * @param in
+	 *            FileDesignator of the source
 	 * @return Compiled class
 	 * @throws Exception
 	 */
@@ -1341,6 +1375,7 @@ public class PLCompiler {
 
 	/**
 	 * Adds all finally blocks within current current block to break exit
+	 * 
 	 * @throws Exception
 	 */
 	private void breakContinueExitProtocol() throws Exception {
@@ -1358,6 +1393,7 @@ public class PLCompiler {
 
 	/**
 	 * Adds all finally blocks to this nonlocal function exit (ie return).
+	 * 
 	 * @throws Exception
 	 */
 	private void functionExitProtocol() throws Exception {
@@ -1380,11 +1416,14 @@ public class PLCompiler {
 
 	/**
 	 * Compiles block of code into bytecode
-	 * @param block BlockContext AST
+	 * 
+	 * @param block
+	 *            BlockContext AST
 	 * @throws Exception
 	 */
 	private void compileBlock(BlockContext block) throws Exception {
-		// Insert new var stack, local variables are only valid within same block
+		// Insert new var stack, local variables are only valid within same
+		// block
 		varStack.pushNewStack();
 		// Number of local variables in the block
 		int pushCount = 0;
@@ -1396,7 +1435,8 @@ public class PLCompiler {
 						.localVariableDeclaration().variableDeclarators()
 						.variableDeclarator();
 				for (VariableDeclaratorContext vd : decls) {
-					// Compile variable declaration with optional expression as initializer 
+					// Compile variable declaration with optional expression as
+					// initializer
 					markLine(bc.currentPc(), vd.start.getLine());
 					String varId = vd.variableDeclaratorId().getText();
 					int localId = stacker.acquire();
@@ -1416,7 +1456,8 @@ public class PLCompiler {
 					}
 					bc.addAstore(localId);
 
-					// Add local variable type on var stack, ready to be used by the rest of the code
+					// Add local variable type on var stack, ready to be used by
+					// the rest of the code
 					varStack.addVariable(varId, VariableType.LOCAL_VARIABLE,
 							localId);
 				}
@@ -1425,7 +1466,8 @@ public class PLCompiler {
 				// Compile statement of the block
 				compileStatement(bscx.statement());
 		}
-		// All locals inside the block are now free, so we release them ready for another use
+		// All locals inside the block are now free, so we release them ready
+		// for another use
 		while (pushCount-- != 0)
 			stacker.release();
 		// Makes all local declaration now invalid in var stack
@@ -1434,7 +1476,9 @@ public class PLCompiler {
 
 	/**
 	 * Long method compiling statements into bytecode
-	 * @param statement StatementContext containing the AST
+	 * 
+	 * @param statement
+	 *            StatementContext containing the AST
 	 * @throws Exception
 	 */
 	private void compileStatement(final StatementContext statement)
@@ -1452,7 +1496,7 @@ public class PLCompiler {
 
 			return;
 		}
-		
+
 		// Compile break statement
 		if (statement.breakStatement() != null) {
 			if (breakStack.empty())
@@ -1464,12 +1508,13 @@ public class PLCompiler {
 
 			return;
 		}
-		
+
 		// Compile for loop
 		if (statement.forStatement() != null) {
 			ForControlContext fcc = statement.forStatement().forControl();
 
-			// for loop needs three jump points, to loop start, to loop end and to continue loop (which is test expression loop)
+			// for loop needs three jump points, to loop start, to loop end and
+			// to continue loop (which is test expression loop)
 			int loopStart = labelCounter++;
 			int loopEnd = labelCounter++;
 			int continueLoop = labelCounter++;
@@ -1481,19 +1526,21 @@ public class PLCompiler {
 			// List all declarations in this block
 			List<VariableDeclaratorContext> decls;
 
-			// If for loop init contains declaration, add it, otherwise list is empty
+			// If for loop init contains declaration, add it, otherwise list is
+			// empty
 			if (fcc.forInit() != null
 					&& fcc.forInit().localVariableDeclaration() != null) {
 				decls = fcc.forInit().localVariableDeclaration()
 						.variableDeclarators().variableDeclarator();
 			} else
 				decls = new ArrayList<VariableDeclaratorContext>();
-			
+
 			// Compile variable declarators
 			for (VariableDeclaratorContext vd : decls) {
 				markLine(bc.currentPc(), vd.start.getLine());
-				
-				// Compile variable declaration with optional expression as initializer 
+
+				// Compile variable declaration with optional expression as
+				// initializer
 				String varId = vd.variableDeclaratorId().getText();
 				int localId = stacker.acquire();
 				// Inc the number of local variables in the block
@@ -1511,12 +1558,14 @@ public class PLCompiler {
 				}
 				bc.addAstore(localId);
 
-				// Add local variable type on var stack, ready to be used by the rest of the code
+				// Add local variable type on var stack, ready to be used by the
+				// rest of the code
 				varStack.addVariable(varId, VariableType.LOCAL_VARIABLE,
 						localId);
 			}
 
-			// Otherwise the init will contain expression, so it will be compiled here
+			// Otherwise the init will contain expression, so it will be
+			// compiled here
 			if (fcc.forInit().expressionList() != null) {
 				ExpressionListContext el = fcc.forInit().expressionList();
 				for (ExpressionContext ex : el.expression()) {
@@ -1541,13 +1590,18 @@ public class PLCompiler {
 				addLabel(new IfEqJumpLabelInfo(), loopEnd);
 			}
 
-			// Insert jump identifiers onto stack so they are reachable by inner compiled block
+			// Insert jump identifiers onto stack so they are reachable by inner
+			// compiled block
 			breakStack.add(loopEnd);
 			continueStack.add(continueLoop);
-			// Mark the loop by null value (for loops manage the breaks by null value)
-			// This is a little bit of logic here, the stack is used for the whole function, but uses same stack,
-			// thus in the stack we need to show that loop has happened by null value. So when break/continue is 
-			// compiled, the exit protocol will know how many exit protocols should it compile
+			// Mark the loop by null value (for loops manage the breaks by null
+			// value)
+			// This is a little bit of logic here, the stack is used for the
+			// whole function, but uses same stack,
+			// thus in the stack we need to show that loop has happened by null
+			// value. So when break/continue is
+			// compiled, the exit protocol will know how many exit protocols
+			// should it compile
 			fbcLoopList.add(null);
 			// Compile inner statement/block of the loop
 			compileStatement(statement.forStatement().statement());
@@ -1584,7 +1638,7 @@ public class PLCompiler {
 
 			return;
 		}
-		
+
 		// Compile while loop
 		if (statement.whileStatement() != null) {
 
@@ -1594,7 +1648,7 @@ public class PLCompiler {
 
 			// mark start of the loop
 			setLabelPos(loopStart);
-			
+
 			// compile the test of the while statement
 			isStatementExpression.add(false);
 			compileExpression(statement.whileStatement().parExpression()
@@ -1615,7 +1669,7 @@ public class PLCompiler {
 			fbcLoopList.remove(fbcLoopList.size() - 1);
 			continueStack.pop();
 			breakStack.pop();
-			
+
 			// jump back to the start of the loop
 			addLabel(new JumpLabelInfo(), loopStart);
 
@@ -1624,11 +1678,12 @@ public class PLCompiler {
 			bc.add(Opcode.NOP);
 			return;
 		}
-		
+
 		// Compile do statement
 		if (statement.doStatement() != null) {
 
-			// Do statement uses three labels, start of the loop, end of the loop and beginning of the test of the loop
+			// Do statement uses three labels, start of the loop, end of the
+			// loop and beginning of the test of the loop
 			int loopStart = labelCounter++;
 			int loopTest = labelCounter++;
 			int loopEnd = labelCounter++;
@@ -1646,7 +1701,7 @@ public class PLCompiler {
 			fbcLoopList.remove(fbcLoopList.size() - 1);
 			continueStack.pop();
 			breakStack.pop();
-			
+
 			// Mark test label, then compile test for the do loop
 			setLabelPos(loopTest);
 			isStatementExpression.add(false);
@@ -1658,25 +1713,27 @@ public class PLCompiler {
 							+ Strings.PLANGOBJECT_L + ")Z"); // boolean on stack
 			addLabel(new IfNeJumpLabelInfo(), loopStart);
 
-			// mark end of the loop and sentinel nop 
+			// mark end of the loop and sentinel nop
 			setLabelPos(loopEnd);
 			bc.add(Opcode.NOP);
 			return;
 		}
-		
+
 		// Compile try statement
 		if (statement.tryStatement() != null) {
 			int endLabel = labelCounter++;
-			
+
 			// need to check whether this try statement has finally block or not
 			boolean hasFinally = statement.tryStatement().finallyBlock() != null;
 
-			// we need two locals, throwable to save throwable and finally for storing the result of return then call finally code and 
+			// we need two locals, throwable to save throwable and finally for
+			// storing the result of return then call finally code and
 			// then return the finally value
 			final int finallyStack = stacker.acquire();
 			final int throwableStack = stacker.acquire();
 
-			// Compile finally block code data when finally is compiled (nonlocal exit)
+			// Compile finally block code data when finally is compiled
+			// (nonlocal exit)
 			FinallyBlockProtocol fbc = new FinallyBlockProtocol() {
 
 				@Override
@@ -1689,7 +1746,8 @@ public class PLCompiler {
 			// mark beginning of the code handled by try
 			int start = bc.currentPc();
 			if (hasFinally) {
-				// if it has finally, we need to add finally block protocol into stack
+				// if it has finally, we need to add finally block protocol into
+				// stack
 				fbcList.add(fbc);
 				fbcLoopList.add(fbcList.get(fbcList.size() - 1));
 			}
@@ -1706,23 +1764,28 @@ public class PLCompiler {
 				// local exit, so compile finally normally
 				compileBlock(statement.tryStatement().finallyBlock().block());
 			}
-			// jump to the end of all try compiled code (skip the exception handling routines)
+			// jump to the end of all try compiled code (skip the exception
+			// handling routines)
 			addLabel(new JumpLabelInfo(), endLabel);
 
 			int prevKey = -1;
 
 			if (statement.tryStatement().catchClause() != null) {
-				// if there is something to catch, we need the catch routines compiled here
-				
+				// if there is something to catch, we need the catch routines
+				// compiled here
+
 				// we need a label to jump to when exception happens
 				int throwLabel = labelCounter++;
-				// mark the try code with exception of BaseCompiledStub type, ie any class in Plang
+				// mark the try code with exception of BaseCompiledStub type, ie
+				// any class in Plang
 				bc.addExceptionHandler(start, end, bc.currentPc(),
 						Strings.BASE_COMPILED_STUB);
 				// save old exception into locals
-				bc.addAstore(throwableStack); 
+				bc.addAstore(throwableStack);
 
-				// compile each catch statement as one big catch statement that uses normal logic (ie call method on the "exception" to determine whether 
+				// compile each catch statement as one big catch statement that
+				// uses normal logic (ie call method on the "exception" to
+				// determine whether
 				// that exception is handled or not)
 				Iterator<CatchClauseContext> ccit = statement.tryStatement()
 						.catchClause().iterator();
@@ -1734,7 +1797,8 @@ public class PLCompiler {
 
 					markLine(bc.currentPc(), ccc.start.getLine());
 
-					// get fully qualified name or guess it based on the current runtime state
+					// get fully qualified name or guess it based on the current
+					// runtime state
 					if (referenceMap.containsKey(type)) {
 						Reference r = referenceMap.get(type);
 						if (r.isJava())
@@ -1750,7 +1814,7 @@ public class PLCompiler {
 					// we need to do this in a loop so we know where to jump
 					if (prevKey != -1)
 						setLabelPos(prevKey);
-					
+
 					// check exception for type
 					addGetRuntime();
 					bc.addAload(throwableStack);
@@ -1769,11 +1833,13 @@ public class PLCompiler {
 					}
 					addLabel(new IfEqJumpLabelInfo(), prevKey);
 
-					// we grab exception into local variable defined in the catch type
+					// we grab exception into local variable defined in the
+					// catch type
 					varStack.addVariable(ccc.Identifier().getText(),
 							VariableType.LOCAL_VARIABLE, throwableStack);
-					
-					// we need to grab another try catch with any throwable so we can execute finally code
+
+					// we need to grab another try catch with any throwable so
+					// we can execute finally code
 					// so grab the current bc position
 					int sstart = bc.currentPc();
 					if (hasFinally) {
@@ -1797,7 +1863,8 @@ public class PLCompiler {
 					addLabel(new JumpLabelInfo(), endLabel);
 
 					if (hasFinally) {
-						// if we have finally block, we need to catch throwable, then compile finally, then rethrow that exception
+						// if we have finally block, we need to catch throwable,
+						// then compile finally, then rethrow that exception
 						bc.addExceptionHandler(sstart, ssend, bc.currentPc(),
 								Strings.THROWABLE);
 						bc.addAstore(finallyStack);
@@ -1808,8 +1875,9 @@ public class PLCompiler {
 					}
 
 				}
-				
-				// if nothing was caught, we execute finally blocks, if any, and rethrow
+
+				// if nothing was caught, we execute finally blocks, if any, and
+				// rethrow
 				setLabelPos(throwLabel);
 				if (hasFinally)
 					compileBlock(statement.tryStatement().finallyBlock()
@@ -1820,11 +1888,12 @@ public class PLCompiler {
 			}
 
 			if (statement.tryStatement().finallyBlock() != null) {
-				// if we have finally block, we need to add throwable catch for the block and then compile finally into it and rethrow
+				// if we have finally block, we need to add throwable catch for
+				// the block and then compile finally into it and rethrow
 				bc.addExceptionHandler(start, end, bc.currentPc(),
 						Strings.THROWABLE);
 				// save throwable exception on stack
-				bc.addAstore(finallyStack); 
+				bc.addAstore(finallyStack);
 
 				compileBlock(statement.tryStatement().finallyBlock().block());
 
@@ -1850,9 +1919,11 @@ public class PLCompiler {
 
 		// Compile return statement
 		if (statement.returnStatement() != null) {
-			// grab local for saving return expression value and then execute finally blocks
+			// grab local for saving return expression value and then execute
+			// finally blocks
 			int local = stacker.acquire();
-			// compile expression for return or NoValue if there is no expression provided
+			// compile expression for return or NoValue if there is no
+			// expression provided
 			if (statement.returnStatement().expression() != null) {
 				isStatementExpression.add(false);
 				compileExpression(statement.returnStatement().expression(),
@@ -1862,11 +1933,12 @@ public class PLCompiler {
 				addNil();
 			}
 
-			// compile exit protocol, ie store the value of expression, add exit protocol, then push value back on stack
+			// compile exit protocol, ie store the value of expression, add exit
+			// protocol, then push value back on stack
 			bc.addAstore(local);
 			functionExitProtocol();
 			bc.addAload(local);
-			
+
 			// return from the function and release auto value
 			bc.add(Opcode.ARETURN);
 			stacker.release();
@@ -1889,8 +1961,8 @@ public class PLCompiler {
 			compileExpression(statement.statementExpression().expression(),
 					false, -1);
 			isStatementExpression.pop();
-		} 
-		
+		}
+
 		// Compile if statement
 		if (statement.ifStatement() != null) {
 			// Compile test
@@ -1931,7 +2003,7 @@ public class PLCompiler {
 				// mark the end of else block
 				setLabelPos(key2);
 			}
-			
+
 			// add sentinel nop
 			bc.add(Opcode.NOP);
 		}
@@ -1949,25 +2021,31 @@ public class PLCompiler {
 	}
 
 	/**
-	 * Compile init method of class/module. Init method performs class/module init (ie class declared variables and values are stored here)
-	 * @param fields list of fields
-	 * @param methods list of methods (method wrappers need to be created here)
-	 * @param superClass name of the super class
+	 * Compile init method of class/module. Init method performs class/module
+	 * init (ie class declared variables and values are stored here)
+	 * 
+	 * @param fields
+	 *            list of fields
+	 * @param methods
+	 *            list of methods (method wrappers need to be created here)
+	 * @param superClass
+	 *            name of the super class
 	 * @throws Exception
 	 */
 	private void compileInitMethod(List<FieldDeclarationContext> fields,
 			Set<String> methods, final String superClass) throws Exception {
-		// grab "self" local variable, ie 1  
+		// grab "self" local variable, ie 1
 		stacker.acquire();
 		if (compilingClass)
-			// if we are compiling class, we need to compile base class variable 
+			// if we are compiling class, we need to compile base class variable
 			// held in super key
 			new StoreToField(BaseClass.___superKey) {
 
 				@Override
 				protected void provideSourceValue() throws Exception {
 					if (superClass == null || superClass.equals("BaseClass")) {
-						// if superclass is null or is base class, we need to create new base class
+						// if superclass is null or is base class, we need to
+						// create new base class
 						bc.addNew(Strings.BASE_CLASS);
 						bc.add(Opcode.DUP);
 						bc.add(Opcode.DUP);
@@ -1978,7 +2056,8 @@ public class PLCompiler {
 								Strings.PL_CLASS__SET_DERIVED_CLASS, "("
 										+ Strings.PL_CLASS_L + ")V");
 					} else {
-						// otherwise we need to find reference to the class then make new instance
+						// otherwise we need to find reference to the class then
+						// make new instance
 						if (referenceMap.containsKey(superClass)) {
 							Reference r = referenceMap.get(superClass);
 							if (r.isJava()) {
@@ -2002,7 +2081,8 @@ public class PLCompiler {
 									Strings.PL_CLASS__SET_DERIVED_CLASS, "("
 											+ Strings.PL_CLASS_L + ")V");
 						} else if (superClass.contains(".")) {
-							// full reference to the class, so we need to search it at runtime
+							// full reference to the class, so we need to search
+							// it at runtime
 							addGetRuntime();
 							bc.addLdc(cacheStrings(superClass));
 							bc.addIconst(1);
@@ -2029,7 +2109,7 @@ public class PLCompiler {
 		for (FieldDeclarationContext field : fields) {
 			compileField(field);
 		}
-		
+
 		// we mark that we are compiling function wrappers
 		cmpInitFuncwraps = true;
 		for (final String method : methods) {
@@ -2053,12 +2133,14 @@ public class PLCompiler {
 		cmpInitFuncwraps = false;
 		// release "self" from locals
 		stacker.release();
-		bc.add(Opcode.RETURN); 
+		bc.add(Opcode.RETURN);
 	}
 
 	/**
 	 * Compile field inside initializer
-	 * @param field FieldDeclarationContext AST
+	 * 
+	 * @param field
+	 *            FieldDeclarationContext AST
 	 * @throws Exception
 	 */
 	private void compileField(FieldDeclarationContext field) throws Exception {
@@ -2096,9 +2178,14 @@ public class PLCompiler {
 
 	/**
 	 * Compiles expression into bytecode
-	 * @param expression ExpressionContext AST of the expression
-	 * @param compilingMethodCall whether we are compiling a method call or not
-	 * @param storeVar what local should we store the expression if it is method call (-1 if it is not)
+	 * 
+	 * @param expression
+	 *            ExpressionContext AST of the expression
+	 * @param compilingMethodCall
+	 *            whether we are compiling a method call or not
+	 * @param storeVar
+	 *            what local should we store the expression if it is method call
+	 *            (-1 if it is not)
 	 * @throws Exception
 	 */
 	private void compileExpression(ExpressionContext expression,
@@ -2106,15 +2193,16 @@ public class PLCompiler {
 		markLine(bc.currentPc(), expression.start.getLine());
 		try {
 			if (expression.primary() != null) {
-				// expression is primary, so we just compile content of primary expression
+				// expression is primary, so we just compile content of primary
+				// expression
 				compilePrimaryExpression(expression.primary(),
 						compilingMethodCall, storeVar);
 				return;
-			} 
-			
+			}
+
 			if (expression.block() != null) {
 				// if expression has block, it is dist expression
-				
+
 				// create new name for auxiliary method/function
 				String methodName = "___internalMethod" + distributed.size();
 				BlockContext block = expression.block();
@@ -2125,8 +2213,9 @@ public class PLCompiler {
 				bd.b = block;
 
 				distributed.add(bd);
-				
-				// compile expression and name of the method, then call run distributed
+
+				// compile expression and name of the method, then call run
+				// distributed
 				addGetRuntime();
 				isStatementExpression.add(false);
 				compileExpression(expression.expression(0), false, -1);
@@ -2147,8 +2236,8 @@ public class PLCompiler {
 								+ Strings.BASE_COMPILED_STUB_L + ")"
 								+ Strings.PLANGOBJECT_L);
 				return;
-			} 
-			
+			}
+
 			if (expression.getChildCount() > 2
 					&& expression.getChild(1).getText().equals("?")) {
 				// Ternary operator expression
@@ -2158,13 +2247,14 @@ public class PLCompiler {
 						(ExpressionContext) expression.getChild(4),
 						compilingMethodCall, storeVar);
 				return;
-			} 
-			
+			}
+
 			if (expression.getChildCount() > 2
 					&& expression.getChild(1).getText().equals("->")) {
 				// compile java call (->) expression
 				if (!PLRuntime.getRuntime().isSafeContext())
-					// is not safe context, so do not allow these expressions in the code
+					// is not safe context, so do not allow these expressions in
+					// the code
 					throw new CompilationException(
 							"Java method call being compiled under unsafe context.");
 
@@ -2223,21 +2313,23 @@ public class PLCompiler {
 					}
 				}
 				return;
-			} 
-			
+			}
+
 			if (expression.methodCall() != null) {
 				// Method call expression
-				
+
 				// we grab local variable slot
 				int stack = stacker.acquire();
-				
-				// we need to grab function wrapper/function object from expression
+
+				// we need to grab function wrapper/function object from
+				// expression
 				addGetRuntime();
 				isStatementExpression.add(false);
 				compileExpression((ExpressionContext) expression.getChild(0),
 						true, stack);
 				isStatementExpression.pop();
-				// we load result of that expression from local passed into compile expression
+				// we load result of that expression from local passed into
+				// compile expression
 				// then we call run method of PLRuntime
 				bc.addAload(stack);
 				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
@@ -2249,8 +2341,8 @@ public class PLCompiler {
 				// release local variable slot
 				stacker.release();
 				return;
-			} 
-			
+			}
+
 			if (leftOperators.contains(expression.getChild(0).getText())) {
 				// Compile left operator, ++ or -- or unary expression
 				final String operator = expression.getChild(0).getText();
@@ -2278,12 +2370,13 @@ public class PLCompiler {
 							compilingMethodCall, storeVar);
 				}
 				return;
-			} 
-			
+			}
+
 			if (expression.getChild(0) instanceof ExpressionContext) {
-				// Compile expression context on the left expression, ie binary operator or instanceof operator
-				// or logical operator  or right operators
-				
+				// Compile expression context on the left expression, ie binary
+				// operator or instanceof operator
+				// or logical operator or right operators
+
 				// grab the operator
 				String operator = expression.getChild(1).getText();
 				if (bioperators.contains(operator)) {
@@ -2305,8 +2398,9 @@ public class PLCompiler {
 					} else {
 						fqName = type;
 					}
-					
-					// instanceof needs fq type or base type defined by PLRuntime
+
+					// instanceof needs fq type or base type defined by
+					// PLRuntime
 					if (!fqName.contains(".") && !isBaseType(fqName)) {
 						throw new CompilationException(
 								"Class type "
@@ -2354,8 +2448,9 @@ public class PLCompiler {
 						}
 
 						markLine(bc.currentPc(), expression.stop.getLine());
-						
-						// we need to do this logic because of how we detect whether field exists in class or superclass
+
+						// we need to do this logic because of how we detect
+						// whether field exists in class or superclass
 						// if it is null, then we look for global variable
 						String identifier = expression.getChild(2).getText();
 						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
@@ -2378,14 +2473,15 @@ public class PLCompiler {
 					}
 				}
 				return;
-			} 
-			
+			}
+
 			if (expression.getChild(0) instanceof ExtendedContext
 					&& rightOperators
 							.contains(expression.getChild(1).getText())) {
 				// compile right operator
-				
-				// we need extended content (ie identifier or expression that ends with identifier)
+
+				// we need extended content (ie identifier or expression that
+				// ends with identifier)
 				ExtendedContext lvalue = expression.extended();
 				final int st = stacker.acquire();
 				final boolean add = expression.getChild(1).getText()
@@ -2411,7 +2507,8 @@ public class PLCompiler {
 				}.compileSetOperator();
 				isStatementExpression.pop();
 
-				// store into method variable if we are in method call first argument
+				// store into method variable if we are in method call first
+				// argument
 				if (compilingMethodCall) {
 					bc.addAload(st);
 					bc.addAstore(storeVar);
@@ -2423,14 +2520,14 @@ public class PLCompiler {
 				}
 				stacker.release();
 				return;
-			} 
-			
+			}
+
 			if (expression.getChild(0).getText().equals("new")) {
 				// new expression compilation
-				
+
 				// grab fully qualified name
 				String fqName = null;
-				if (expression.getChildCount() == 4) { 
+				if (expression.getChildCount() == 4) {
 					// fully qualified name is included in new with dot
 					fqName = expression.getChild(1).getText()
 							+ "."
@@ -2447,7 +2544,7 @@ public class PLCompiler {
 										+ expression.start.getLine());
 					fqName = r.getFullReference();
 				}
-				
+
 				// call to newInstance method
 				addGetRuntime();
 				bc.addLdc(cacheStrings(fqName)); // load string from constants
@@ -2480,6 +2577,7 @@ public class PLCompiler {
 
 	/**
 	 * Returns whether fully qualified name is base type or not
+	 * 
 	 * @param fqName
 	 * @return
 	 */
@@ -2489,17 +2587,23 @@ public class PLCompiler {
 
 	/**
 	 * Compiles ternary operator
-	 * @param e Test expression
-	 * @param et Expression when test is true
-	 * @param ef Expression when test is false
-	 * @param compilingMethod whether we are compiling method call
-	 * @param storeVar local to store in if we are compiling method call (-1 if not)
+	 * 
+	 * @param e
+	 *            Test expression
+	 * @param et
+	 *            Expression when test is true
+	 * @param ef
+	 *            Expression when test is false
+	 * @param compilingMethod
+	 *            whether we are compiling method call
+	 * @param storeVar
+	 *            local to store in if we are compiling method call (-1 if not)
 	 * @throws Exception
 	 */
 	private void compileTernaryOperator(ExpressionContext e,
 			ExpressionContext et, ExpressionContext ef,
 			boolean compilingMethod, int storeVar) throws Exception {
-		
+
 		// compile test expression, then add jumps
 		isStatementExpression.add(false);
 		compileExpression(e, false, -1);
@@ -2531,12 +2635,19 @@ public class PLCompiler {
 	}
 
 	/**
-	 * Compile logic expression, either or or and, compiling it correctly with shortcuting
-	 * @param left left side of the expression
-	 * @param right right side of the expression
-	 * @param or whether it is or or and
-	 * @param compilingMethod whether we are compiling method call
-	 * @param storeVar local to store in if we are compiling method call (-1 if not)
+	 * Compile logic expression, either or or and, compiling it correctly with
+	 * shortcuting
+	 * 
+	 * @param left
+	 *            left side of the expression
+	 * @param right
+	 *            right side of the expression
+	 * @param or
+	 *            whether it is or or and
+	 * @param compilingMethod
+	 *            whether we are compiling method call
+	 * @param storeVar
+	 *            local to store in if we are compiling method call (-1 if not)
 	 * @throws Exception
 	 */
 	private void compileLogic(ExpressionContext left, ExpressionContext right,
@@ -2589,7 +2700,7 @@ public class PLCompiler {
 			bc.addIconst(0);
 		}
 		setLabelPos(reminder);
-		//  convert boolean back to the PLangObject
+		// convert boolean back to the PLangObject
 		bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 				Strings.BASE_COMPILED_STUB__CONVERT_BOOLEAN, "(Z)"
 						+ Strings.PLANGOBJECT_L);
@@ -2601,10 +2712,15 @@ public class PLCompiler {
 
 	/**
 	 * Compiles unary operator.
-	 * @param operator unary operator
-	 * @param expression expression of the unary operator
-	 * @param compilingMethod whether we are compiling method call
-	 * @param storeVar local to store in if we are compiling method call (-1 if not)
+	 * 
+	 * @param operator
+	 *            unary operator
+	 * @param expression
+	 *            expression of the unary operator
+	 * @param compilingMethod
+	 *            whether we are compiling method call
+	 * @param storeVar
+	 *            local to store in if we are compiling method call (-1 if not)
 	 * @throws Exception
 	 */
 	private void compileUnaryOperator(String operator,
@@ -2645,11 +2761,17 @@ public class PLCompiler {
 
 	/**
 	 * Compiles binary operation
-	 * @param operator the operator
-	 * @param expression1 left side of the operator
-	 * @param expression2 right side of the operator
-	 * @param compilingMethod whether we are compiling method call
-	 * @param storeVar local to store in if we are compiling method call (-1 if not)
+	 * 
+	 * @param operator
+	 *            the operator
+	 * @param expression1
+	 *            left side of the operator
+	 * @param expression2
+	 *            right side of the operator
+	 * @param compilingMethod
+	 *            whether we are compiling method call
+	 * @param storeVar
+	 *            local to store in if we are compiling method call (-1 if not)
 	 * @throws Exception
 	 */
 	private void compileBinaryOperator(String operator,
@@ -2729,7 +2851,9 @@ public class PLCompiler {
 
 	/**
 	 * Compile parameters of a method call into an array
-	 * @param expressionList ExpressionList AST
+	 * 
+	 * @param expressionList
+	 *            ExpressionList AST
 	 * @throws Exception
 	 */
 	private void compileParameters(ExpressionListContext expressionList)
@@ -2763,10 +2887,15 @@ public class PLCompiler {
 
 	/**
 	 * Compile set operator
-	 * @param operator type of set operator
-	 * @param expression ExpressionContext AST
-	 * @param compilingMethod whether we are compiling method call
-	 * @param storeVar local to store in if we are compiling method call (-1 if not)
+	 * 
+	 * @param operator
+	 *            type of set operator
+	 * @param expression
+	 *            ExpressionContext AST
+	 * @param compilingMethod
+	 *            whether we are compiling method call
+	 * @param storeVar
+	 *            local to store in if we are compiling method call (-1 if not)
 	 * @throws Exception
 	 */
 	private void compileSetOperator(final String operator,
@@ -2800,15 +2929,19 @@ public class PLCompiler {
 	}
 
 	/**
-	 * Compiles primary expression 
-	 * @param primary PrimaryContext AST
-	 * @param compilingMethod whether we are compiling method call
-	 * @param storeVar local to store in if we are compiling method call (-1 if not)
+	 * Compiles primary expression
+	 * 
+	 * @param primary
+	 *            PrimaryContext AST
+	 * @param compilingMethod
+	 *            whether we are compiling method call
+	 * @param storeVar
+	 *            local to store in if we are compiling method call (-1 if not)
 	 * @throws Exception
 	 */
 	private void compilePrimaryExpression(PrimaryContext primary,
 			boolean compilingMethod, int storeVar) throws Exception {
-		
+
 		if (primary.expression() != null) {
 			// it is inner expression, so just compile it
 			isStatementExpression.add(false);
@@ -2876,9 +3009,11 @@ public class PLCompiler {
 			if (identifier.equals("parent"))
 				identifier = BaseClass.___superKey;
 
-			// check for illegal identifiers, ie ___ identifiers or identifiers related to the throwable base class
+			// check for illegal identifiers, ie ___ identifiers or identifiers
+			// related to the throwable base class
 			if (identifier.startsWith("___")) {
-				// 3x _ or more are illegal prefixes used by system methods/fields
+				// 3x _ or more are illegal prefixes used by system
+				// methods/fields
 				throw new CompilationException(
 						"Identifier cannot start with ___, ___ is disabled due to nameclashing with internal methods and fields");
 			} else if (identifier.equals("readResolve")) {
@@ -3012,7 +3147,9 @@ public class PLCompiler {
 
 	/**
 	 * Add plang throw BaseException statement with string text provided
-	 * @param string Text of the exception
+	 * 
+	 * @param string
+	 *            Text of the exception
 	 * @throws Exception
 	 */
 	private void addThrow(String string) throws Exception {
@@ -3036,6 +3173,7 @@ public class PLCompiler {
 
 	/**
 	 * Prunes dead code from the bytecode
+	 * 
 	 * @throws Exception
 	 */
 	// Magic method again, do not touch
@@ -3044,7 +3182,8 @@ public class PLCompiler {
 		ExceptionTable etable = bc.getExceptionTable();
 
 		int counter = 0;
-		// store exception handlers so we can later modify them if we prune some code out 
+		// store exception handlers so we can later modify them if we prune some
+		// code out
 		List<ExceptionHandler> eh = new ArrayList<ExceptionHandler>();
 		BidiMultiMap<Integer, IntegerLink> linkMap = new BidiMultiHashMap<Integer, IntegerLink>();
 
@@ -3062,7 +3201,7 @@ public class PLCompiler {
 			eh.add(ehi);
 		}
 
-		// disected bytecode is stored here 
+		// disected bytecode is stored here
 		Map<Integer, Instruction> iPosList = new HashMap<Integer, Instruction>();
 		List<Instruction> insts = parseBytecode(bytecode, iPosList);
 
@@ -3117,6 +3256,7 @@ public class PLCompiler {
 
 	/**
 	 * Recalculate jumps for new prunned code
+	 * 
 	 * @param prunned
 	 */
 	private void recalculateJumps(List<Instruction> prunned) {
@@ -3131,6 +3271,7 @@ public class PLCompiler {
 
 	/**
 	 * Returns distance between two instructions
+	 * 
 	 * @param a
 	 * @param b
 	 * @param list
@@ -3158,6 +3299,7 @@ public class PLCompiler {
 
 	/**
 	 * Returns distance between two positions
+	 * 
 	 * @param idxs
 	 * @param idxl
 	 * @param list
@@ -3173,6 +3315,7 @@ public class PLCompiler {
 
 	/**
 	 * Mark dead code in bytecode
+	 * 
 	 * @param insts
 	 * @param iPosList
 	 * @param etable
@@ -3190,6 +3333,7 @@ public class PLCompiler {
 
 	/**
 	 * Mark dead code from this position in list
+	 * 
 	 * @param insts
 	 * @param i
 	 */
@@ -3225,6 +3369,7 @@ public class PLCompiler {
 
 	/**
 	 * Parse bytecode into list of instructions
+	 * 
 	 * @param bytecode
 	 * @param iPosList
 	 * @return
@@ -3565,6 +3710,7 @@ public class PLCompiler {
 
 	/**
 	 * Returns class loader for where to store new classes
+	 * 
 	 * @return
 	 */
 	public ClassLoader getClassLoader() {
@@ -3573,6 +3719,7 @@ public class PLCompiler {
 
 	/**
 	 * Marks the line of the code
+	 * 
 	 * @param pc
 	 * @param line
 	 * @throws Exception
@@ -3583,6 +3730,7 @@ public class PLCompiler {
 
 	/**
 	 * Write line info into stream
+	 * 
 	 * @param pc
 	 * @param line
 	 * @throws Exception
@@ -3597,6 +3745,7 @@ public class PLCompiler {
 
 	/**
 	 * Cache strings so only one copy is stored into pool
+	 * 
 	 * @param string
 	 * @return
 	 */
@@ -3609,6 +3758,7 @@ public class PLCompiler {
 
 	/**
 	 * Set label position identified by key to current bytecode
+	 * 
 	 * @param key
 	 * @return
 	 */
@@ -3620,6 +3770,7 @@ public class PLCompiler {
 
 	/**
 	 * Returns label position from the map based on the key provided
+	 * 
 	 * @param key
 	 * @return
 	 */
@@ -3629,6 +3780,7 @@ public class PLCompiler {
 
 	/**
 	 * Add label of the LabelInfo type identified by key
+	 * 
 	 * @param nfo
 	 * @param key
 	 */

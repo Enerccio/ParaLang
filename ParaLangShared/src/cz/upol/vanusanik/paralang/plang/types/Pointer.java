@@ -8,7 +8,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.apache.commons.codec.binary.Base64;
@@ -22,6 +24,12 @@ import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
+/**
+ * Java instance wrapper for PLang, wraps java instance for use in PLang.
+ * 
+ * @author Enerccio
+ *
+ */
 public class Pointer extends BaseCompiledStub implements Serializable {
 	private static final long serialVersionUID = -4564277494396267580L;
 
@@ -33,6 +41,7 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 		this.value = value;
 	}
 
+	/** Wrapped object */
 	private Object value;
 
 	@Override
@@ -88,6 +97,13 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 		}
 	}
 
+	/**
+	 * Exception thrown when there is no such method or method is wrong.
+	 * Internal exception that is never thrown outside this class.
+	 * 
+	 * @author Enerccio
+	 *
+	 */
 	public static class PointerMethodIncompatibleException extends Exception {
 		private static final long serialVersionUID = -7762628083995844743L;
 
@@ -97,22 +113,38 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 
 		@Override
 		public synchronized Throwable fillInStackTrace() {
+			// No stack generation, is used in object flow
 			return this;
 		}
 
 	};
 
-	private static WeakHashMap<Method, MethodHandle> methodHandles = new WeakHashMap<Method, MethodHandle>();
+	/** MethodHandle cache */
+	private static Map<Method, MethodHandle> methodHandles = Collections
+			.synchronizedMap(new WeakHashMap<Method, MethodHandle>());
 
+	/**
+	 * Runs method identified by this string with those arguments. Does
+	 * automatic type conversion from PLang to Java
+	 * 
+	 * @param methodName
+	 * @param args
+	 * @return
+	 * @throws Throwable
+	 */
 	public PLangObject runMethod(String methodName, PLangObject[] args)
 			throws Throwable {
 		if (value == null)
+			// check for transient pointer, ie deserialized pointer of object
+			// that does not support serialization
 			throw PLRuntime.getRuntime().newInstance("System.BaseException",
 					new Str("Transient pointer accessed"));
 
 		for (Method m : value.getClass().getMethods()) {
 			if (m.getName().equals(methodName)) {
 				try {
+					// maybe found method, do the type conversions and check
+
 					Class<?> retType = m.getReturnType();
 					Class<?>[] argTypes = m.getParameterTypes();
 					List<Object> constructedArgs = new ArrayList<Object>();
@@ -120,6 +152,7 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 					if (argTypes.length != args.length)
 						continue;
 
+					// found it, do type conversions
 					int it = 0;
 					for (Class<?> aType : argTypes) {
 						if (aType.isAssignableFrom(args[it].getClass())) {
@@ -131,17 +164,21 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 						++it;
 					}
 
+					// find method handle in cache
 					MethodHandle genHandle = methodHandles.get(m);
 
 					if (genHandle == null) {
+						// store handle in cache if there is none
 						genHandle = MethodHandles.lookup().unreflect(m);
 						methodHandles.put(m, genHandle);
 					}
 
 					MethodHandle handle = genHandle.bindTo(value);
+					// run the method
 					Object ret = handle.invokeWithArguments(constructedArgs
 							.toArray());
 
+					// recast the return value back
 					if (ret == null)
 						return NoValue.NOVALUE;
 
@@ -150,6 +187,7 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 
 					return Utils.cast(ret, retType);
 				} catch (PointerMethodIncompatibleException ce) {
+					// method incompatible, find another method
 					continue;
 				} catch (Exception e) {
 					throw PLRuntime.getRuntime().newInstance(
@@ -159,6 +197,7 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 				}
 			}
 		}
+		// No method found
 		throw new RuntimeException("Unknown method: " + methodName);
 	}
 
@@ -197,10 +236,22 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 		___restrictedOverride = false;
 	}
 
+	/**
+	 * Check for transient pointer
+	 * 
+	 * @param self
+	 * @return
+	 */
 	public PLangObject transientPointer(PLangObject self) {
 		return BooleanValue.fromBoolean(value == null);
 	}
 
+	/**
+	 * Checks whether it might be transient pointer or not
+	 * 
+	 * @param self
+	 * @return
+	 */
 	public PLangObject willBeTransientPointer(PLangObject self) {
 		return BooleanValue.fromBoolean(!(value instanceof Serializable));
 	}

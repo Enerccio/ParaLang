@@ -5,6 +5,13 @@ import java.util.List;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 
+/**
+ * PLException is java exception wrapping other exceptions and printing relevant
+ * stack trace, ie stack trace only related to the plang stack.
+ * 
+ * @author Enerccio
+ *
+ */
 public class PLException extends Exception {
 	private static final long serialVersionUID = 2030787167158305381L;
 

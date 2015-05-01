@@ -9,8 +9,15 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 
+/**
+ * PLang integer
+ * 
+ * @author Enerccio
+ *
+ */
 public class Int extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = 3731336418712870225L;
+	/** Actual value of this instance */
 	long value;
 
 	public Int() {
@@ -80,6 +87,11 @@ public class Int extends PrimitivePLangObject implements Serializable {
 		return value == b.___getNumber(b).intValue();
 	}
 
+	/**
+	 * Returns long value of this Int object
+	 * 
+	 * @return
+	 */
 	public long getValue() {
 		return value;
 	}

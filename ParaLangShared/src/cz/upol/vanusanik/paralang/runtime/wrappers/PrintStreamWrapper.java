@@ -5,6 +5,12 @@ import java.io.Serializable;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 
+/**
+ * PrintStreamWrapper for IO.PrintStream object
+ * 
+ * @author Enerccio
+ *
+ */
 public class PrintStreamWrapper extends ObjectBase implements Serializable {
 
 	private static final long serialVersionUID = -7893331337659396685L;

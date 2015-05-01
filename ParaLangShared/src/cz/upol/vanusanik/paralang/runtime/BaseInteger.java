@@ -8,6 +8,12 @@ import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
+/**
+ * System.BaseInteger
+ * 
+ * @author Enerccio
+ *
+ */
 public class BaseInteger extends BaseNumber {
 	private static final long serialVersionUID = 2544264163945283955L;
 

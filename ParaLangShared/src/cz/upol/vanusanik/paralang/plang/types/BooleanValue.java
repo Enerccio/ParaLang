@@ -9,15 +9,29 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 
+/**
+ * PLang boolean
+ * 
+ * @author Enerccio
+ *
+ */
 public class BooleanValue extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = -4278817229742488910L;
+	/** boolean value held by this instance */
 	boolean value;
 
+	/**
+	 * BooleanValue is singleton
+	 * 
+	 * @param value
+	 */
 	private BooleanValue(boolean value) {
 		this.value = value;
 	}
 
+	/** PLang true */
 	public static final BooleanValue TRUE = new BooleanValue(true);
+	/** PLang false */
 	public static final BooleanValue FALSE = new BooleanValue(false);
 
 	@Override
@@ -46,6 +60,12 @@ public class BooleanValue extends PrimitivePLangObject implements Serializable {
 		return null;
 	}
 
+	/**
+	 * Returns PLang value from boolean
+	 * 
+	 * @param result
+	 * @return
+	 */
 	public static PLangObject fromBoolean(boolean result) {
 		return result ? TRUE : FALSE;
 	}
@@ -55,10 +75,21 @@ public class BooleanValue extends PrimitivePLangObject implements Serializable {
 		return this == b;
 	}
 
+	/**
+	 * Since this value is singleton, deserialize it as such
+	 * 
+	 * @return
+	 */
 	private Object readResolve() {
 		return value ? TRUE : FALSE;
 	}
 
+	/**
+	 * Converts any Plang value into boolean
+	 * 
+	 * @param b
+	 * @return
+	 */
 	public static boolean toBoolean(PLangObject b) {
 		return TypeOperations.convertToBoolean(b);
 	}

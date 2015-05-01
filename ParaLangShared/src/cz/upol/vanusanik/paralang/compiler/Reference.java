@@ -1,9 +1,19 @@
 package cz.upol.vanusanik.paralang.compiler;
 
+/**
+ * Stores reference to a key. Ie String -> java.util.String if java.util.String
+ * is imported. Same for using directive, ie PrintStream -> IO.PrintStream.
+ * 
+ * @author Enerccio
+ *
+ */
 public class Reference {
 
+	/** Fully qualified reference */
 	private String fullReference;
+	/** Short key */
 	private String key;
+	/** Whether it is java reference or plang reference */
 	private boolean isJava;
 
 	public Reference(String fullReference, String key, boolean isJava) {

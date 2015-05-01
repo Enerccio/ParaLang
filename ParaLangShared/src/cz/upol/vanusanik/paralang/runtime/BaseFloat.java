@@ -6,6 +6,12 @@ import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 
+/**
+ * System.BaseFloat
+ * 
+ * @author Enerccio
+ *
+ */
 public class BaseFloat extends BaseNumber {
 	private static final long serialVersionUID = 9204688374246651301L;
 

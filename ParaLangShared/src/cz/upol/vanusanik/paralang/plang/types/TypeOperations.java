@@ -15,8 +15,24 @@ import cz.upol.vanusanik.paralang.runtime.BaseNumber;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
-public class TypeOperations {
+/**
+ * Static class providing operator logic. Only allows static access
+ * 
+ * @author Enerccio
+ *
+ */
+public final class TypeOperations {
 
+	private TypeOperations() {
+
+	}
+
+	/**
+	 * Operator enum
+	 * 
+	 * @author Enerccio
+	 *
+	 */
 	public enum Operator {
 		PLUS("__plus"), MINUS("__minus"), MUL("__mul"), DIV("__div"), MOD(
 				"__mod"), LSHIFT("__left_shift"), RSHIFT("__right_shift"), RUSHIFT(
@@ -37,6 +53,12 @@ public class TypeOperations {
 
 	}
 
+	/**
+	 * Converts PLangObject into boolean
+	 * 
+	 * @param object
+	 * @return
+	 */
 	public static boolean convertToBoolean(PLangObject object) {
 		if (object == null)
 			throw new NullPointerException();
@@ -47,6 +69,15 @@ public class TypeOperations {
 		return true;
 	}
 
+	/**
+	 * Invokedynamic bootstrap method for binary operators
+	 * 
+	 * @param callerClass
+	 * @param dynMethodName
+	 * @param dynMethodType
+	 * @return
+	 * @throws Throwable
+	 */
 	public static CallSite binopbootstrap(MethodHandles.Lookup callerClass,
 			String dynMethodName, MethodType dynMethodType) throws Throwable {
 
@@ -55,6 +86,15 @@ public class TypeOperations {
 		return new ConstantCallSite(mh);
 	}
 
+	/**
+	 * Invokedynamic bootstrap method for unary operators
+	 * 
+	 * @param callerClass
+	 * @param dynMethodName
+	 * @param dynMethodType
+	 * @return
+	 * @throws Throwable
+	 */
 	public static CallSite unopbootstrap(MethodHandles.Lookup callerClass,
 			String dynMethodName, MethodType dynMethodType) throws Throwable {
 
@@ -62,6 +102,9 @@ public class TypeOperations {
 				dynMethodName, dynMethodType);
 		return new ConstantCallSite(mh);
 	}
+
+	// Rest of these methods are methods providing operations. These are then
+	// linked via bootstrap methods.
 
 	public static PLangObject plus(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.STRING) {

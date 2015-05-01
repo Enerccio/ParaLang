@@ -6,6 +6,13 @@ import java.util.List;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
+/**
+ * IndexedSet<T> is a set that is indexed and uses Equalator
+ * 
+ * @author Enerccio
+ *
+ * @param <T>
+ */
 public class IndexedSet<T> {
 
 	public static interface Equalator<X> {

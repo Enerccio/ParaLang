@@ -10,6 +10,12 @@ import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
+/**
+ * Abstrac base class to System.Float and System.Integer
+ * 
+ * @author Enerccio
+ *
+ */
 public abstract class BaseNumber extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523234L;
 	public static final String __valKey = "__val";
@@ -178,6 +184,13 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 				.___getkey(__valKey)));
 	}
 
+	/**
+	 * Returns the object value of this class (Integer or Float)
+	 * 
+	 * @param o
+	 *            Integer or Float
+	 * @return
+	 */
 	protected abstract PLangObject asObject(PLangObject o);
 
 	@Override

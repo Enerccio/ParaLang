@@ -12,6 +12,12 @@ import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
+/**
+ * PLang string value
+ * 
+ * @author Enerccio
+ *
+ */
 public class Str extends BaseCompiledStub implements Serializable {
 	private static final long serialVersionUID = -7656132457086147070L;
 
@@ -23,6 +29,7 @@ public class Str extends BaseCompiledStub implements Serializable {
 		this.value = value;
 	}
 
+	/** Actual string value of this instance */
 	String value;
 
 	@Override
@@ -83,6 +90,8 @@ public class Str extends BaseCompiledStub implements Serializable {
 		else
 			return false;
 	}
+
+	// methods provided by string instance in plang
 
 	@Override
 	protected void ___init_internal_datafields(BaseCompiledStub self) {
