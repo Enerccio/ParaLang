@@ -1,16 +1,32 @@
-import cz.upol.vanusanik.paralang.runtime.wrappers.PLTime;
+import java.util.Date;
 
+###
+    Utility module providing utility functions and classes.
+###
 module Utils {
 
+    ###
+        Time instance encapsulates unix time. 
+    ###
     class Time {
-        var wrappedTime;
+        var __date;
         
+        ### 
+            Creates new Time instance. If provided value is NoValue, it is initialized into current time, otherwise passed argument must be integer.
+        ###
         defn init(unixTime){
-            wrappedTime = PLTime->PLTime(unixTime);
+            if (unixTime == NoValue)
+                __date = Date->Date();
+            else
+                __date = Date->Date(unixTime);
         }
         
+        ###
+            Returns unix time value as integer.
+            *ret integer
+        ###
         defn get_time(){
-            return wrappedTime->getUnixTime();
+            return __date->getTime();
         }
     }
 

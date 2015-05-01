@@ -1,46 +1,67 @@
 using IO;
-using Math;
-using Math.Matrix;
-using Random.Random;
-using Random;
 using System;
-using System.BaseException;
+using Math.Matrix;
+using Random;
+using Collections.List;
 
 module Main {
-    var r = new Random.Random(NoValue);
-
-    defn test(a){
-        while (a) {
-            try {
-                return true;
+    
+    class X {
+        var itc = 8000;
+        var fnodes;
+        
+        defn restricted calculate(a, b){ 
+            var ct = 0;
+            var etime = 0;
+            fnodes = System.free_nodes();
+            
+            IO.out.println("Generating random matrices");
+            
+            IO.out.print("[");
+            var list = new List();
+            for (var i=0; i<itc; i++){
+                list.add(Math.random_matrix(10, 10, Random.random, 100));
+                if (i % (itc/100) == 0)
+                    IO.out.print(".");
             }
-            finally {
-                break;
+            IO.out.println("]");
+            
+            IO.out.println("Calculating multiplication of " + itc + " matrices.");
+            
+            IO.out.println("  Normally");
+            ct = System.current_time();
+            var mat = list.get(0);
+            for (var i=1; i<list.size(); i++){
+                mat *= list.get(i);
             }
+            etime = (System.current_time() - ct);
+            IO.out.println("    Result: " + mat);
+            IO.out.println("    Run time: " + etime);
+            
+            IO.out.println("  Distributed");
+            IO.out.println("     Expected node count -  " + fnodes);            
+            var ct = System.current_time();
+            var rl = (dist (fnodes, list) {
+                var start = (itc/fnodes) * run_id;
+                var end = (itc/fnodes) * (run_id + 1);
+                var res = passed_arg.get(start);
+                for (var i=start + 1; i<end; i++){
+                    res *= passed_arg.get(i);
+                }
+                return res;
+            });
+            mat = rl.get(0);
+            for (var i=1; i<rl.size(); i++){
+                mat *= rl.get(i);
+            }            
+            var etime = (System.current_time() - ct);
+            IO.out.println("    Result: " + mat);
+            IO.out.println("    Run time: " + etime);
         }
-        return false;
+    
     }
     
     defn restricted calculate(a, b){
-    
-        IO.out.println(test(true));
-    
-        var ct = System.current_time();
-        
-        IO.out.println("Ahoj".to(3).from(1));
-        
-        var m1 = Math.random_matrix(a, a, r, 100);
-        var m2 = Math.random_matrix(b, b, r, 50);        
-        
-        IO.out.println(m1);
-        IO.out.println(m2);
-        
-        IO.out.println(m1 * 10);
-        IO.out.println(m1 * m2);
-        
-        IO.out.println(Math.sqrt(4) + Math.sqrt(2.2));
-        
-        IO.out.println(System.current_time() - ct);
+        new X().calculate(a, b);
     }
-    
 };

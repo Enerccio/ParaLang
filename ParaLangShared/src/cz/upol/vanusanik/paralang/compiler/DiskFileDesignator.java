@@ -11,10 +11,11 @@ import org.apache.commons.io.FileUtils;
 public class DiskFileDesignator implements FileDesignator {
 
 	private File in;
-	public DiskFileDesignator(File in){
+
+	public DiskFileDesignator(File in) {
 		this.in = in;
 	}
-	
+
 	@Override
 	public boolean isRealFile() {
 		return true;
@@ -47,9 +48,12 @@ public class DiskFileDesignator implements FileDesignator {
 	@Override
 	public String getSource() {
 		String path = in.getAbsolutePath();
-		for (String cp : System.getProperty("java.class.path").split(System.getProperty("path.separator")))
+		for (String cp : System.getProperty("java.class.path").split(
+				System.getProperty("path.separator")))
 			path = path.replace(cp, "");
-		return path.replaceFirst(System.getProperty("file.separator").equals("\\") ? "\\\\" : System.getProperty("file.separator"), "");
+		return path.replaceFirst(
+				System.getProperty("file.separator").equals("\\") ? "\\\\"
+						: System.getProperty("file.separator"), "");
 	}
 
 	@Override

@@ -7,32 +7,46 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 
-public class BooleanValue extends PLangObject implements Serializable {
+/**
+ * PLang boolean
+ * 
+ * @author Enerccio
+ *
+ */
+public class BooleanValue extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = -4278817229742488910L;
+	/** boolean value held by this instance */
 	boolean value;
-	
-	private BooleanValue(boolean value){
+
+	/**
+	 * BooleanValue is singleton
+	 * 
+	 * @param value
+	 */
+	private BooleanValue(boolean value) {
 		this.value = value;
 	}
-	
+
+	/** PLang true */
 	public static final BooleanValue TRUE = new BooleanValue(true);
+	/** PLang false */
 	public static final BooleanValue FALSE = new BooleanValue(false);
-	
+
 	@Override
 	public PlangObjectType ___getType() {
 		return PlangObjectType.BOOLEAN;
 	}
-	
+
 	@Override
-	public String toString(){
+	public String toString() {
 		return value ? "TRUE" : "FALSE";
 	}
 
 	@Override
 	public JsonValue ___toObject() {
-		return new JsonObject()
-				.add("metaObjectType", ___getType().toString())
+		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}
 
@@ -46,6 +60,12 @@ public class BooleanValue extends PLangObject implements Serializable {
 		return null;
 	}
 
+	/**
+	 * Returns PLang value from boolean
+	 * 
+	 * @param result
+	 * @return
+	 */
 	public static PLangObject fromBoolean(boolean result) {
 		return result ? TRUE : FALSE;
 	}
@@ -54,11 +74,22 @@ public class BooleanValue extends PLangObject implements Serializable {
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
-	
-	private Object readResolve()  {
+
+	/**
+	 * Since this value is singleton, deserialize it as such
+	 * 
+	 * @return
+	 */
+	private Object readResolve() {
 		return value ? TRUE : FALSE;
 	}
 
+	/**
+	 * Converts any Plang value into boolean
+	 * 
+	 * @param b
+	 * @return
+	 */
 	public static boolean toBoolean(PLangObject b) {
 		return TypeOperations.convertToBoolean(b);
 	}

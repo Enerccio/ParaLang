@@ -1,35 +1,60 @@
 using Collections.List;
+using Collections.Map;
+using IO;
 
+import cz.upol.vanusanik.paralang.runtime.wrappers.Matrix as __MatrixData;
+
+###
+    Math module contains classes and functions related to math.
+###
 module Math {
 
+    ###
+        Encapsulates exceptions that happens in this module.
+    ###
     class MathException > BaseException {
         defn init(message){
             parent.init(message);
         }
     }
     
+    ###
+        Matrix class. Encapsulates any sized dense matrix. You can multiply matrix by simply using * operator with either compatible matrix or scalar number.
+    ###
     class Matrix {
     
-        var matrix, n, m;
+        var __matrix;
+        ###
+            Number of rows
+            *type integer
+        ###
+        var n;
+        ###
+            Number of columns
+            *type integer
+        ###
+        var m;
         
         defn init(n, m){
             inst.n = n;
             inst.m = m;
-            matrix = new List();
-            for (var i=0; i<n; i++){
-                var mcol = new List();
-                for (var j=0; j<m; j++)
-                    mcol.add(0);
-                matrix.add(mcol);
-            }
+            __matrix = __MatrixData->__MatrixData(n, m);
+            
         }   
         
+        ###
+            Returns value at i, j.
+            *ret number
+        ###
         defn get(i, j){
-            return matrix.get(i).get(j);
+            return __matrix->get(i, j);
         }
         
-        defn restricted set(i, j, v){
-            matrix.get(i).setAt(j, v);
+        ###
+            Sets the value at i, j to v
+        ###
+        defn set(i, j, v){
+            __matrix->set(i, j, v);
         }
     
         defn __str(){
@@ -40,9 +65,8 @@ module Math {
             var pp = "[";
             for (var i=0; i<n; i++){
                 pp += "[";
-                var mcol = matrix.get(i);
                 for (var j=0; j<m; j++)
-                    pp += mcol.get(j) + (j == m-1 ? "" : " ");
+                    pp += get(i, j) + (j == m-1 ? "" : " ");
                 pp += "]";
             }
             return pp + "]";
@@ -50,20 +74,56 @@ module Math {
         
         defn __mul(other){
             if (other instanceof Matrix){
-            
+                return mul_matrix(other);
             } else {
-                mul_scalar(other);
-                return inst;
+                return mul_scalar(other);
             }
         }
         
+        ###
+            Multiplies this matrix by scalar value as new copy.
+            *ret Matrix
+        ###
         defn mul_scalar(scalar){
+            var nm = new Matrix(n, m);
             for (var i=0; i<n; i++)
-                    for (var j=0; j<m; j++)
-                        set(i, j, get(i, j) * scalar);
+                    for (var j=0; j<m; j++){
+                        nm.set(i, j, get(i, j) * scalar);
+                    }
+            return nm;
         }
+        
+        ###
+            Multiplies this matrix by other matrix as new matrix.
+            
+            Throws MathException if matrices are incompatible.
+            *ret Matrix
+        ###
+        defn mul_matrix(b){
+            if (n != b.m)
+                throw new MathException("Incompatible matrices");
+            
+            var nm = new Matrix(n, n);
+            for (var row=0; row<n; row++){
+                for (var col=0; col<n; col++){
+                    var sum = 0;
+                
+                    for (var i=0; i<m; i++){
+                        sum += get(row, i) * b.get(i, col);
+                    }
+                    
+                    nm.set(row, col, sum);
+                }
+            }
+            
+            return nm;
+        }
+        
     }
 
+    ###
+        SquareMatrix is Matrix that can be inited only with single argument n and is squared (n == m).
+    ###
     class SquareMatrix > Matrix {
         
         defn init(n){
@@ -72,6 +132,10 @@ module Math {
     
     }
     
+    ###
+        Returns random matrix of size i, j. Random data is provided via r random generator's get_int and maxv is max value passed to get_int.
+        *ret Matrix
+    ###
     defn random_matrix(i, j, r, maxv){
         var m = new Matrix(i, j);
         for (i=0; i<m.n; i++)
@@ -80,22 +144,42 @@ module Math {
         return m;
     }
     
+    ###
+        Returns absolute value of passed number.
+        *ret number
+    ###
     defn abs(a){
         return a >= 0 ? a : -a;
     }
     
+    ###
+        Returns maximum of a and b.
+        *ret number
+    ###
     defn max(a, b){
         return a >= b ? a : b;
     }
     
+    ###
+        Returns minimum of a and b.
+        *ret number
+    ###
     defn min(a, b){
         return a <= b? a : b;
     }
     
+    ###
+        Returns a to the power of 2.
+        *ret number
+    ###
     defn sqr(a){
         return a * a;
     }
     
+    ###
+        Returns square root of a.
+        *ret number
+    ###
     defn sqrt(a){
         if (!(a instanceof number)) 
             throw new MathException("Argument must be a number!");

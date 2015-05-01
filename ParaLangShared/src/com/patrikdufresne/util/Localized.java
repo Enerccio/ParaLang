@@ -26,115 +26,120 @@ import java.util.ResourceBundle;
  * 
  */
 public class Localized {
-    /**
-     * Define the default bundle name containing the localized resource.
-     */
-    private static final String BUNDLE_NAME = "messages"; //$NON-NLS-1$
+	/**
+	 * Define the default bundle name containing the localized resource.
+	 */
+	private static final String BUNDLE_NAME = "messages"; //$NON-NLS-1$
 
-    // Get the locale once
-    private static final Locale locale = Locale.getDefault();
+	// Get the locale once
+	private static final Locale locale = Locale.getDefault();
 
-    /**
-     * Utility function to localize a string.
-     * 
-     * @return
-     */
-    public static String _(Class<?> clazz, String key) {
-        return get(clazz, key);
-    }
+	/**
+	 * Utility function to localize a string.
+	 * 
+	 * @return
+	 */
+	public static String _(Class<?> clazz, String key) {
+		return get(clazz, key);
+	}
 
-    public static String _(Class<?> clazz, String key, Object... args) {
-        return Localized.load(clazz).format(key, args);
-    }
+	public static String _(Class<?> clazz, String key, Object... args) {
+		return Localized.load(clazz).format(key, args);
+	}
 
-    /**
-     * Get one localized string. Prefer way is to call load() and then multiple call to get().
-     * 
-     * @param cls
-     * @param key
-     */
-    public static String format(Class<?> clazz, String key, Object... args) {
-        return Localized.load(clazz).format(key, args);
-    }
+	/**
+	 * Get one localized string. Prefer way is to call load() and then multiple
+	 * call to get().
+	 * 
+	 * @param cls
+	 * @param key
+	 */
+	public static String format(Class<?> clazz, String key, Object... args) {
+		return Localized.load(clazz).format(key, args);
+	}
 
-    /**
-     * Get one localized string. Prefer way is to call load() and then multiple call to get().
-     * 
-     * @param cls
-     * @param key
-     */
-    public static String get(Class<?> clazz, String key) {
-        return Localized.load(clazz).get(key);
-    }
+	/**
+	 * Get one localized string. Prefer way is to call load() and then multiple
+	 * call to get().
+	 * 
+	 * @param cls
+	 * @param key
+	 */
+	public static String get(Class<?> clazz, String key) {
+		return Localized.load(clazz).get(key);
+	}
 
-    /**
-     * Create a new Localized instance for the given class.
-     * 
-     * @return
-     */
-    public static Localized load(Class<?> cls) {
-        return load(cls, BUNDLE_NAME);
-    }
+	/**
+	 * Create a new Localized instance for the given class.
+	 * 
+	 * @return
+	 */
+	public static Localized load(Class<?> cls) {
+		return load(cls, BUNDLE_NAME);
+	}
 
-    public static Localized load(Class<?> cls, String resName) {
-        // With the class name, create a new resource name to find the
-        // .properties file
-        String name = resName;
-        String baseName = cls.getName();
-        int index = baseName.lastIndexOf('.');
-        if (index != -1) {
-            name = baseName.substring(0, index).replace('.', '/') + '/' + resName;
-        }
+	public static Localized load(Class<?> cls, String resName) {
+		// With the class name, create a new resource name to find the
+		// .properties file
+		String name = resName;
+		String baseName = cls.getName();
+		int index = baseName.lastIndexOf('.');
+		if (index != -1) {
+			name = baseName.substring(0, index).replace('.', '/') + '/'
+					+ resName;
+		}
 
-        try {
-            return new Localized(ResourceBundle.getBundle(name, locale, cls.getClassLoader()));
-        } catch (MissingResourceException e) {
-            e.printStackTrace();
-            return new Localized(null);
-        }
-    }
+		try {
+			return new Localized(ResourceBundle.getBundle(name, locale,
+					cls.getClassLoader()));
+		} catch (MissingResourceException e) {
+			e.printStackTrace();
+			return new Localized(null);
+		}
+	}
 
-    /**
-     * The resource bundle.
-     */
-    private ResourceBundle res;
+	/**
+	 * The resource bundle.
+	 */
+	private ResourceBundle res;
 
-    /**
-     * Private constructor to avoid creating a utility class.
-     */
-    private Localized(ResourceBundle res) {
-        this.res = res;
-    }
+	/**
+	 * Private constructor to avoid creating a utility class.
+	 */
+	private Localized(ResourceBundle res) {
+		this.res = res;
+	}
 
-    /**
-     * Returns a localized formated string using the specified format string and arguments.
-     * 
-     * @param key
-     *            the key to the localized string
-     * @param args
-     *            the arguments
-     * @return the string
-     */
-    public String format(String key, Object... args) {
-        return String.format(locale, get(key), args);
-    }
+	/**
+	 * Returns a localized formated string using the specified format string and
+	 * arguments.
+	 * 
+	 * @param key
+	 *            the key to the localized string
+	 * @param args
+	 *            the arguments
+	 * @return the string
+	 */
+	public String format(String key, Object... args) {
+		return String.format(locale, get(key), args);
+	}
 
-    /**
-     * Return the required localized string
-     * 
-     * @param key
-     *            a key to the localized string
-     * @return the localized key
-     */
-    public String get(String key) {
-        if (this.res != null) {
-            try {
-                return this.res.getString(key);
-            } catch (MissingResourceException e) {
-                // Print the exception into the console
-                e.printStackTrace();
-            }
-        }
-        return "LOCALIZE " + key; //$NON-NLS-1$
-    }
+	/**
+	 * Return the required localized string
+	 * 
+	 * @param key
+	 *            a key to the localized string
+	 * @return the localized key
+	 */
+	public String get(String key) {
+		if (this.res != null) {
+			try {
+				return this.res.getString(key);
+			} catch (MissingResourceException e) {
+				// Print the exception into the console
+				e.printStackTrace();
+			}
+		}
+		return "LOCALIZE " + key; //$NON-NLS-1$
+	}
 }

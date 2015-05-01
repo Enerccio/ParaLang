@@ -65,20 +65,28 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.VariableInitializerContext;
 
 public class GenerateMarkdown {
 
-	public static void main(String[] a) throws Exception{
-		new GenerateMarkdown().run(new FileInputStream(new File("src/input.in")));
+	public static void main(String[] a) throws Exception {
+		new GenerateMarkdown()
+				.run(new FileInputStream(new File("src/input.in")));
 	}
-	
+
 	private void run(FileInputStream fileInputStream) throws Exception {
 		String data = IOUtils.toString(fileInputStream);
 		String output = "<!-- " + data + "-->\n";
 		output += format(data);
 		System.out.println(output);
 	}
-	
+
+	public String run(String content) throws Exception {
+		String output = "<!-- " + content + "-->\n";
+		output += format(content);
+		return output;
+	}
+
 	private class Block implements Comparable<Block> {
 		private int index;
 		private String value;
+
 		@Override
 		public int compareTo(Block arg0) {
 			return Integer.compare(index, arg0.index);
@@ -88,10 +96,10 @@ public class GenerateMarkdown {
 	private String format(String data) throws Exception {
 		ParserRuleContext ctx = parse(data);
 		String content = data;
-		
+
 		final List<Block> blocks = new ArrayList<Block>();
-		
-		PLangBaseVisitor<Void> visitor = new PLangBaseVisitor<Void>(){
+
+		PLangBaseVisitor<Void> visitor = new PLangBaseVisitor<Void>() {
 
 			@Override
 			public Void visitExpression(ExpressionContext ctx) {
@@ -132,7 +140,7 @@ public class GenerateMarkdown {
 			@Override
 			public Void visitConstExpr(ConstExprContext ctx) {
 				int start = ctx.getStart().getStartIndex();
-				int end = ctx.getStop().getStopIndex()+1;
+				int end = ctx.getStop().getStopIndex() + 1;
 				Block b = new Block();
 				b.index = start;
 				b.value = "<span class=\"pl-s3\">";
@@ -337,43 +345,14 @@ public class GenerateMarkdown {
 
 			@Override
 			public Void visitStatement(StatementContext ctx) {
-				if (ctx.getText().startsWith("return") || ctx.getText().startsWith("for") || 
-						ctx.getText().startsWith("while") || ctx.getText().startsWith("do") ||
-						ctx.getText().startsWith("break") || ctx.getText().startsWith("continue") ||
-						ctx.getText().startsWith("throw") || ctx.getText().startsWith("try") || 
-						ctx.getText().startsWith("if")){
-					String text = ctx.getChild(0).getText();
-					String[] arr = text.split(" ");
-					int start = ctx.start.getStartIndex();
-					int end = arr[0].length() + start;
-					Block b = new Block();
-					b.index = start;
-					b.value = "<span class=\"pl-k\">";
-					blocks.add(b);
-					b = new Block();
-					b.index = end;
-					b.value = "</span>";
-					blocks.add(b);
-				}
-				
-				if (ctx.getText().startsWith("do")){
-					int start = ctx.statement().get(0).getStop().getStopIndex()+1;
-					int end = ctx.parExpression().getStart().getStartIndex();
-					Block b = new Block();
-					b.index = start;
-					b.value = "<span class=\"pl-k\">";
-					blocks.add(b);
-					b = new Block();
-					b.index = end;
-					b.value = "</span>";
-					blocks.add(b);
-				}
-				
-				if (ctx.getText().startsWith("if")){
-					if (ctx.statement().size() == 2){
+
+				if (ctx.ifStatement() != null) {
+					if (ctx.ifStatement().statement().size() == 2) {
 						// has else
-						int start = ctx.statement().get(0).getStop().getStopIndex()+1;
-						int end =  ctx.statement().get(1).getStart().getStartIndex();
+						int start = ctx.ifStatement().statement().get(0)
+								.getStop().getStopIndex() + 1;
+						int end = ctx.ifStatement().statement().get(1)
+								.getStart().getStartIndex();
 						Block b = new Block();
 						b.index = start;
 						b.value = "<span class=\"pl-k\">";
@@ -384,7 +363,7 @@ public class GenerateMarkdown {
 						blocks.add(b);
 					}
 				}
-				
+
 				return super.visitStatement(ctx);
 			}
 
@@ -438,7 +417,7 @@ public class GenerateMarkdown {
 
 			@Override
 			public Void visitForInit(ForInitContext ctx) {
-				if (ctx.getText().startsWith("var")){
+				if (ctx.getText().startsWith("var")) {
 					String text = ctx.getChild(0).getText();
 					String[] arr = text.split(" ");
 					int start = ctx.start.getStartIndex();
@@ -458,7 +437,7 @@ public class GenerateMarkdown {
 			@Override
 			public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
 				int start = ctx.getStart().getStartIndex();
-				int end = ctx.formalParameters().getStop().getStopIndex()+1;
+				int end = ctx.formalParameters().getStop().getStopIndex() + 1;
 				Block b = new Block();
 				b.index = start;
 				b.value = "<span class=\"pl-s3\">";
@@ -467,7 +446,7 @@ public class GenerateMarkdown {
 				b.index = end;
 				b.value = "</span>";
 				blocks.add(b);
-				
+
 				return super.visitFunctionDeclaration(ctx);
 			}
 
@@ -497,7 +476,7 @@ public class GenerateMarkdown {
 			@Override
 			public Void visitLiteral(LiteralContext ctx) {
 				int start = ctx.getStart().getStartIndex();
-				int end = ctx.getStop().getStopIndex()+1;
+				int end = ctx.getStop().getStopIndex() + 1;
 				Block b = new Block();
 				b.index = start;
 				b.value = "<span class=\"pl-s2\"><span class=\"pl-pds\">";
@@ -508,22 +487,25 @@ public class GenerateMarkdown {
 				blocks.add(b);
 				return super.visitLiteral(ctx);
 			}
-			
+
 		};
 		visitor.visit(ctx);
-		
+
 		Collections.sort(blocks);
-		
-		for (int i=blocks.size()-1; i>=0; i--){
+
+		for (int i = blocks.size() - 1; i >= 0; i--) {
 			Block b = blocks.get(i);
-			content = content.substring(0, b.index) + b.value + content.substring(b.index);
+			content = content.substring(0, b.index) + b.value
+					+ content.substring(b.index);
 		}
-		
-		return "<div class=\"highlight highlight-js\"><pre>" + content + "</pre></div>";
+
+		return "<div class=\"highlight highlight-js\"><pre>" + content
+				+ "</pre></div>";
 	}
 
-	private CompilationUnitContext parse(String in) throws Exception{
-		ANTLRInputStream is = new ANTLRInputStream(new ByteArrayInputStream(in.getBytes("utf-8")));
+	private CompilationUnitContext parse(String in) throws Exception {
+		ANTLRInputStream is = new ANTLRInputStream(new ByteArrayInputStream(
+				in.getBytes("utf-8")));
 		PLangLexer lexer = new PLangLexer(is);
 		CommonTokenStream stream = new CommonTokenStream(lexer);
 		PLangParser parser = new PLangParser(stream);

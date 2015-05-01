@@ -1,30 +1,56 @@
-
 import cz.upol.vanusanik.paralang.runtime.wrappers.PrintStreamWrapper;
 
+###
+    IO module implements various functions related to IO, such as printing.
+    
+    Some methods or functions might be restricted!
+###
 module IO {
 
+    ###
+        SystemPrinter wraps java printstreams (out and err). Should not be instantiated by itself.
+    ###
 	class SystemPrinter {
-		var wrappedPrinter;
-		var emptyLine = "";
+		var __wrappedPrinter;
+		var __emptyLine = "";
 		
 		defn init(wp){
-			inst.wrappedPrinter = PrintStreamWrapper->PrintStreamWrapper(wp);
+			__wrappedPrinter = PrintStreamWrapper->PrintStreamWrapper(wp);
 		}
 		
+        ###
+            <b>Restricted function</b>. Prints object to the print stream.
+        ###
 		defn restricted print(object){
-			wrappedPrinter->print(object);
+			__wrappedPrinter->print(object);
 		}
 		
+        ###
+            <b>Restricted function</b>. Prints object to the print stream and prints end of line afterwards.
+        ###
 		defn restricted println(object){
 			print(object); lerp();
 		}
 		
+        ###
+            <b>Restricted function</b>. Prints end of line to the print stream.
+        ###
 		defn restricted lerp(){
-			wrappedPrinter->println(emptyLine);
+			__wrappedPrinter->println(__emptyLine);
 		}
 	}
 	
+    ###
+        SystemPrinter that prints to system out.
+        *type SystemPrinter
+        *init out system printer
+    ###
 	var out = new SystemPrinter(true);
+    ###
+        SystemPrinter that prints to system err.
+        *type SystemPrinter
+        *init err system printer
+    ###
 	var err = new SystemPrinter(false);
 
 };

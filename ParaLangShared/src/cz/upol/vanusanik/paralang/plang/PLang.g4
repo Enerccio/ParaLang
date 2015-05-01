@@ -1,12 +1,14 @@
 grammar PLang;
 
 compilationUnit
-    :   importDeclaration* moduleDeclaration EOF
+    :   importDeclaration* docComment? moduleDeclaration EOF
     ;
 
 importDeclaration
 	:   'using' singleQualifiedName ';'
+	|   'using' singleQualifiedName 'as' Identifier ';'
     |   'import' qualifiedName ';'
+    |   'import' qualifiedName 'as' Identifier ';'
     ; 
     
 moduleDeclaration
@@ -14,9 +16,9 @@ moduleDeclaration
 	; 
 	
 moduleDeclarations 
-	: functionDeclaration
-	| fieldDeclaration
-	| classDeclaration 
+	: docComment? functionDeclaration
+	| docComment? fieldDeclaration
+	| docComment? classDeclaration 
 	;
 
 classDeclaration 
@@ -31,7 +33,7 @@ classBody
 
 classBodyDeclaration
     :   ';'
-    |   memberDeclaration
+    |   docComment? memberDeclaration
     ;
 
 
@@ -86,7 +88,7 @@ formalParameter
     ;
 
 lastFormalParameter
-    :   variableDeclaratorId '...'
+    :   variableDeclaratorId
     ;
 
 functionBody
@@ -133,18 +135,54 @@ localVariableDeclaration
 
 statement
     :   block
-    |   'if' parExpression statement ('else' statement)?
-    |   'throw' expression ';'
-    |   'try' block (catchClause+ finallyBlock? | finallyBlock)
-    |   'for' '(' forControl ')' statement
-    |   'while' parExpression statement
-    |   'do' statement 'while' parExpression ';'
-    |   'return' expression? ';'
-    |   'break' ';'
-    |   'continue' ';'
+    |   ifStatement
+    |   throwStatement
+    |   tryStatement
+    |   forStatement
+    |   whileStatement
+    |   doStatement
+    |   returnStatement
+    |   breakStatement
+    |   continueStatement
     |   ';'
     |   statementExpression ';'
     ;
+    
+continueStatement
+	:	'continue' ';'
+	;
+    
+breakStatement
+	:	'break' ';'
+	;
+    
+forStatement
+	:	'for' '(' forControl ')' statement
+	;
+    
+whileStatement
+	:	'while' parExpression statement
+	;
+    
+doStatement
+	:	'do' statement 'while' parExpression ';'
+	;
+    
+tryStatement
+	:	'try' block (catchClause+ finallyBlock? | finallyBlock)
+	;
+    
+returnStatement
+	:	'return' expression? ';'
+	;
+    
+throwStatement 
+	:	'throw' expression ';'
+	;
+    
+ifStatement
+	:	'if' parExpression statement ('else' statement)?
+	;
     
 catchClause
     :   'catch' '(' type Identifier ')' block
@@ -185,7 +223,7 @@ constantExpression
 
 expression
     :   primary 
-    |   '(' 'dist' '(' IntegerLiteral ')' block ')'
+    |   '(' 'dist' '(' expression (',' expression)? ')' block ')'
     |   expression '.' Identifier
     |   expression '->' Identifier '(' expressionList? ')'
     |   Identifier '->' Identifier '(' expressionList? ')'
@@ -601,6 +639,14 @@ JavaLetterOrDigit
 
 WS  :  [ \t\r\n\u000C]+ -> skip
     ;
+    
+docComment
+    :   DOCCOMMENT
+    ;
+    
+DOCCOMMENT
+	: '###' .*? '###' 
+	;
 
 COMMENT
     :   '/*' .*? '*/' -> skip

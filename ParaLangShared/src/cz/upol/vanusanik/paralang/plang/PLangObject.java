@@ -4,45 +4,95 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 
-public abstract class PLangObject extends RuntimeException {
-	private static final long serialVersionUID = -4777704860769051988L;
+/**
+ * Every PLangObject has to implement this interface
+ * 
+ * @author Enerccio
+ *
+ */
+public interface PLangObject {
 
-	public abstract PlangObjectType ___getType();
-	
-	public abstract JsonValue ___toObject();
-	
-	public abstract boolean ___isNumber();
-	
-	public abstract Float ___getNumber(PLangObject self);
+	/**
+	 * Returns type of this instance
+	 * 
+	 * @return
+	 */
+	public PlangObjectType ___getType();
 
-	public abstract boolean ___eq(PLangObject self, PLangObject b);
+	/**
+	 * Serializes this object into json
+	 * 
+	 * @return
+	 */
+	public JsonValue ___toObject();
 
-	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {
-		throw new RuntimeException("Undefined method for this type!");
-	}
-	
-	public boolean ___more(PLangObject self, PLangObject other, boolean equals) {
-		throw new RuntimeException("Undefined method for this type!");
-	}
-	
-	public BaseCompiledStub ___getLowestClassdef(){
-		return null;
-	}
+	/**
+	 * Returns whether it is number or not
+	 * 
+	 * @return
+	 */
+	public boolean ___isNumber();
 
-	public String toString(PLangObject self) {
-		return toString();
-	}
-	
-	@Override
-    public Throwable fillInStackTrace()
-    {
-		if (___isException(this))
-			return super.fillInStackTrace();
-		else
-			return this;
-    }
+	/**
+	 * Returns itself as a numeric value.
+	 * 
+	 * @param self
+	 *            This instance (used for objects)
+	 * @return
+	 */
+	public Float ___getNumber(PLangObject self);
 
-	protected boolean ___isException(PLangObject self) {
-		return false;
-	}
+	/**
+	 * Returns whether these objects are equal
+	 * 
+	 * @param self
+	 *            this object
+	 * @param b
+	 *            other object
+	 * @return
+	 */
+	public boolean ___eq(PLangObject self, PLangObject b);
+
+	/**
+	 * Returns < comparison
+	 * 
+	 * @param self
+	 *            this object
+	 * @param other
+	 *            other object
+	 * @param equals
+	 *            <= or not
+	 * @return
+	 */
+	public boolean ___less(PLangObject self, PLangObject other, boolean equals);
+
+	/**
+	 * Returns > comparison
+	 * 
+	 * @param self
+	 *            this object
+	 * @param other
+	 *            other object
+	 * @param equals
+	 *            >= or not
+	 * @return
+	 */
+	public boolean ___more(PLangObject self, PLangObject other, boolean equals);
+
+	/**
+	 * Finds lowest parent
+	 * 
+	 * @return
+	 */
+	public BaseCompiledStub ___getLowestClassdef();
+
+	/**
+	 * toString
+	 * 
+	 * @param self
+	 *            this object
+	 * @return
+	 */
+	public String toString(PLangObject self);
+
 }

@@ -1,36 +1,55 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
-public class FunctionWrapper extends PLangObject implements Serializable {
+/**
+ * FunctionWrapper, ie a function/method accessor object. This object is used
+ * when method is called in PLang.
+ * 
+ * @author Enerccio
+ *
+ */
+public class FunctionWrapper extends PrimitivePLangObject implements
+		Serializable {
 
 	private static final long serialVersionUID = 3998164784189902299L;
 
-	public FunctionWrapper(){
-		
+	public FunctionWrapper() {
+
 	}
-	
-	public FunctionWrapper(String mName, BaseCompiledStub stub, boolean ism){
+
+	public FunctionWrapper(String mName, BaseCompiledStub stub, boolean ism) {
 		methodName = mName;
 		owner = stub;
 		isMethod = ism;
 	}
-	
+
+	/** Whether this is method or a function */
 	private boolean isMethod;
+	/** Java method name */
 	private String methodName;
+	/** Bound object */
 	private BaseCompiledStub owner;
-	
+
 	@Override
 	public BaseCompiledStub ___getLowestClassdef() {
 		BaseCompiledStub lowest = owner;
@@ -42,26 +61,59 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 		} while (nextLowest != null);
 		return lowest;
 	}
-	
+
+	/**
+	 * MethodAccessor helper class
+	 * 
+	 * @author Enerccio
+	 *
+	 */
 	private class MethodAccessor {
 		public Method m;
 		public BaseCompiledStub o;
 	}
 
-	public PLangObject run(BaseCompiledStub owner, PLangObject... arguments) throws Exception{
-		for (MethodAccessor ma : getAllMethods(owner)){
-			if (ma.m.getName().equals(methodName)){
-				return run(ma.m, ma.o, owner, arguments);
+	/**
+	 * All method accessors are cached here.
+	 */
+	private transient WeakHashMap<BaseCompiledStub, MethodAccessor> accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
+
+	/**
+	 * Runs the code with arguments
+	 * 
+	 * @param owner
+	 * @param arguments
+	 * @return
+	 * @throws Throwable
+	 */
+	public PLangObject run(BaseCompiledStub owner, PLangObject... arguments)
+			throws Throwable {
+		MethodAccessor ma = accessorCache.get(owner);
+		if (ma == null) {
+			for (MethodAccessor maa : getAllMethods(owner)) {
+				if (maa.m.getName().equals(methodName)) {
+					ma = maa;
+					accessorCache.put(owner, ma);
+					break;
+				}
 			}
+			if (ma == null)
+				throw new RuntimeException("Unknown method: " + methodName);
 		}
-		throw new RuntimeException("Unknown method: " + methodName);
+		return run(ma, owner, arguments);
 	}
 
+	/**
+	 * Returns all the methods of that owner.
+	 * 
+	 * @param owner
+	 * @return
+	 */
 	private List<MethodAccessor> getAllMethods(BaseCompiledStub owner) {
 		List<MethodAccessor> mList = new ArrayList<MethodAccessor>();
-		
+
 		do {
-			for (Method m : owner.getClass().getMethods()){
+			for (Method m : owner.getClass().getMethods()) {
 				MethodAccessor ma = new MethodAccessor();
 				ma.m = m;
 				ma.o = owner;
@@ -69,16 +121,40 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 			}
 			owner = owner.___getParent();
 		} while (owner != null);
-		
+
 		return mList;
 	}
 
-	private PLangObject run(Method m, BaseCompiledStub runner, BaseCompiledStub self, PLangObject[] arguments) throws Exception {
+	/** Method handle cache */
+	private static Map<Method, MethodHandle> methodHandles = Collections
+			.synchronizedMap(new WeakHashMap<Method, MethodHandle>());
+
+	/**
+	 * Runs the method accessor with the self and arguments
+	 * 
+	 * @param ma
+	 * @param self
+	 * @param arguments
+	 * @return
+	 * @throws Throwable
+	 */
+	private PLangObject run(MethodAccessor ma, BaseCompiledStub self,
+			PLangObject[] arguments) throws Throwable {
+		MethodHandle genHandle = methodHandles.get(ma.m);
+
+		if (genHandle == null) {
+			genHandle = MethodHandles.lookup().unreflect(ma.m);
+			methodHandles.put(ma.m, genHandle);
+		}
+
+		MethodHandle handle = genHandle.bindTo(ma.o);
+
 		PLangObject[] data = arguments;
-		if (isMethod){
+		if (isMethod) {
 			data = Utils.pushLeft(self, arguments);
 		}
-		return (PLangObject) m.invoke(runner, (Object[])data);
+
+		return (PLangObject) handle.invokeWithArguments((Object[]) data);
 	}
 
 	public boolean isMethod() {
@@ -96,7 +172,7 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	public void setMethodName(String methodName) {
 		this.methodName = methodName;
 	}
-	
+
 	public BaseCompiledStub getOwner() {
 		return owner;
 	}
@@ -109,10 +185,11 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	public PlangObjectType ___getType() {
 		return PlangObjectType.FUNCTION;
 	}
-	
+
 	@Override
-	public String toString(){
-		return "Function Wrapper of method " + methodName + " of object " + owner;
+	public String toString() {
+		return "Function Wrapper of method " + methodName + " of object "
+				+ owner;
 	}
 
 	@Override
@@ -146,16 +223,16 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public JsonValue ___toObject() {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
-				.add("value", new JsonObject()
-					.add("methodName", methodName)
-					.add("owner", owner.___toObject())
-					.add("isClassMethod", isMethod));
+				.add("value",
+						new JsonObject().add("methodName", methodName)
+								.add("owner", owner.___toObject())
+								.add("isClassMethod", isMethod));
 	}
-	
+
 	@Override
 	public boolean ___isNumber() {
 		return false;
@@ -165,9 +242,24 @@ public class FunctionWrapper extends PLangObject implements Serializable {
 	public Float ___getNumber(PLangObject self) {
 		return null;
 	}
-	
+
 	@Override
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
+	}
+
+	/**
+	 * Needs to provide own implementation of accessorCache since it is not
+	 * serialized
+	 * 
+	 * @param in
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+
+		accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
 	}
 }

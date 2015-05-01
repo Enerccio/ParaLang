@@ -55,174 +55,174 @@ import java.util.Set;
  */
 public interface BidiMultiMap<K, V> extends Map<K, V> {
 
-    /**
-     * The empty map (immutable).
-     */
-    @SuppressWarnings("rawtypes")
+	/**
+	 * The empty map (immutable).
+	 */
+	@SuppressWarnings("rawtypes")
 	public static final BidiMultiMap EMPTY = new BidiMultiMap() {
 
-        @Override
-        public int size() {
-            return 0;
-        }
+		@Override
+		public int size() {
+			return 0;
+		}
 
-        @Override
-        public boolean isEmpty() {
-            return true;
-        }
+		@Override
+		public boolean isEmpty() {
+			return true;
+		}
 
-        @Override
-        public boolean containsKey(Object key) {
-            return false;
-        }
+		@Override
+		public boolean containsKey(Object key) {
+			return false;
+		}
 
-        @Override
-        public boolean containsValue(Object value) {
-            return false;
-        }
+		@Override
+		public boolean containsValue(Object value) {
+			return false;
+		}
 
-        @Override
-        public Object get(Object key) {
-            return null;
-        }
+		@Override
+		public Object get(Object key) {
+			return null;
+		}
 
-        @Override
-        public Object put(Object key, Object value) {
-            throw new UnsupportedOperationException();
-        }
+		@Override
+		public Object put(Object key, Object value) {
+			throw new UnsupportedOperationException();
+		}
 
-        @Override
-        public Object remove(Object key) {
-            return null;
-        }
+		@Override
+		public Object remove(Object key) {
+			return null;
+		}
 
-        @Override
-        public void putAll(Map m) {
-            throw new UnsupportedOperationException();
-        }
+		@Override
+		public void putAll(Map m) {
+			throw new UnsupportedOperationException();
+		}
 
-        @Override
-        public void clear() {
-            // Nothing to do
-        }
+		@Override
+		public void clear() {
+			// Nothing to do
+		}
 
-        @Override
-        public Set keySet() {
-            return Collections.EMPTY_SET;
-        }
+		@Override
+		public Set keySet() {
+			return Collections.EMPTY_SET;
+		}
 
-        @Override
-        public Collection values() {
-            return Collections.EMPTY_SET;
-        }
+		@Override
+		public Collection values() {
+			return Collections.EMPTY_SET;
+		}
 
-        @Override
-        public Set entrySet() {
-            return Collections.EMPTY_SET;
-        }
+		@Override
+		public Set entrySet() {
+			return Collections.EMPTY_SET;
+		}
 
-        @Override
-        public boolean containsEntry(Object key, Object value) {
-            return false;
-        }
+		@Override
+		public boolean containsEntry(Object key, Object value) {
+			return false;
+		}
 
-        @Override
-        public Set keySet(Object value) {
-            return Collections.EMPTY_SET;
-        }
+		@Override
+		public Set keySet(Object value) {
+			return Collections.EMPTY_SET;
+		}
 
-        @Override
-        public boolean removeEntry(Object key, Object value) {
-            return false;
-        }
+		@Override
+		public boolean removeEntry(Object key, Object value) {
+			return false;
+		}
 
-        @Override
-        public Set removeKey(Object key) {
-            return null;
-        }
+		@Override
+		public Set removeKey(Object key) {
+			return null;
+		}
 
-        @Override
-        public Set removeValue(Object value) {
-            return null;
-        }
+		@Override
+		public Set removeValue(Object value) {
+			return null;
+		}
 
-        @Override
-        public Set valueSet() {
-            return Collections.EMPTY_SET;
-        }
+		@Override
+		public Set valueSet() {
+			return Collections.EMPTY_SET;
+		}
 
-        @Override
-        public Set valueSet(Object key) {
-            return Collections.EMPTY_SET;
-        }
+		@Override
+		public Set valueSet(Object key) {
+			return Collections.EMPTY_SET;
+		}
 
-    };
+	};
 
-    /**
-     * Checks whether the map contains the specified entry.
-     * 
-     * @param key
-     *            the key to search for
-     * @param value
-     *            the value to search for
-     * @return true if the map contains the entry
-     */
-    boolean containsEntry(Object key, Object value);
+	/**
+	 * Checks whether the map contains the specified entry.
+	 * 
+	 * @param key
+	 *            the key to search for
+	 * @param value
+	 *            the value to search for
+	 * @return true if the map contains the entry
+	 */
+	boolean containsEntry(Object key, Object value);
 
-    /**
-     * Gets the keySet view of the map. Changes made to the view affect this
-     * map. To simply iterate through the keys, use {@link #mapIterator()}.
-     * 
-     * @param value
-     *            the value
-     * @return the keySet view
-     */
-    Set<K> keySet(V value);
+	/**
+	 * Gets the keySet view of the map. Changes made to the view affect this
+	 * map. To simply iterate through the keys, use {@link #mapIterator()}.
+	 * 
+	 * @param value
+	 *            the value
+	 * @return the keySet view
+	 */
+	Set<K> keySet(V value);
 
-    /**
-     * Removes the specified mapping from this map.
-     * 
-     * @param key
-     *            the mapping to remove
-     * @param value
-     *            the mapping to remove
-     * @return False if key not in map
-     */
-    boolean removeEntry(Object key, Object value);
+	/**
+	 * Removes the specified mapping from this map.
+	 * 
+	 * @param key
+	 *            the mapping to remove
+	 * @param value
+	 *            the mapping to remove
+	 * @return False if key not in map
+	 */
+	boolean removeEntry(Object key, Object value);
 
-    /**
-     * Remove the specified key from this map.
-     * 
-     * @param key
-     *            the key to remove
-     * @return the values mapped to the removed key, null if key not in map
-     */
-    Set<V> removeKey(Object key);
+	/**
+	 * Remove the specified key from this map.
+	 * 
+	 * @param key
+	 *            the key to remove
+	 * @return the values mapped to the removed key, null if key not in map
+	 */
+	Set<V> removeKey(Object key);
 
-    /**
-     * Removes the specified value from this map.
-     * 
-     * @param value
-     *            the value to remove
-     * @return the keys mapped to the removed value, null if value not in map
-     */
-    Set<K> removeValue(Object value);
+	/**
+	 * Removes the specified value from this map.
+	 * 
+	 * @param value
+	 *            the value to remove
+	 * @return the keys mapped to the removed value, null if value not in map
+	 */
+	Set<K> removeValue(Object value);
 
-    /**
-     * Gets the values view of the map. Changes made to the view affect this
-     * map.
-     * 
-     * @return the values view
-     */
-    Set<V> valueSet();
+	/**
+	 * Gets the values view of the map. Changes made to the view affect this
+	 * map.
+	 * 
+	 * @return the values view
+	 */
+	Set<V> valueSet();
 
-    /**
-     * Gets the values view of the map for the key specified. Changes made to
-     * the view affect this map.
-     * 
-     * @param key
-     * @return
-     */
-    Set<V> valueSet(K key);
+	/**
+	 * Gets the values view of the map for the key specified. Changes made to
+	 * the view affect this map.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	Set<V> valueSet(K key);
 
 }

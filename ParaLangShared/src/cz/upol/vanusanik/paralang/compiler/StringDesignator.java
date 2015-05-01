@@ -6,11 +6,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+/**
+ * FileDesignator from String data in memory
+ * 
+ * @author Enerccio
+ *
+ */
 public class StringDesignator implements FileDesignator {
 
 	private String classDef;
 	private String source;
-	
+
 	@Override
 	public boolean isRealFile() {
 		return false;
@@ -45,8 +51,8 @@ public class StringDesignator implements FileDesignator {
 	public String getSource() {
 		return source;
 	}
-	
-	public void setSource(String source){
+
+	public void setSource(String source) {
 		this.source = source;
 	}
 
