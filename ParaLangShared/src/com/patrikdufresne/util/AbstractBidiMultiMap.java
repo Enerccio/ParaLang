@@ -310,6 +310,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 			private K nextObject;
 			private boolean nextObjectSet = false;
 
+			@Override
 			public boolean hasNext() {
 				if (nextObjectSet) {
 					return true;
@@ -317,6 +318,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 				return setNextObject();
 			}
 
+			@Override
 			public K next() {
 				if (!nextObjectSet) {
 					if (!setNextObject()) {
@@ -327,6 +329,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 				return nextObject;
 			}
 
+			@Override
 			public void remove() {
 				if (nextObjectSet) {
 					throw new IllegalStateException("remove() cannot be called");
@@ -369,6 +372,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 			private V nextObject;
 			private boolean nextObjectSet = false;
 
+			@Override
 			public boolean hasNext() {
 				if (nextObjectSet) {
 					return true;
@@ -376,6 +380,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 				return setNextObject();
 			}
 
+			@Override
 			public V next() {
 				if (!nextObjectSet) {
 					if (!setNextObject()) {
@@ -386,6 +391,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 				return nextObject;
 			}
 
+			@Override
 			public void remove() {
 				if (nextObjectSet) {
 					throw new IllegalStateException("remove() cannot be called");
@@ -431,6 +437,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 	/**
 	 * Subclasses must implement this function to provide a set of keys.
 	 */
+	@Override
 	public Set<K> keySet() {
 		if (this.keySet == null) {
 			this.keySet = new KeySet();
@@ -472,6 +479,7 @@ public abstract class AbstractBidiMultiMap<K, V> extends AbstractMap<K, V>
 
 	// -----------------------------------------------------------------------
 
+	@Override
 	public V put(K key, V value) {
 		entrySet().add(new SimpleEntry(key, value));
 		return null;

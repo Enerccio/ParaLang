@@ -31,10 +31,10 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.net.ssl.SSLSocketFactory;
-
 import javassist.ClassPool;
 import javassist.CtClass;
+
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -1290,6 +1290,7 @@ public class PLRuntime {
 			byte[] decoded = Base64.decodeBase64(encoded);
 			ByteArrayInputStream is = new ByteArrayInputStream(decoded);
 			ObjectInputStream serstream = new ObjectInputStream(is) {
+				@Override
 				protected Class<?> resolveClass(ObjectStreamClass desc)
 						throws IOException, ClassNotFoundException {
 					String name = desc.getName();

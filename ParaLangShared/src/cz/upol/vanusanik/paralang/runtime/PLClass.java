@@ -28,6 +28,7 @@ public abstract class PLClass extends BaseCompiledStub {
 		___fieldsAndMethods.put("inst", this);
 	}
 
+	@Override
 	public PLangObject ___getkey(String key) {
 		if (!___isInited) {
 			___init_class();

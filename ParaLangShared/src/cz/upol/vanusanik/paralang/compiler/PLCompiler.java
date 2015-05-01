@@ -70,7 +70,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.PrimaryContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.StatementContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.VariableDeclaratorsContext;
-import cz.upol.vanusanik.paralang.runtime.BaseClass;
+import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLModule;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
@@ -616,7 +616,7 @@ public class PLCompiler {
 
 		@Override
 		public String toString() {
-			return Mnemonic.OPCODE[(int) instBytes[0] & 0x000000FF] + ": "
+			return Mnemonic.OPCODE[instBytes[0] & 0x000000FF] + ": "
 					+ visited;
 		}
 	}
@@ -2039,7 +2039,7 @@ public class PLCompiler {
 		if (compilingClass)
 			// if we are compiling class, we need to compile base class variable
 			// held in super key
-			new StoreToField(BaseClass.___superKey) {
+			new StoreToField(PLClass.___superKey) {
 
 				@Override
 				protected void provideSourceValue() throws Exception {
@@ -3007,7 +3007,7 @@ public class PLCompiler {
 					.constExpr().id().getText() : primary.getText();
 
 			if (identifier.equals("parent"))
-				identifier = BaseClass.___superKey;
+				identifier = PLClass.___superKey;
 
 			// check for illegal identifiers, ie ___ identifiers or identifiers
 			// related to the throwable base class
@@ -3382,7 +3382,7 @@ public class PLCompiler {
 			Instruction in = new Instruction();
 			int pos = i;
 
-			switch ((int) bytecode[i] & 0x000000FF) {
+			switch (bytecode[i] & 0x000000FF) {
 			// 1
 			case 0x19:
 			case 0x3a:
@@ -3471,7 +3471,7 @@ public class PLCompiler {
 
 				// wide
 			case 0xc4:
-				int cbc = (int) bytecode[i] & 0x000000FF;
+				int cbc = bytecode[i] & 0x000000FF;
 				if (cbc == 0x84) {
 					in.instBytes = new byte[6];
 					in.instBytes[0] = bytecode[i];
@@ -3654,7 +3654,7 @@ public class PLCompiler {
 
 		int it = 0;
 		for (Instruction i : iList) {
-			int opcode = (int) i.instBytes[0] & 0x000000FF;
+			int opcode = i.instBytes[0] & 0x000000FF;
 
 			switch (opcode) {
 			case 0xa7:

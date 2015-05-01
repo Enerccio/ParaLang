@@ -26,7 +26,7 @@ public class BaseException extends PLClass implements Serializable {
 	protected void ___init_internal_datafields(BaseCompiledStub self) {
 		this.___restrictedOverride = true;
 
-		___setkey(BaseClass.___superKey, new BaseClass());
+		___setkey(PLClass.___superKey, new BaseClass());
 		___setkey("init", new FunctionWrapper("__init__base", this, true));
 		___setkey(__messageGetter, new FunctionWrapper(__messageGetter, this,
 				true));
@@ -39,7 +39,7 @@ public class BaseException extends PLClass implements Serializable {
 
 	public PLangObject __init__base(PLangObject self, PLangObject message) {
 		// run super init
-		BaseClass bc = (BaseClass) ___getkey(BaseClass.___superKey);
+		BaseClass bc = (BaseClass) ___getkey(PLClass.___superKey);
 		PLRuntime.getRuntime().run(bc.___getkey("init"), bc);
 
 		___setkey(__messageField, message);

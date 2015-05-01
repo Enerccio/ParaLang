@@ -26,7 +26,7 @@ public class NetworkException extends PLClass {
 
 		BaseException be = new BaseException();
 		be.___init_class();
-		___setkey(BaseClass.___superKey, be);
+		___setkey(PLClass.___superKey, be);
 		___setkey("init", new FunctionWrapper("__init__base", this, true));
 		___setkey(BaseException.__messageField, NoValue.NOVALUE);
 		___setkey(listKey, NoValue.NOVALUE);
@@ -42,7 +42,7 @@ public class NetworkException extends PLClass {
 
 	public PLangObject __init__base(PLangObject self, PLangObject message) {
 		// run super init
-		BaseException bc = (BaseException) ___getkey(BaseClass.___superKey);
+		BaseException bc = (BaseException) ___getkey(PLClass.___superKey);
 		PLRuntime.getRuntime().run(bc.___getkey("init"), bc);
 
 		___setkey(BaseException.__messageField, message);

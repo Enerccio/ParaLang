@@ -988,6 +988,7 @@ public class BidiMultiHashMap<K, V> extends AbstractBidiMultiMap<K, V>
 	 * 
 	 * @return the keySet iterator
 	 */
+	@Override
 	protected Iterator<K> createKeySetIterator() {
 		if (size() == 0) {
 			return Collections.EMPTY_SET.iterator();
@@ -998,6 +999,7 @@ public class BidiMultiHashMap<K, V> extends AbstractBidiMultiMap<K, V>
 	/**
 	 * Replace the default implementation by our iterator.
 	 */
+	@Override
 	protected Iterator<K> createKeySetIteratorForValue(final V value) {
 		return new KeySetIteratorForValue(value);
 	}
@@ -1010,6 +1012,7 @@ public class BidiMultiHashMap<K, V> extends AbstractBidiMultiMap<K, V>
 	 * 
 	 * @return the values iterator
 	 */
+	@Override
 	protected Iterator<V> createValueIterator() {
 		if (size() == 0) {
 			return Collections.EMPTY_SET.iterator();

@@ -43,6 +43,7 @@ public class WeakHashSet extends HashSet {
 	 *
 	 * @return an Iterator over the elements in this set.
 	 */
+	@Override
 	public Iterator iterator() {
 		// remove garbage collected elements
 		processQueue();
@@ -51,15 +52,18 @@ public class WeakHashSet extends HashSet {
 		final Iterator i = super.iterator();
 
 		return new Iterator() {
+			@Override
 			public boolean hasNext() {
 				return i.hasNext();
 			}
 
+			@Override
 			public Object next() {
 				// unwrap the element
 				return getReferenceObject((WeakReference) i.next());
 			}
 
+			@Override
 			public void remove() {
 				// remove the element from the HashSet
 				i.remove();
@@ -74,6 +78,7 @@ public class WeakHashSet extends HashSet {
 	 *            element whose presence in this set is to be tested.
 	 * @return <code>true</code> if this set contains the specified element.
 	 */
+	@Override
 	public boolean contains(Object o) {
 		return super.contains(WeakElement.create(o));
 	}
@@ -86,6 +91,7 @@ public class WeakHashSet extends HashSet {
 	 * @return <code>true</code> if the set did not already contain the
 	 *         specified element.
 	 */
+	@Override
 	public boolean add(Object o) {
 		processQueue();
 		return super.add(WeakElement.create(o, this.queue));
@@ -98,6 +104,7 @@ public class WeakHashSet extends HashSet {
 	 *            object to be removed from this set, if present.
 	 * @return <code>true</code> if the set contained the specified element.
 	 */
+	@Override
 	public boolean remove(Object o) {
 		boolean ret = super.remove(WeakElement.create(o));
 		processQueue();
@@ -161,6 +168,7 @@ public class WeakHashSet extends HashSet {
 		 * objects that are, in turn, equal according to their own equals
 		 * methods
 		 */
+		@Override
 		public boolean equals(Object o) {
 			if (this == o)
 				return true;
@@ -175,6 +183,7 @@ public class WeakHashSet extends HashSet {
 			return t.equals(u);
 		}
 
+		@Override
 		public int hashCode() {
 			return hash;
 		}

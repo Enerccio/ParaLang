@@ -42,6 +42,7 @@ public class Protocol {
 	/** Threads used to provide future access */
 	private static ExecutorService executor = Executors
 			.newCachedThreadPool(new ThreadFactory() {
+				@Override
 				public Thread newThread(Runnable r) {
 					Thread t = Executors.defaultThreadFactory().newThread(r);
 					t.setDaemon(true);
@@ -69,6 +70,7 @@ public class Protocol {
 			return null;
 
 		Future<JsonObject> future = executor.submit(new Callable<JsonObject>() {
+			@Override
 			public JsonObject call() {
 				try {
 					byte[] arr = new byte[4];
