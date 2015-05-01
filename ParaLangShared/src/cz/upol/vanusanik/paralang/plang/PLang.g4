@@ -88,7 +88,7 @@ formalParameter
     ;
 
 lastFormalParameter
-    :   variableDeclaratorId '...'
+    :   variableDeclaratorId
     ;
 
 functionBody

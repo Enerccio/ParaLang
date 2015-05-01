@@ -1,10 +1,10 @@
 package cz.upol.vanusanik.paralang.connector;
 
 public class Node {
-	
+
 	private final String address;
 	private final int port;
-	
+
 	public Node(String address, int port) {
 		this.address = address;
 		this.port = port;
@@ -50,5 +50,5 @@ public class Node {
 	public int getPort() {
 		return port;
 	}
-	
+
 }

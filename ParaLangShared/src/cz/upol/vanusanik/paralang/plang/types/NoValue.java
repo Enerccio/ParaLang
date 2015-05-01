@@ -12,10 +12,10 @@ import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 public class NoValue extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = 7573052889816332570L;
 
-	private NoValue(){
-		
+	private NoValue() {
+
 	}
-	
+
 	public static final NoValue NOVALUE = new NoValue();
 
 	@Override
@@ -24,15 +24,15 @@ public class NoValue extends PrimitivePLangObject implements Serializable {
 	}
 
 	@Override
-	public String toString(){
+	public String toString() {
 		return "NoValue";
 	}
-	
+
 	@Override
 	public JsonValue ___toObject() {
 		return new JsonObject().add("metaObjectType", ___getType().toString());
 	}
-	
+
 	@Override
 	public boolean ___isNumber() {
 		return false;
@@ -42,13 +42,13 @@ public class NoValue extends PrimitivePLangObject implements Serializable {
 	public Float ___getNumber(PLangObject self) {
 		return null;
 	}
-	
+
 	@Override
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
-	
-	private Object readResolve()  {
-	    return NOVALUE;
+
+	private Object readResolve() {
+		return NOVALUE;
 	}
 }

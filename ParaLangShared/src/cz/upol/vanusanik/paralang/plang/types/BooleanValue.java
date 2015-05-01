@@ -12,28 +12,27 @@ import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 public class BooleanValue extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = -4278817229742488910L;
 	boolean value;
-	
-	private BooleanValue(boolean value){
+
+	private BooleanValue(boolean value) {
 		this.value = value;
 	}
-	
+
 	public static final BooleanValue TRUE = new BooleanValue(true);
 	public static final BooleanValue FALSE = new BooleanValue(false);
-	
+
 	@Override
 	public PlangObjectType ___getType() {
 		return PlangObjectType.BOOLEAN;
 	}
-	
+
 	@Override
-	public String toString(){
+	public String toString() {
 		return value ? "TRUE" : "FALSE";
 	}
 
 	@Override
 	public JsonValue ___toObject() {
-		return new JsonObject()
-				.add("metaObjectType", ___getType().toString())
+		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}
 
@@ -55,8 +54,8 @@ public class BooleanValue extends PrimitivePLangObject implements Serializable {
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		return this == b;
 	}
-	
-	private Object readResolve()  {
+
+	private Object readResolve() {
 		return value ? TRUE : FALSE;
 	}
 

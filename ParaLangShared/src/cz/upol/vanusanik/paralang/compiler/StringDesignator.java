@@ -10,7 +10,7 @@ public class StringDesignator implements FileDesignator {
 
 	private String classDef;
 	private String source;
-	
+
 	@Override
 	public boolean isRealFile() {
 		return false;
@@ -45,8 +45,8 @@ public class StringDesignator implements FileDesignator {
 	public String getSource() {
 		return source;
 	}
-	
-	public void setSource(String source){
+
+	public void setSource(String source) {
 		this.source = source;
 	}
 

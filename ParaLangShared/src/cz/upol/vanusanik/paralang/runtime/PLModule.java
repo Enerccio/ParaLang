@@ -9,5 +9,5 @@ public abstract class PLModule extends BaseCompiledStub {
 	public PlangObjectType ___getType() {
 		return PlangObjectType.MODULE;
 	}
-	
+
 }

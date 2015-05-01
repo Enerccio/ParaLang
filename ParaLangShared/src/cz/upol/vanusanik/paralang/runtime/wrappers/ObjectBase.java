@@ -4,18 +4,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class ObjectBase {
-	
-	private static ThreadLocal<Set<Object>> printChain = new ThreadLocal<Set<Object>>(){
+
+	private static ThreadLocal<Set<Object>> printChain = new ThreadLocal<Set<Object>>() {
 
 		@Override
 		protected Set<Object> initialValue() {
 			return new HashSet<Object>();
 		}
-		
+
 	};
-	
+
 	@Override
-	public final String toString(){
+	public final String toString() {
 		if (printChain.get().contains(this))
 			return "...";
 		printChain.get().add(this);

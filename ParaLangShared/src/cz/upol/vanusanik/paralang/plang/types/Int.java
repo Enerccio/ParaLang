@@ -12,16 +12,16 @@ import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
 public class Int extends PrimitivePLangObject implements Serializable {
 	private static final long serialVersionUID = 3731336418712870225L;
 	long value;
-	
-	public Int(){
-		
+
+	public Int() {
+
 	}
-	
-	public Int(int value){
+
+	public Int(int value) {
 		this.value = value;
 	}
-	
-	public Int(long value){
+
+	public Int(long value) {
 		this.value = value;
 	}
 
@@ -29,10 +29,10 @@ public class Int extends PrimitivePLangObject implements Serializable {
 	public PlangObjectType ___getType() {
 		return PlangObjectType.INTEGER;
 	}
-	
+
 	@Override
-	public String toString(){
-		return ""+value;
+	public String toString() {
+		return "" + value;
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class Int extends PrimitivePLangObject implements Serializable {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}
-	
+
 	@Override
 	public boolean ___isNumber() {
 		return true;
@@ -72,24 +72,27 @@ public class Int extends PrimitivePLangObject implements Serializable {
 	public Float ___getNumber(PLangObject self) {
 		return (float) value;
 	}
-	
+
 	@Override
 	public boolean ___eq(PLangObject self, PLangObject b) {
-		if (!b.___isNumber()) return false;
+		if (!b.___isNumber())
+			return false;
 		return value == b.___getNumber(b).intValue();
 	}
 
 	public long getValue() {
 		return value;
 	}
-	
+
 	@Override
 	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {
-		return equals ? (value <= other.___getNumber(other)) : (value < other.___getNumber(other));
+		return equals ? (value <= other.___getNumber(other)) : (value < other
+				.___getNumber(other));
 	}
-	
+
 	@Override
 	public boolean ___more(PLangObject self, PLangObject other, boolean equals) {
-		return equals ? (value >= other.___getNumber(other)) : (value > other.___getNumber(other));
+		return equals ? (value >= other.___getNumber(other)) : (value > other
+				.___getNumber(other));
 	}
 }

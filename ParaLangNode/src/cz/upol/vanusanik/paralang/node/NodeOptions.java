@@ -6,29 +6,30 @@ import com.beust.jcommander.Parameter;
 
 /**
  * Options this console server application accepts.
+ * 
  * @author Enerccio
  *
  */
 public class NodeOptions {
 
-	@Parameter(required = true, names = {"-p", "--port"}, description="Port on which this node will listen")
+	@Parameter(required = true, names = { "-p", "--port" }, description = "Port on which this node will listen")
 	public Integer portNumber;
-	
-	@Parameter(required = true, names = {"-ks", "--keystore"}, description="Keystore for SSL conecction.  Must be in same dir as running process.")
+
+	@Parameter(required = true, names = { "-ks", "--keystore" }, description = "Keystore for SSL conecction.  Must be in same dir as running process.")
 	public String keystore;
-	
-	@Parameter(required = true, names = {"-ksp", "--keystore-password"}, description="Keystore password for SSL conecction.")
+
+	@Parameter(required = true, names = { "-ksp", "--keystore-password" }, description = "Keystore password for SSL conecction.")
 	public String keystorepass;
-	
-	@Parameter(names = {"-tc", "--thread-count"}, description="Number of available node threads, default is number of cpu hardware threads available")
+
+	@Parameter(names = { "-tc", "--thread-count" }, description = "Number of available node threads, default is number of cpu hardware threads available")
 	public Integer threadCount = Runtime.getRuntime().availableProcessors();
 
-	@Parameter(names = {"-cst", "--cache-store-duration"}, description="Amount of time the cache is kept. Default 3600000 (in ms)")
+	@Parameter(names = { "-cst", "--cache-store-duration" }, description = "Amount of time the cache is kept. Default 3600000 (in ms)")
 	public Long cacheStoreTime = 3600L;
-	
-	@Parameter(names = {"-n", "--nodes"}, description = "List of nodes in <address>:<port>; format in single \"\" string")
+
+	@Parameter(names = { "-n", "--nodes" }, description = "List of nodes in <address>:<port>; format in single \"\" string")
 	public String nodes = "";
-	
-	@Parameter(names = {"-nl", "--node-list"}, description = "File containing node list")
+
+	@Parameter(names = { "-nl", "--node-list" }, description = "File containing node list")
 	public File nodeListFile;
 }
