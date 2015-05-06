@@ -898,7 +898,7 @@ public class PLRuntime {
 
 		PLClass c = newInstance("Collections.List");
 		List<PLangObject> data = ((Pointer) c.___fieldsAndMethods
-				.get("wrappedList")).getPointer();
+				.get("__wrappedList")).getPointer();
 
 		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(),
 				runner, methodName, tcount, arg);

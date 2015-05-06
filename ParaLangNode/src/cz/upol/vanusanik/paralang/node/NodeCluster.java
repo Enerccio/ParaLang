@@ -8,17 +8,60 @@ package cz.upol.vanusanik.paralang.node;
  *
  */
 public class NodeCluster {
+	
+	public static class ___TimeoutException extends RuntimeException {
+		private static final long serialVersionUID = 7423384920348882357L;
+		private int timeoutValue;
+		public ___TimeoutException(int timeout){
+			this.timeoutValue = timeout;
+		}
+		public int getTimeoutValue(){
+			return timeoutValue;
+		}
+	}
 
 	private Node[] nodes;
+	private Thread[] tcontainers;
+	private int timeout;
 
-	public NodeCluster(int wtc) {
+	public NodeCluster(final int wtc, final int timeout) {
+		this.timeout = timeout;
 		nodes = new Node[wtc];
+		tcontainers = new Thread[wtc];
 		for (int i = 0; i < wtc; i++) {
-			nodes[i] = new Node(this, i);
-			Thread t = new Thread(nodes[i], "Worker Thread " + i + ";");
-			t.setDaemon(true);
-			t.start();
+			newNode(i);
 		}
+		if (timeout > 0){
+			Thread cleaner = new Thread("Cleaning daemon thread"){
+
+				@Override
+				public void run() {
+					while (!interrupted()){
+						for (int i=0; i<wtc; i++){
+							Node n = nodes[i];
+							if (n.isExceedingTimeout(timeout))
+								terminateNode(n);
+						}
+					}
+				}
+				
+			};
+			cleaner.setDaemon(true);
+			cleaner.setPriority(Thread.MIN_PRIORITY);
+			cleaner.start();
+		}
+	}
+
+	/**
+	 * Creates new node at slot i
+	 * @param i
+	 */
+	private void newNode(int i) {
+		nodes[i] = new Node(this, i);
+		Thread t = new Thread(nodes[i], "Worker Thread " + i + ";");
+		tcontainers[i] = t;
+		t.setDaemon(true);
+		t.start();
 	}
 
 	/**
@@ -28,6 +71,29 @@ public class NodeCluster {
 	 */
 	public Node[] getNodes() {
 		return nodes;
+	}
+	
+	/**
+	 * Terminates node n, used by daemon
+	 * @param n
+	 */
+	public synchronized void terminateNode(Node n){
+		for (int i=0; i<nodes.length; i++){
+			if (nodes[i] == n){
+				terminateNode(i);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Terminates single node i
+	 * @param i
+	 */
+	@SuppressWarnings("deprecation")
+	private void terminateNode(int i) {
+		tcontainers[i].stop(new ___TimeoutException(timeout));
+		newNode(i);
 	}
 
 	int rrindex = 0;
@@ -58,7 +124,7 @@ public class NodeCluster {
 	 * 
 	 * @return free, reserved node or null
 	 */
-	private Node getFreeNodeOrFail() {
+	private synchronized Node getFreeNodeOrFail() {
 		for (Node n : nodes) {
 			if (!n.isBusy()) {
 				n.reserve();

@@ -2,6 +2,8 @@ package cz.upol.vanusanik.paralang.node;
 
 import org.apache.log4j.Logger;
 
+import cz.upol.vanusanik.paralang.node.NodeCluster.___TimeoutException;
+
 /**
  * Node is running thread that handles the execution of ParaLang code.
  * 
@@ -15,6 +17,8 @@ public class Node implements Runnable {
 	private int id;
 	/** Whether this node is reserved for some client or not */
 	private boolean reserved = false;
+	/** Start time of the payload, used to terminate halting threads */
+	private long startTime;
 
 	public Node(NodeCluster nodeCluster, int id) {
 		this.setId(id);
@@ -44,6 +48,10 @@ public class Node implements Runnable {
 				payload.run();
 				reserved = false;
 				payload = null;
+			} catch (___TimeoutException e){
+				payload = null;
+				reserved = false;
+				return;
 			} catch (Exception e) {
 				payload = null;
 				reserved = false;
@@ -61,6 +69,7 @@ public class Node implements Runnable {
 	 *            to be run
 	 */
 	public synchronized void setNewPayload(Runnable payload) {
+		startTime = System.currentTimeMillis();
 		this.payload = payload;
 	}
 
@@ -77,5 +86,14 @@ public class Node implements Runnable {
 	 */
 	public void release() {
 		reserved = false;
+	}
+
+	/**
+	 * Returns true if thread is exceeding timeout
+	 * @param timeout
+	 * @return
+	 */
+	public synchronized boolean isExceedingTimeout(int timeout) {
+		return (startTime + timeout < System.currentTimeMillis()) && (payload != null); 
 	}
 }

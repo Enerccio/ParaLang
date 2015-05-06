@@ -32,4 +32,7 @@ public class NodeOptions {
 
 	@Parameter(names = { "-nl", "--node-list" }, description = "File containing node list")
 	public File nodeListFile;
+	
+	@Parameter(names = { "-t", "--timeout" }, description = "Maximum node execution timeout before termination in ms, default -1")
+	public int timeout;
 }

@@ -21,8 +21,10 @@ import com.eclipsesource.json.JsonValue;
 import cz.upol.vanusanik.paralang.compiler.StringDesignator;
 import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.connector.Protocol;
+import cz.upol.vanusanik.paralang.node.NodeCluster.___TimeoutException;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.Int;
+import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime.DeserializationResult;
@@ -245,6 +247,13 @@ public class NodeController {
 				} catch (PLClass e) {
 					storage.exception = e;
 					return null;
+				} catch (___TimeoutException te){
+					// cancel the thread due to time limit and inform about it
+					log.info("Worker thread failed due to timeout");
+					storage.exception = PLRuntime.getRuntime().newInstance("System.BaseException", 
+							new Str("Timeout, maximum runtime allowed: " + te.getTimeoutValue()));
+					finished = true;
+					throw te;
 				} catch (Throwable t) {
 					// cancel unlimited running because throwing will go behind
 					// the usual end of run mechanics
@@ -356,7 +365,9 @@ public class NodeController {
 		JsonObject o = new JsonObject();
 
 		for (Node n : cluster.getNodes()) {
-			o.add("node" + n.getId(), n.isBusy());
+			synchronized (cluster){
+				o.add("node" + n.getId(), n.isBusy());
+			}
 		}
 
 		return o;
@@ -376,7 +387,7 @@ public class NodeController {
 	private void initialize(NodeOptions no) throws Exception {
 		service = Executors.newCachedThreadPool();
 		options = no;
-		cluster = new NodeCluster(no.threadCount);
+		cluster = new NodeCluster(no.threadCount, no.timeout);
 
 		if (no.nodeListFile != null) {
 			FileInputStream fis = new FileInputStream(no.nodeListFile);
