@@ -20,6 +20,7 @@ public class Strings {
 	public static final String BASE_COMPILED_STUB__GET_THIS = "___get_this";
 	public static final String BASE_COMPILED_STUB__RESTRICTED_OVERRIDE = "___restrictedOverride";
 	public static final String BASE_COMPILED_STUB__CONVERT_BOOLEAN = "___convertBoolean";
+	public static final String BASE_COMPILED_STUB__REBUILD_STACK = "___rebuildStack";
 
 	public static final String PL_MODULE = "cz/upol/vanusanik/paralang/runtime/PLModule";
 	public static final String PL_MODULE_L = "L" + PL_MODULE + ";";

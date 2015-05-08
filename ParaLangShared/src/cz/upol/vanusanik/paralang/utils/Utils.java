@@ -193,4 +193,11 @@ public class Utils {
 		throw new PointerMethodIncompatibleException();
 	}
 
+	public static StackTraceElement[] removeStackElements(StackTraceElement[] stackTrace, int no) {
+		StackTraceElement[] ed = new StackTraceElement[stackTrace.length - no];
+		for (int i=no; i<stackTrace.length; i++)
+			ed[i-no] = stackTrace[i]; 
+		return ed;
+	}
+
 }

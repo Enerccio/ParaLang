@@ -575,7 +575,7 @@ public class PLRuntime {
 				return wrapper.run(currentRunner, args);
 			} catch (WrongMethodTypeException e) {
 				throw newInstance("System.BaseException", new Str(
-						"Wrong number of arguments."));
+						"Wrong number of arguments.")).___rebuildStack();
 			} catch (RuntimeException e) {
 				throw e;
 			} catch (InvocationTargetException e) {
@@ -673,10 +673,10 @@ public class PLRuntime {
 			}
 		} catch (Exception e) {
 			throw newInstance("System.BaseException", new Str(
-					"Failed to create new java instance: " + e.getMessage()));
+					"Failed to create new java instance: " + e.getMessage())).___rebuildStack();
 		}
 		throw newInstance("System.BaseException", new Str(
-				"No method found for arguments " + args));
+				"No method found for arguments " + args)).___rebuildStack();
 	}
 
 	/**
@@ -720,10 +720,10 @@ public class PLRuntime {
 			}
 		} catch (Exception e) {
 			throw newInstance("System.BaseException", new Str(
-					"Failed to create new java instance: " + e.getMessage()));
+					"Failed to create new java instance: " + e.getMessage())).___rebuildStack();
 		}
 		throw newInstance("System.BaseException", new Str(
-				"No constructor found for arguments " + args));
+				"No constructor found for arguments " + args)).___rebuildStack();
 	}
 
 	public void setRestricted(boolean restricted) {
@@ -907,6 +907,7 @@ public class PLRuntime {
 					"System.NetworkException",
 					new Str(
 							"Failed distributed network call because of remote exception(s)"));
+			e.___rebuildStack();
 			for (PLangObject o : r.exceptions)
 				if (o != null)
 					data.add(o);

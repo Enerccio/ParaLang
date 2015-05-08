@@ -10,6 +10,7 @@ import com.eclipsesource.json.JsonValue;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
+import cz.upol.vanusanik.paralang.utils.Utils;
 
 /**
  * BaseCompiledStub is base class for all PLang classes/modules.
@@ -223,5 +224,11 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		if (!___isInited)
 			___init_class();
 		return (BaseCompiledStub) ___fieldsAndMethods.get(PLClass.___superKey);
+	}
+	
+	public BaseCompiledStub ___rebuildStack(){
+		fillInStackTrace();
+		setStackTrace(Utils.removeStackElements(getStackTrace(), 1));
+		return this;
 	}
 }

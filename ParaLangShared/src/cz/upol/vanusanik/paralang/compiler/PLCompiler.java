@@ -1951,6 +1951,8 @@ public class PLCompiler {
 			compileExpression(statement.throwStatement().expression(), false,
 					-1);
 			isStatementExpression.pop();
+			bc.add(Opcode.DUP);
+			bc.addInvokevirtual(Strings.BASE_COMPILED_STUB, Strings.BASE_COMPILED_STUB__REBUILD_STACK, "()"+Strings.BASE_COMPILED_STUB_L);
 			bc.add(Opcode.ATHROW);
 			return;
 		}

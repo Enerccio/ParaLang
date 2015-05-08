@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import org.apache.log4j.Logger;
@@ -96,6 +97,7 @@ public class NodeController {
 				.getDefault();
 		ServerSocket server = sslServerFactory
 				.createServerSocket(no.portNumber);
+		((SSLServerSocket)server).getNeedClientAuth();
 
 		while (true) {
 			final Socket s = server.accept();
