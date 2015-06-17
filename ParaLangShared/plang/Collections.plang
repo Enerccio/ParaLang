@@ -226,7 +226,7 @@ module Collections {
         ###
             Swaps the object at index index with object o.
         ###
-        defn set_at(index, o){
+        defn set(index, o){
             if (index < 0 || index >= size())
                 throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
             return __wrappedList->set(index, o);
@@ -426,7 +426,7 @@ module Collections {
     	Returns length of this array
     	###
     	defn size(){
-    		return length;
+    		return _length;
     	}
     	
     	###
@@ -452,6 +452,10 @@ module Collections {
     	defn __neq(other){
     		return !_eq(other);
     	}
+        
+        defn _str(){
+            return _array._str();
+        }
     }
     
     ###
@@ -542,8 +546,8 @@ module Collections {
     	
     	defn set(index, object){
     		if (!(object instanceof Array)){
-    			throw new IllegalArgumentException(__type_exception);
     		}
+    			throw new IllegalArgumentException(__type_exception);
     		parent.set(index, object._array);
     	}
     }
@@ -562,5 +566,51 @@ module Collections {
     	array._type_exception = "Incorrect type of argument passed, must be Array";
     	array._atype = "array";
     	return array;
+    }
+    
+    // More functions
+    
+    ###
+    Sorts anything that has get method with index argument, set method with index and object and size method with no arguments in place.
+    ###
+    defn simple_sort(gettable){
+    	__merge_sort(gettable, __preload_list(new List(), gettable.size()), 0, gettable.size());
+    }
+    
+    defn __preload_list(list, n){
+        for (var i=0; i<n; i++)
+            list.add(NoValue);
+        return list;
+    }
+    
+    defn __merge_sort(source, result, start, end){
+    	if (end - start < 2)
+    		return;
+    		
+    	var mid = (start + end) / 2;
+    	__merge_sort(source, result, start, mid);
+    	__merge_sort(source, result, mid, end);
+    	__merge_sort_merge(source, result, start, mid, end);
+        __merge_sort_copy(result, source, start, end);
+    }
+    
+    defn __merge_sort_merge(source, result, start, mid, end){
+    	var i0 = start;
+    	var i1 = mid;
+    	
+    	for (var j=start; j<end; j++){
+    		if (i0 < mid && (i1 >= end || source.get(i0) <= source.get(i1))){
+    			result.set(j, source.get(i0));
+    			++i0;
+    		} else {
+    			result.set(j, source.get(i1));
+    			++i1;
+    		}
+    	}
+    }
+    
+    defn __merge_sort_copy(result, source, start, end){
+        for (var k=start; k<end; k++)
+            source.set(k, result.get(k));
     }
 };

@@ -369,9 +369,10 @@ public class PLCompiler {
 
 					bc.addLdc(cacheStrings(identifier)); // load string from
 															// constants
+					bc.addIconst(0);
 					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 							Strings.BASE_COMPILED_STUB__GETKEY, "("
-									+ Strings.STRING_L + ")"
+									+ Strings.STRING_L + "Z)"
 									+ Strings.PLANGOBJECT_L);
 				} else {
 					addNil();
