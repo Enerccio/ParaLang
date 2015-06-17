@@ -15,7 +15,7 @@ import cz.upol.vanusanik.paralang.plang.types.Str;
  */
 public class BaseException extends PLClass implements Serializable {
 	private static final long serialVersionUID = 8923942805591451790L;
-	static final String __messageField = "__message";
+	static final String __messageField = "_message";
 	static final String __messageGetter = "get_message";
 
 	public BaseException() {
@@ -30,7 +30,7 @@ public class BaseException extends PLClass implements Serializable {
 		___setkey("init", new FunctionWrapper("__init__base", this, true));
 		___setkey(__messageGetter, new FunctionWrapper(__messageGetter, this,
 				true));
-		___setkey("__str", new FunctionWrapper("__str", this, true));
+		___setkey("_str", new FunctionWrapper("__str", this, true));
 
 		___setkey(__messageField, NoValue.NOVALUE);
 

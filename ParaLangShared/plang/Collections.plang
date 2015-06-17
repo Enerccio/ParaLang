@@ -382,7 +382,7 @@ module Collections {
     
     ###
     Fixed size array, used to get and set elements. Used to fast access and modification.
-    This class is abstract and should not be used. Use functions bellow to instantiate arrays.
+    This class is abstract and should not be used. Use functions above to instantiate arrays.
     ###
     class Array {
     	
@@ -490,7 +490,7 @@ module Collections {
     *ret Array
     ### 
     defn float_array(n){
-    	return float_array(n, FloatArray->FloatArray(n));
+    	return __float_array(n, FloatArray->FloatArray(n));
     }
     
     defn __float_array(n, internal_array){
@@ -549,7 +549,7 @@ module Collections {
     }
     
     ###
-    Constructs string array which will only allow string to be passed in
+    Constructs array of arrays which will only allow Array to be passed in
     *ret Array
     ### 
     defn array_array(n){

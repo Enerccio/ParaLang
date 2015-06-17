@@ -22,6 +22,10 @@ public class FloatArray extends ArrayBase implements Serializable {
 	public void setUnderlineObject(int idx, float value) {
 		data[idx] = value;
 	}
+	
+	public void setUnderlineObject(int idx, long value) {
+		data[idx] = value;
+	}
 
 	@Override
 	public int get_length() {

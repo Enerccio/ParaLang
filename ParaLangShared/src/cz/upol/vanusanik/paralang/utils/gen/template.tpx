@@ -993,22 +993,22 @@
                 <tr><td width="40%"><code>expression '.' Identifier</code></td><td width="10%">N/A</td><td width="50%">Returns the value stored in module/instance field identified by Identifier.</td><tr>
                 <tr><td width="40%"><code>expression '->' Identifier '(' parameters ')'</code></td><td width="10%">N/A</td><td width="50%">Calls java method identified by Identifier of Pointer value returned by expression.*</td><tr>
                 <tr><td width="40%"><code>Identifier '->' Identifier '(' parameters ')'</code></td><td width="10%">N/A</td><td width="50%">Creates new Pointer instance with new java class instance identified by Identifier. The identifiers must be equal!*</td><tr>
-                <tr><td width="40%"><code>expression '(' parameters ')'</code></td><td width="10%"><code>__apply</code></td><td width="50%">Calls function/method with arguments presented. You may define method <code>__apply</code> in any object or derive class from <code>System.Function</code> to call that method when this is executed.</td><tr>
+                <tr><td width="40%"><code>expression '(' parameters ')'</code></td><td width="10%"><code>protected _apply</code></td><td width="50%">Calls function/method with arguments presented. You may define method <code>protected _apply</code> in any object or derive class from <code>System.Function</code> to call that method when this is executed.</td><tr>
                 <tr><td width="40%"><code>new Identifier '(' parameters ')'</code></td><td width="10%"><code>init</code></td><td width="50%">Creates new object of specified class. Class must be either local class or type specified by <code>using</code> directive. The parameters must be exactly the same as specified by init method, which will be called.</td><tr>
                 <tr><td width="40%"><code>new Identifier '.' Identifier '(' parameters ')'</code></td><td width="10%"><code>init</code></td><td width="50%">Creates new object of specified module and class. Module must be specified by <code>using</code> directive.  The parameters must be exactly the same as specified by init method, which will be called.</td><tr>
                 <tr><td width="40%"><code>(Identifier | ( expression '.' Identifier )) ('++' | '--')</code></td><td width="10%">N/A</td><td width="50%">Increase the value of Identifier by calling (x + 1) but returns the previous value.</td><tr>
-                <tr><td width="40%"><code>('+' | '-') expression </code></td><td width="10%"><code>__uplus()</code>, <code>__uminus()</code></td><td width="50%">On numbers, - returns negative number while + is ignored.</td><tr>
-                <tr><td width="40%"><code>('++' | '--') expression </code></td><td width="10%"><code>__lplusplus()</code>, <code>__lminusminus()</code></td><td width="50%">Increase/decrease the value by 1</td><tr>
-                <tr><td width="40%"><code>('~' | '!') expression </code></td><td width="10%"><code>__ulogneg()</code>, <code>__ubinneg()</code></td><td width="50%">~ performs binary negation while ! performs logical negation</td><tr>
-                <tr><td width="40%"><code>expression ('*' | '/' | '%') expression </code></td><td width="10%"><code>__mul(other)</code>, <code>__div(other)</code>, <code>__mod(other)</code></td><td width="50%">Math operations of multiplication, division and modulo.</td><tr>
-                <tr><td width="40%"><code>expression ('+' | '-' ) expression </code></td><td width="10%"><code>__plus(other)</code>, <code>__minus(other)</code></td><td width="50%">Math operations of addition and subtraction.</td><tr>
-                <tr><td width="40%"><code>expression ('<<' | '>>' | '>>>' ) expression </code></td><td width="10%"><code>__right_shift(other)</code>, <code>__left_shift(other)</code>, <code>__right_ushift(other)</code></td><td width="50%">Math operations of left shift, right shift and right unsigned shift.</td><tr>
-                <tr><td width="40%"><code>expression ('<=' | '<' | '>' | '>=' ) expression </code></td><td width="10%"><code>__leq(other)</code>, <code>__less(other)</code>, <code>__meq(other)</code>, <code>__more(other)</code></td><td width="50%">Compare operations. Returns boolean value.</td><tr>
+                <tr><td width="40%"><code>('+' | '-') expression </code></td><td width="10%"><code>protected _uplus()</code>, <code>protected _uminus()</code></td><td width="50%">On numbers, - returns negative number while + is ignored.</td><tr>
+                <tr><td width="40%"><code>('++' | '--') expression </code></td><td width="10%"><code>protected _lplusplus()</code>, <code>protected _lminusminus()</code></td><td width="50%">Increase/decrease the value by 1</td><tr>
+                <tr><td width="40%"><code>('~' | '!') expression </code></td><td width="10%"><code>protected _ulogneg()</code>, <code>protected _ubinneg()</code></td><td width="50%">~ performs binary negation while ! performs logical negation</td><tr>
+                <tr><td width="40%"><code>expression ('*' | '/' | '%') expression </code></td><td width="10%"><code>protected _mul(other)</code>, <code>protected _div(other)</code>, <code>protected _mod(other)</code></td><td width="50%">Math operations of multiplication, division and modulo.</td><tr>
+                <tr><td width="40%"><code>expression ('+' | '-' ) expression </code></td><td width="10%"><code>protected _plus(other)</code>, <code>protected _minus(other)</code></td><td width="50%">Math operations of addition and subtraction.</td><tr>
+                <tr><td width="40%"><code>expression ('<<' | '>>' | '>>>' ) expression </code></td><td width="10%"><code>protected _right_shift(other)</code>, <code>protected _left_shift(other)</code>, <code>protected _right_ushift(other)</code></td><td width="50%">Math operations of left shift, right shift and right unsigned shift.</td><tr>
+                <tr><td width="40%"><code>expression ('<=' | '<' | '>' | '>=' ) expression </code></td><td width="10%"><code>protected _leq(other)</code>, <code>protected _less(other)</code>, <code>protected _meq(other)</code>, <code>protected _more(other)</code></td><td width="50%">Compare operations. Returns boolean value.</td><tr>
                 <tr><td width="40%"><code>expression 'instanceof' type </code></td><td width="10%">N/A</td><td width="50%">Returns true if expression is instance of the type. Types are defined in Base Types presented above.</td><tr>
-                <tr><td width="40%"><code>expression ('==' | '!=' ) expression </code></td><td width="10%"><code>__eq(other)</code>, <code>__neq(other)</code></td><td width="50%">Equality and non equality operator. Returns boolean value.</td><tr>
-                <tr><td width="40%"><code>expression '&' expression </code></td><td width="10%"><code>__bit_or(other)</code></td><td width="50%">Math operation, performs binary and.</td><tr>
-                <tr><td width="40%"><code>expression '|' expression </code></td><td width="10%"><code>__bit_and(other)</code></td><td width="50%">Math operation, performs binary or.</td><tr>
-                <tr><td width="40%"><code>expression '^' expression </code></td><td width="10%"><code>__bit_xor(other)</code></td><td width="50%">Math operation, performs binary xor.</td><tr>
+                <tr><td width="40%"><code>expression ('==' | '!=' ) expression </code></td><td width="10%"><code>protected _eq(other)</code>, <code>protected _neq(other)</code></td><td width="50%">Equality and non equality operator. Returns boolean value.</td><tr>
+                <tr><td width="40%"><code>expression '&' expression </code></td><td width="10%"><code>protected _bit_or(other)</code></td><td width="50%">Math operation, performs binary and.</td><tr>
+                <tr><td width="40%"><code>expression '|' expression </code></td><td width="10%"><code>protected _bit_and(other)</code></td><td width="50%">Math operation, performs binary or.</td><tr>
+                <tr><td width="40%"><code>expression '^' expression </code></td><td width="10%"><code>protected _bit_xor(other)</code></td><td width="50%">Math operation, performs binary xor.</td><tr>
                 <tr><td width="40%"><code>expression '&&' expression </code></td><td width="10%">N/A</td><td width="50%">Logical and operation, performs the logical expression short-cutting.</td><tr>
                 <tr><td width="40%"><code>expression '||' expression </code></td><td width="10%">N/A</td><td width="50%">Logical or operation, performs the logical expression short-cutting.</td><tr>
                 <tr><td width="40%"><code>expression '?' expression ':' expression </code></td><td width="10%">N/A</td><td width="50%">Ternary operator.</td><tr>
@@ -1040,7 +1040,7 @@
                 <tr><td width="10%"><code>center</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns string off-setted by space characters.</td></tr>
                 <tr><td width="10%"><code>contains</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string contains string provided as argument.</td></tr>
                 <tr><td width="10%"><code>count_matches</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns number of times argument matches in this string.</td></tr>
-                <tr><td width="10%"><code>__eq_ignorecase</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether string is equal with argument ignoring case.</td></tr>
+                <tr><td width="10%"><code>protected _eq_ignorecase</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether string is equal with argument ignoring case.</td></tr>
                 <tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr><tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr>
                 <tr><td width="10%"><code>last_index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of last match of parameter in this string, -1 if not found.</td></tr><tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr>
                 <tr><td width="10%"><code>is_all_uppercase</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is all upper case.</td></tr>
@@ -1092,9 +1092,9 @@
             
             <table>
                 <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
-                <tr><td width="10%"><code>__str</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns string representation of this instance.</td></tr>
-                <tr><td width="10%"><code>__eq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether value passed is equal. Base implementation compares pointer value of underline java objects.</td></tr>
-                <tr><td width="10%"><code>__neq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether value passed is inequal. Base implementation returns logical negation of <code>__eq</code> method.</td></tr>
+                <tr><td width="10%"><code>protected _str</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns string representation of this instance.</td></tr>
+                <tr><td width="10%"><code>protected _eq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether value passed is equal. Base implementation compares pointer value of underline java objects.</td></tr>
+                <tr><td width="10%"><code>protected _neq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether value passed is inequal. Base implementation returns logical negation of <code>protected _eq</code> method.</td></tr>
             </table>
             
             <h4 id="doc-sl-system-BaseNumber">Class: BaseInteger</h4>
@@ -1105,21 +1105,21 @@
             <table>
                 <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
                 <tr><td width="10%"><code>init</code></td><td width="20%">integer</td><td width="10%">N/A</td><td width="60%">Constructor of this class.</td></tr>
-                <tr><td width="10%"><code>__bit_and</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit and operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__bit_or</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit or operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__bit_xor</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit xor operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__div</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns div operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__mod</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns mod operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__mul</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns mul operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__plus</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns plus operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__minus</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns minus operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__right_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns right shift operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__left_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns left shift operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__right_ushift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns right unsigned shift operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__leq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less or equal operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__less</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__meq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more or equal operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__more</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_and</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit and operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_or</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit or operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_xor</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit xor operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _div</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns div operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mod</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns mod operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mul</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns mul operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _plus</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns plus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _minus</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns minus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns right shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _left_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns left shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_ushift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns right unsigned shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _leq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _less</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _meq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _more</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more operation on this instance and argument</td></tr>
                 <tr><td width="10%"><code>sqrt</code></td><td width="20%"></td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns square root of itself.</td></tr>
             </table>
             
@@ -1131,21 +1131,21 @@
             <table>
                 <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
                 <tr><td width="10%"><code>init</code></td><td width="20%">float</td><td width="10%">N/A</td><td width="60%">Constructor of this class.</td></tr>
-                <tr><td width="10%"><code>__bit_and</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit and operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__bit_or</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit or operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__bit_xor</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit xor operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__div</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns div operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__mod</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns mod operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__mul</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns mul operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__plus</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns plus operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__minus</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns minus operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__right_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns right shift operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__left_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns left shift operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__right_ushift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns right unsigned shift operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__leq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less or equal operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__less</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__meq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more or equal operation on this instance and argument</td></tr>
-                <tr><td width="10%"><code>__more</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_and</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit and operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_or</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit or operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_xor</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit xor operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _div</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns div operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mod</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns mod operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mul</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns mul operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _plus</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns plus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _minus</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns minus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns right shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _left_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns left shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_ushift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns right unsigned shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _leq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _less</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _meq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _more</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more operation on this instance and argument</td></tr>
                 <tr><td width="10%"><code>sqrt</code></td><td width="20%"></td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns square root of itself.</td></tr>
             </table>
             
@@ -1157,7 +1157,7 @@
             
             <table>
                 <tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr>
-                <tr><td width="10%"><code>__message</code></td><td width="20%"><code>string</code></td><td width="10%">NoValue</td><td width="60%">Message of this exception.</td></tr>
+                <tr><td width="10%"><code>protected _message</code></td><td width="20%"><code>string</code></td><td width="10%">NoValue</td><td width="60%">Message of this exception.</td></tr>
             </table>
             
             <table>
@@ -1175,18 +1175,18 @@
             <table>
                 <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
                 <tr><td width="10%"><code>init</code></td><td width="20%">string</td><td width="10%">N/A</td><td width="60%">Constructs new NetworkException with provided string as text.</td></tr>
-                <tr><td width="10%"><code>__get_exceptions</code></td><td width="20%"></td><td width="10%"><code>Collections.List</code></td><td width="60%">Returns list of all exceptions that happened in same order as were the calling runtimes. NoValue indicates that particular runtime finished successfully.</td></tr>
+                <tr><td width="10%"><code>protected _get_exceptions</code></td><td width="20%"></td><td width="10%"><code>Collections.List</code></td><td width="60%">Returns list of all exceptions that happened in same order as were the calling runtimes. NoValue indicates that particular runtime finished successfully.</td></tr>
             </table>
             
             <h4 id="doc-sl-system-Function">Class: Function</h4>
             
             <b>Parent class: </b> <code>System.BaseClass</code> <hr/>
             
-            This class represents basic interface of classes which instance can be called by method/function call. You are not required to derive from this class, you can use <code>__apply</code> freely in any class. 
+            This class represents basic interface of classes which instance can be called by method/function call. You are not required to derive from this class, you can use <code>protected _apply</code> freely in any class. 
             
             <table>
                 <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
-                <tr><td width="10%"><code>__apply</code></td><td width="20%">any values</td><td width="10%"><code>any type</code></td><td width="60%">This method is called when instance is asked to run itself with arguments.</td></tr>
+                <tr><td width="10%"><code>protected _apply</code></td><td width="20%">any values</td><td width="10%"><code>any type</code></td><td width="60%">This method is called when instance is asked to run itself with arguments.</td></tr>
             </table>
             
             <hr/><a href="#toc">Back to top</a>

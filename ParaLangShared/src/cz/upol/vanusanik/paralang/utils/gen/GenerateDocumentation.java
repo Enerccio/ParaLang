@@ -152,6 +152,8 @@ public class GenerateDocumentation {
 		for (FuncDef fd : funcs) {
 			if (fd.name.startsWith("__"))
 				continue;
+			if (fd.name.startsWith("_"))
+				fd.name = "protected " + fd.name;
 			fdl.add(fd);
 		}
 		return fdl;
@@ -176,6 +178,8 @@ public class GenerateDocumentation {
 		for (FieldDec fd : fields) {
 			if (fd.name.startsWith("__"))
 				continue;
+			if (fd.name.startsWith("_"))
+				fd.name = "protected " + fd.name;
 			fdl.add(fd);
 		}
 		return fdl;

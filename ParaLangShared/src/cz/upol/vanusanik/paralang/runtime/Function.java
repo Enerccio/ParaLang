@@ -14,7 +14,7 @@ import cz.upol.vanusanik.paralang.plang.types.NoValue;
  */
 public class Function extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523210L;
-	public static final String __applyMethod = "__apply";
+	public static final String __applyMethod = "_apply";
 
 	public Function() {
 
