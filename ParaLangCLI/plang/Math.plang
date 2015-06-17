@@ -1,8 +1,7 @@
 using Collections.List;
 using Collections.Map;
+using Collections;
 using IO;
-
-import cz.upol.vanusanik.paralang.runtime.wrappers.Matrix as __MatrixData;
 
 ###
     Math module contains classes and functions related to math.
@@ -38,8 +37,9 @@ module Math {
         defn init(n, m){
             inst.n = n;
             inst.m = m;
-            __matrix = __MatrixData->__MatrixData(n, m);
-            
+            __matrix = Collections.array_array(n);
+            for (var i=0; i<n; i++)
+                __matrix.set(i, Collections.float_array(m));
         }   
         
         ###
@@ -47,17 +47,17 @@ module Math {
             *ret number
         ###
         defn get(i, j){
-            return __matrix->get(i, j);
+            return __matrix.get(i).get(j);
         }
         
         ###
             Sets the value at i, j to v
         ###
         defn set(i, j, v){
-            __matrix->set(i, j, v);
+            __matrix.get(i).set(j, v);
         }
     
-        defn __str(){
+        defn _str(){
             return "Matrix <" + m + ", " + n + "> " + __pretty_print_matrix();
         }
         
@@ -72,7 +72,7 @@ module Math {
             return pp + "]";
         }
         
-        defn __mul(other){
+        defn _mul(other){
             if (other instanceof Matrix){
                 return mul_matrix(other);
             } else {

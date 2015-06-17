@@ -1,6 +1,7 @@
 package cz.upol.vanusanik.paralang.runtime.wrappers;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class ArrayArray extends ArrayBase implements Serializable {
 	private static final long serialVersionUID = -9071517535373056290L;
@@ -12,7 +13,7 @@ public class ArrayArray extends ArrayBase implements Serializable {
 	
 	@Override
 	protected String doToString() {
-		return "ArrayArray of size " + data.length;
+		return "ArrayArray of size " + data.length + " " + Arrays.toString(data);
 	}
 
 	public ArrayBase getUnderlineObject(int idx) {

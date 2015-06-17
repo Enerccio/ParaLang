@@ -2,6 +2,15 @@ import java.util.HashSet as __JHashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import cz.upol.vanusanik.paralang.runtime.wrappers.CollectionsUtils;
+import cz.upol.vanusanik.paralang.runtime.wrappers.BooleanArray;
+import cz.upol.vanusanik.paralang.runtime.wrappers.IntArray;
+import cz.upol.vanusanik.paralang.runtime.wrappers.FloatArray;
+import cz.upol.vanusanik.paralang.runtime.wrappers.StringArray;
+import cz.upol.vanusanik.paralang.runtime.wrappers.ArrayArray;
+
+using System.BaseException;
+using Utils.ArrayIndexOutOfBoundsException;
+using Utils.IllegalArgumentException;
 
 ###
  Collections is a module containing easy to use collections, such as List, HashSet or Map.
@@ -50,7 +59,7 @@ module Collections {
             return __iter->remove();
         }
     
-        defn __str(){
+        defn _str(){
             return __iter;
         }
         
@@ -144,7 +153,7 @@ module Collections {
             return new Iterator(__wrappedSet->iterator());
         }
 		
-		defn __str(){
+		defn _str(){
 			return "Set=" + __wrappedSet;
 		}
 	}
@@ -217,7 +226,7 @@ module Collections {
         ###
             Swaps the object at index index with object o.
         ###
-        defn set_at(index, o){
+        defn set(index, o){
             if (index < 0 || index >= size())
                 throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
             return __wrappedList->set(index, o);
@@ -261,7 +270,7 @@ module Collections {
             return new Iterator(__wrappedList->iterator());
         }
 	
-		defn __str(){
+		defn _str(){
 			return __wrappedList;
 		}
 	}
@@ -365,9 +374,243 @@ module Collections {
             __wrappedMap->clear();
         }
         
-        defn __str(){
+        defn _str(){
             return __wrappedMap;
         }
     
+    }
+    
+    ###
+    Fixed size array, used to get and set elements. Used to fast access and modification.
+    This class is abstract and should not be used. Use functions above to instantiate arrays.
+    ###
+    class Array {
+    	
+    	var _array;
+    	var _type_exception;
+    	var _length;
+    	var _atype;
+    	
+    	defn init(len){
+    		inst._length = len;
+    	}
+    	
+    	###
+    	Returns object at index index, or NoValue if there is no object
+    	*ret underline object or NoValue
+    	###
+    	defn get(index){
+    		if (index < 0 || index >= _length)
+    			throw new ArrayIndexOutOfBoundsException();
+    		try {
+    			return _array->getUnderlineObject(index);
+    		} catch (BaseException e){
+    			throw new IllegalArgumentException(_type_exception);
+    		}
+    	}
+    	
+    	###
+    	Sets the object at index in this array.
+    	###
+    	defn set(index, object){
+    		if (index < 0 || index >= _length)
+    			throw new ArrayIndexOutOfBoundsException();
+    		try {
+    			_array->setUnderlineObject(index, object);
+    		} catch (BaseException e){
+    			throw new IllegalArgumentException(_type_exception);
+    		}
+    	}
+    	
+    	###
+    	Returns length of this array
+    	###
+    	defn size(){
+    		return _length;
+    	}
+    	
+    	###
+    	Returns type of this array. Types can be "boolean", "int", "float", "string" or "array"; 
+    	*ret string
+    	###
+    	defn get_type(){
+    		return _atype;
+    	}
+    	
+    	defn _eq(other){
+    		if (other instanceof Array){
+    			if (other.size() != size())
+    				return false;
+    			for (var i=0; i<size(); i++)
+    				if (get(i) != other.get(i))
+    					return false;
+    			return true;
+    		}
+    		return false;
+    	}
+    	
+    	defn __neq(other){
+    		return !_eq(other);
+    	}
+        
+        defn _str(){
+            return _array._str();
+        }
+    }
+    
+    ###
+    Constructs boolean array which will convert all arguments passed in as a boolean
+    *ret Array
+    ### 
+    defn boolean_array(n){
+    	return __boolean_array(BooleanArray->BooleanArray(n));
+    }
+    
+    defn __boolean_array(n, internal_array){
+    	var array = new Array(n);
+    	array._array = internal_array;
+    	array._atype = "boolean";
+    	return array;
+    }
+    
+    ###
+    Constructs integer array which will only allow int/Integer to be passed in
+    *ret Array
+    ### 
+    defn integer_array(n){
+    	return __integer_array(n, IntArray->IntArray(n));
+    }
+    
+    defn __integer_array(n, internal_array){
+    	var array = new Array(n);
+    	array._array = internal_array;
+    	array._type_exception = "Incorrect type of argument passed, must be int or Integer";
+    	array._atype = "int";
+    	return array;
+    }
+    
+    ###
+    Constructs float array which will only allow float/Float to be passed in
+    *ret Array
+    ### 
+    defn float_array(n){
+    	return __float_array(n, FloatArray->FloatArray(n));
+    }
+    
+    defn __float_array(n, internal_array){
+    	var array = new Array(n);
+    	array._array = internal_array;
+    	array._type_exception = "Incorrect type of argument passed, must be float or Float";
+    	array._atype = "float";
+    	return array;
+    }
+    
+    ###
+    Constructs string array which will only allow string to be passed in
+    *ret Array
+    ### 
+    defn string_array(n){
+    	return _string_array(n, StringArray->StringArray(n));
+    }
+    
+    defn __string_array(n, internal_array){
+    	var array = new Array(n);
+    	array._array = internal_array;
+    	array._type_exception = "Incorrect type of argument passed, must be String";
+    	array._atype = "string";
+    	return array;
+    }
+    
+    class __ArrayArray > Array {
+    
+    	defn get(index){
+    		var array = parent.get(index);
+    		var type = array._str();
+    		if (type.starts_with("Boolean")){
+    			return __boolean_array(array->get_length(), array);
+    		}
+    		if (type.starts_with("Int")){
+    			return __integer_array(array->get_length(), array);
+    		}
+    		if (type.starts_with("Float")){
+    			return __float_array(array->get_length(), array);
+    		}
+    		if (type.starts_with("String")){
+    			return __string_array(array->get_length(), array);
+    		}
+    		if (type.starts_with("Array")){
+    			return __array_array(array->get_length(), array);
+    		}
+    	}
+    	
+    	
+    	defn set(index, object){
+    		if (!(object instanceof Array)){
+    		}
+    			throw new IllegalArgumentException(__type_exception);
+    		parent.set(index, object._array);
+    	}
+    }
+    
+    ###
+    Constructs array of arrays which will only allow Array to be passed in
+    *ret Array
+    ### 
+    defn array_array(n){
+    	return __array_array(n, ArrayArray->ArrayArray(n));
+    }
+    
+    defn __array_array(n, internal_array){
+    	var array = new __ArrayArray(n);
+    	array._array = internal_array;
+    	array._type_exception = "Incorrect type of argument passed, must be Array";
+    	array._atype = "array";
+    	return array;
+    }
+    
+    // More functions
+    
+    ###
+    Sorts anything that has get method with index argument, set method with index and object and size method with no arguments in place.
+    ###
+    defn simple_sort(gettable){
+    	__merge_sort(gettable, __preload_list(new List(), gettable.size()), 0, gettable.size());
+    }
+    
+    defn __preload_list(list, n){
+        for (var i=0; i<n; i++)
+            list.add(NoValue);
+        return list;
+    }
+    
+    defn __merge_sort(source, result, start, end){
+    	if (end - start < 2)
+    		return;
+    		
+    	var mid = (start + end) / 2;
+    	__merge_sort(source, result, start, mid);
+    	__merge_sort(source, result, mid, end);
+    	__merge_sort_merge(source, result, start, mid, end);
+        __merge_sort_copy(result, source, start, end);
+    }
+    
+    defn __merge_sort_merge(source, result, start, mid, end){
+    	var i0 = start;
+    	var i1 = mid;
+    	
+    	for (var j=start; j<end; j++){
+    		if (i0 < mid && (i1 >= end || source.get(i0) <= source.get(i1))){
+    			result.set(j, source.get(i0));
+    			++i0;
+    		} else {
+    			result.set(j, source.get(i1));
+    			++i1;
+    		}
+    	}
+    }
+    
+    defn __merge_sort_copy(result, source, start, end){
+        for (var k=start; k<end; k++)
+            source.set(k, result.get(k));
     }
 };
