@@ -38,13 +38,13 @@ public class BaseFloat extends BaseNumber {
 	}
 
 	public PLangObject sqrt(PLangObject self) {
-		Flt value = (Flt) ___getkey(__valKey);
+		Flt value = (Flt) ___getkey(__valKey, false);
 		Flt result = new Flt((float) Math.sqrt(value.___getNumber(value)));
 		return asObject(result);
 	}
 
 	public PLangObject toInt(PLangObject self) {
-		Flt value = (Flt) ___getkey(__valKey);
+		Flt value = (Flt) ___getkey(__valKey, false);
 		return new Int(value.___getNumber(value).longValue());
 	}
 }

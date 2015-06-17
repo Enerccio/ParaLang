@@ -57,7 +57,7 @@ module Math {
             __matrix->set(i, j, v);
         }
     
-        defn __str(){
+        defn _str(){
             return "Matrix <" + m + ", " + n + "> " + __pretty_print_matrix();
         }
         
@@ -72,7 +72,7 @@ module Math {
             return pp + "]";
         }
         
-        defn __mul(other){
+        defn _mul(other){
             if (other instanceof Matrix){
                 return mul_matrix(other);
             } else {

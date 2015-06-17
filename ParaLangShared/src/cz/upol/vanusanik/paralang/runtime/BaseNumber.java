@@ -18,7 +18,7 @@ import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
  */
 public abstract class BaseNumber extends PLClass implements Serializable {
 	private static final long serialVersionUID = -499503904346523234L;
-	public static final String __valKey = "__val";
+	public static final String __valKey = "_val";
 	public static final String __toInt = "__to_int";
 
 	@Override
@@ -83,105 +83,105 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	}
 
 	public PLangObject __str_base(PLangObject self) {
-		return new Str(((PLClass) self).___getkey(__valKey).toString());
+		return new Str(((PLClass) self).___getkey(__valKey, false).toString());
 	}
 
 	public abstract PLangObject __init_superclass(PLangObject self,
 			PLangObject iv);
 
 	public PLangObject __eq_base(PLangObject self, PLangObject other) {
-		return TypeOperations.eq(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.eq(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __neq_base(PLangObject self, PLangObject other) {
-		return TypeOperations.neq(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.neq(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __bitand_base(PLangObject self, PLangObject other) {
-		return TypeOperations.bitand(((PLClass) self).___getkey(__valKey),
+		return TypeOperations.bitand(((PLClass) self).___getkey(__valKey, false),
 				other);
 	}
 
 	public PLangObject __bitor_base(PLangObject self, PLangObject other) {
 		return TypeOperations
-				.bitor(((PLClass) self).___getkey(__valKey), other);
+				.bitor(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __bitxor_base(PLangObject self, PLangObject other) {
-		return TypeOperations.bitxor(((PLClass) self).___getkey(__valKey),
+		return TypeOperations.bitxor(((PLClass) self).___getkey(__valKey, false),
 				other);
 	}
 
 	public PLangObject __div_base(PLangObject self, PLangObject other) {
-		return TypeOperations.div(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.div(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __leq_base(PLangObject self, PLangObject other) {
-		return TypeOperations.leq(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.leq(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __less_base(PLangObject self, PLangObject other) {
-		return TypeOperations.less(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.less(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __lshift_base(PLangObject self, PLangObject other) {
-		return TypeOperations.lshift(((PLClass) self).___getkey(__valKey),
+		return TypeOperations.lshift(((PLClass) self).___getkey(__valKey, false),
 				other);
 	}
 
 	public PLangObject __meq_base(PLangObject self, PLangObject other) {
-		return TypeOperations.meq(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.meq(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __minus_base(PLangObject self, PLangObject other) {
 		return TypeOperations
-				.minus(((PLClass) self).___getkey(__valKey), other);
+				.minus(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __mod_base(PLangObject self, PLangObject other) {
-		return TypeOperations.mod(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.mod(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __more_base(PLangObject self, PLangObject other) {
-		return TypeOperations.more(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.more(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __mul_base(PLangObject self, PLangObject other) {
-		return TypeOperations.mul(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.mul(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __plus_base(PLangObject self, PLangObject other) {
-		return TypeOperations.plus(((PLClass) self).___getkey(__valKey), other);
+		return TypeOperations.plus(((PLClass) self).___getkey(__valKey, false), other);
 	}
 
 	public PLangObject __rshift_base(PLangObject self, PLangObject other) {
-		return TypeOperations.rshift(((PLClass) self).___getkey(__valKey),
+		return TypeOperations.rshift(((PLClass) self).___getkey(__valKey, false),
 				other);
 	}
 
 	public PLangObject __rushift_base(PLangObject self, PLangObject other) {
-		return TypeOperations.rushift(((PLClass) self).___getkey(__valKey),
+		return TypeOperations.rushift(((PLClass) self).___getkey(__valKey, false),
 				other);
 	}
 
 	public PLangObject __lpp_base(PLangObject self) {
 		return asObject(TypeOperations.lplusplus(((PLClass) self)
-				.___getkey(__valKey)));
+				.___getkey(__valKey, false)));
 	}
 
 	public PLangObject __lmm_base(PLangObject self) {
 		return asObject(TypeOperations.lminusminus(((PLClass) self)
-				.___getkey(__valKey)));
+				.___getkey(__valKey, false)));
 	}
 
 	public PLangObject __up_base(PLangObject self) {
 		return asObject(TypeOperations.uplus(((PLClass) self)
-				.___getkey(__valKey)));
+				.___getkey(__valKey, false)));
 	}
 
 	public PLangObject __um_base(PLangObject self) {
 		return asObject(TypeOperations.uminus(((PLClass) self)
-				.___getkey(__valKey)));
+				.___getkey(__valKey, false)));
 	}
 
 	/**
@@ -197,10 +197,10 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	public boolean ___less(PLangObject self, PLangObject other, boolean equals) {
 		if (equals) {
 			return BooleanValue.toBoolean(TypeOperations.leq(
-					((PLClass) self).___getkey(__valKey), other));
+					((PLClass) self).___getkey(__valKey, false), other));
 		} else {
 			return BooleanValue.toBoolean(TypeOperations.less(
-					((PLClass) self).___getkey(__valKey), other));
+					((PLClass) self).___getkey(__valKey, false), other));
 		}
 	}
 
@@ -208,10 +208,10 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 	public boolean ___more(PLangObject self, PLangObject other, boolean equals) {
 		if (equals) {
 			return BooleanValue.toBoolean(TypeOperations.meq(
-					((PLClass) self).___getkey(__valKey), other));
+					((PLClass) self).___getkey(__valKey, false), other));
 		} else {
 			return BooleanValue.toBoolean(TypeOperations.more(
-					((PLClass) self).___getkey(__valKey), other));
+					((PLClass) self).___getkey(__valKey, false), other));
 		}
 	}
 
@@ -222,7 +222,7 @@ public abstract class BaseNumber extends PLClass implements Serializable {
 
 	@Override
 	public Float ___getNumber(PLangObject self) {
-		PLangObject val = ___getkey(__valKey);
+		PLangObject val = ___getkey(__valKey, false);
 		return val.___getNumber(val);
 	}
 }

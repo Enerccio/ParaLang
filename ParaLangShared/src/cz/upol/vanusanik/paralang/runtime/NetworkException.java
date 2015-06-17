@@ -37,14 +37,14 @@ public class NetworkException extends PLClass {
 	}
 
 	public PLangObject __get_exceptions(PLangObject self) {
-		return ((PLClass) self).___getkey(listKey);
+		return ((PLClass) self).___getkey(listKey, false);
 	}
 
 	public PLangObject __init__base(PLangObject self, PLangObject message) {
 		// run super init
 		___restrictedOverride = true;
-		BaseException bc = (BaseException) ___getkey(PLClass.___superKey);
-		PLRuntime.getRuntime().run(bc.___getkey("init"), bc, message);
+		BaseException bc = (BaseException) ___getkey(PLClass.___superKey, true);
+		PLRuntime.getRuntime().run(bc.___getkey("init", true), bc, message);
 
 		___setkey(BaseException.__messageField, message);
 		___restrictedOverride = false;

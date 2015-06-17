@@ -2,9 +2,14 @@ using IO;
 using System;
 using Math.Matrix;
 using Random;
+using Collections;
 using Collections.List;
 
 module Main {
+
+    class XExc > BaseException {
+        
+    }
     
     class X {
         var itc = 8000;
@@ -62,6 +67,15 @@ module Main {
     }
     
     defn restricted calculate(a, b){
-        new X().calculate(a, b);
+        var ia = Collections.integer_array(4);
+        ia.set(3, new System.Integer(1024));
+        
+        var aa = Collections.array_array(1);
+        aa.set(0, ia);
+        
+        IO.out.println(aa.get(0).get(3));
+        // throw new XExc("yay!");
+        //(dist (2, 0) { while (true) ; });
+        // new X().calculate(a, b);
     }
 };

@@ -151,7 +151,7 @@ public class Utils {
 			if (datum instanceof BaseInteger) {
 				return new Integer(
 						(int) ((Int) ((BaseInteger) datum)
-								.___getkey(BaseNumber.__valKey)).getValue());
+								.___getkey(BaseNumber.__valKey, false)).getValue());
 			}
 		}
 
@@ -161,7 +161,7 @@ public class Utils {
 			if (datum instanceof BaseInteger) {
 				return new Long(
 						((Int) ((BaseInteger) datum)
-								.___getkey(BaseNumber.__valKey)).getValue());
+								.___getkey(BaseNumber.__valKey, false)).getValue());
 			}
 		}
 

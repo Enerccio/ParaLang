@@ -34,16 +34,16 @@ public final class TypeOperations {
 	 *
 	 */
 	public enum Operator {
-		PLUS("__plus"), MINUS("__minus"), MUL("__mul"), DIV("__div"), MOD(
-				"__mod"), LSHIFT("__left_shift"), RSHIFT("__right_shift"), RUSHIFT(
-				"__right_ushift"), BITOR("__bit_or"), BITAND("__bit_and"), BITXOR(
-				"__bit_xor"),
+		PLUS("_plus"), MINUS("_minus"), MUL("_mul"), DIV("_div"), MOD(
+				"_mod"), LSHIFT("_left_shift"), RSHIFT("_right_shift"), RUSHIFT(
+				"_right_ushift"), BITOR("_bit_or"), BITAND("_bit_and"), BITXOR(
+				"_bit_xor"),
 
-		EQ("__eq"), NEQ("__neq"), LESS("__less"), MORE("__more"), LEQ(
-				"__less_eq"), MEQ("__more_eq"),
+		EQ("_eq"), NEQ("_neq"), LESS("_less"), MORE("_more"), LEQ(
+				"_less_eq"), MEQ("_more_eq"),
 
-		LPLUSPLUS("__lplusplus"), LMINUSMINUS("__lminusminus"), UPLUS("__uplus"), UMINUS(
-				"__uminus"), ULOGNEG("__ulogneg"), UBINNEG("__ubinneg");
+		LPLUSPLUS("_lplusplus"), LMINUSMINUS("_lminusminus"), UPLUS("_uplus"), UMINUS(
+				"_uminus"), ULOGNEG("_ulogneg"), UBINNEG("_ubinneg");
 
 		Operator(String cm) {
 			classMethod = cm;
@@ -116,7 +116,7 @@ public final class TypeOperations {
 
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.PLUS.classMethod),
+					((PLClass) a).___getkey(Operator.PLUS.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -128,7 +128,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va + vb;
 			return new Int(result);
@@ -148,7 +148,7 @@ public final class TypeOperations {
 	public static PLangObject minus(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.MINUS.classMethod),
+					((PLClass) a).___getkey(Operator.MINUS.classMethod, false),
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
@@ -159,7 +159,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va - vb;
 			return new Int(result);
@@ -184,7 +184,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.MUL.classMethod),
+					((PLClass) a).___getkey(Operator.MUL.classMethod, false),
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
@@ -195,7 +195,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va * vb;
 			return new Int(result);
@@ -215,7 +215,7 @@ public final class TypeOperations {
 	public static PLangObject div(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.DIV.classMethod),
+					((PLClass) a).___getkey(Operator.DIV.classMethod, false),
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
@@ -226,7 +226,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va / vb;
 			return new Int(result);
@@ -254,7 +254,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.MOD.classMethod),
+					((PLClass) a).___getkey(Operator.MOD.classMethod, false),
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
@@ -265,7 +265,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va % vb;
 			return new Int(result);
@@ -296,7 +296,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.LSHIFT.classMethod),
+					((PLClass) a).___getkey(Operator.LSHIFT.classMethod, false),
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
@@ -307,7 +307,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va << vb;
 			return new Int(result);
@@ -338,7 +338,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.RSHIFT.classMethod),
+					((PLClass) a).___getkey(Operator.RSHIFT.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -350,7 +350,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va >> vb;
 			return new Int(result);
@@ -394,7 +394,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.RUSHIFT.classMethod),
+					((PLClass) a).___getkey(Operator.RUSHIFT.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -406,7 +406,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va >>> vb;
 			return new Int(result);
@@ -426,7 +426,7 @@ public final class TypeOperations {
 	public static PLangObject bitor(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.BITOR.classMethod),
+					((PLClass) a).___getkey(Operator.BITOR.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -438,7 +438,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va | vb;
 			return new Int(result);
@@ -458,7 +458,7 @@ public final class TypeOperations {
 	public static PLangObject bitand(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.BITAND.classMethod),
+					((PLClass) a).___getkey(Operator.BITAND.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -470,7 +470,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va & vb;
 			return new Int(result);
@@ -490,7 +490,7 @@ public final class TypeOperations {
 	public static PLangObject bitxor(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.BITXOR.classMethod),
+					((PLClass) a).___getkey(Operator.BITXOR.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -502,7 +502,7 @@ public final class TypeOperations {
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey)).value;
+				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va ^ vb;
 			return new Int(result);
@@ -522,7 +522,7 @@ public final class TypeOperations {
 	public static PLangObject eq(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.EQ.classMethod),
+					((PLClass) a).___getkey(Operator.EQ.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -532,7 +532,7 @@ public final class TypeOperations {
 	public static PLangObject neq(PLangObject a, PLangObject b) {
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.NEQ.classMethod),
+					((PLClass) a).___getkey(Operator.NEQ.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -549,7 +549,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.LESS.classMethod),
+					((PLClass) a).___getkey(Operator.LESS.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -566,7 +566,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.MORE.classMethod),
+					((PLClass) a).___getkey(Operator.MORE.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -583,7 +583,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.LEQ.classMethod),
+					((PLClass) a).___getkey(Operator.LEQ.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -600,7 +600,7 @@ public final class TypeOperations {
 		}
 		if (a.___getType() == PlangObjectType.CLASS) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.MEQ.classMethod),
+					((PLClass) a).___getkey(Operator.MEQ.classMethod, false),
 					(PLClass) a, b);
 		}
 
@@ -610,7 +610,7 @@ public final class TypeOperations {
 	public static PLangObject lplusplus(PLangObject a) {
 		if (a instanceof PLClass) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.LPLUSPLUS.classMethod),
+					((PLClass) a).___getkey(Operator.LPLUSPLUS.classMethod, false),
 					(PLClass) a);
 		}
 
@@ -633,7 +633,7 @@ public final class TypeOperations {
 	public static PLangObject lminusminus(PLangObject a) {
 		if (a instanceof PLClass) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.LMINUSMINUS.classMethod),
+					((PLClass) a).___getkey(Operator.LMINUSMINUS.classMethod, false),
 					(PLClass) a);
 		}
 
@@ -656,7 +656,7 @@ public final class TypeOperations {
 	public static PLangObject uplus(PLangObject a) {
 		if (a instanceof PLClass) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.UPLUS.classMethod),
+					((PLClass) a).___getkey(Operator.UPLUS.classMethod, false),
 					(PLClass) a);
 		}
 
@@ -677,7 +677,7 @@ public final class TypeOperations {
 	public static PLangObject uminus(PLangObject a) {
 		if (a instanceof PLClass) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.UMINUS.classMethod),
+					((PLClass) a).___getkey(Operator.UMINUS.classMethod, false),
 					(PLClass) a);
 		}
 
@@ -698,7 +698,7 @@ public final class TypeOperations {
 	public static PLangObject ulneg(PLangObject a) {
 		if (a instanceof PLClass) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.ULOGNEG.classMethod),
+					((PLClass) a).___getkey(Operator.ULOGNEG.classMethod, false),
 					(PLClass) a);
 		}
 		return BooleanValue.fromBoolean(!BooleanValue.toBoolean(a));
@@ -707,7 +707,7 @@ public final class TypeOperations {
 	public static PLangObject ubneg(PLangObject a) {
 		if (a instanceof PLClass) {
 			return PLRuntime.getRuntime().run(
-					((PLClass) a).___getkey(Operator.UBINNEG.classMethod),
+					((PLClass) a).___getkey(Operator.UBINNEG.classMethod, false),
 					(PLClass) a);
 		}
 

@@ -8,6 +8,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -198,7 +199,8 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 			}
 		}
 		// No method found
-		throw new RuntimeException("Unknown method: " + methodName);
+		throw PLRuntime.getRuntime().newInstance("System.BaseException",
+				new Str(("Unknown method " + methodName + " for arguments of " + Arrays.asList(args))));
 	}
 
 	@Override
@@ -232,8 +234,13 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 				"transientPointer", this, true));
 		___setkey("will_be_transient_pointer", new FunctionWrapper(
 				"willBeTransientPointer", this, true));
+		___setkey("_str", new FunctionWrapper("__str", this, true));
 
 		___restrictedOverride = false;
+	}
+	
+	public PLangObject __str(PLangObject self){
+		return new Str(value.toString());
 	}
 
 	/**

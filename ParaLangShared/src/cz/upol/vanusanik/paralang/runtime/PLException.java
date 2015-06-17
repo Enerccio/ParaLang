@@ -44,7 +44,7 @@ public class PLException extends Exception {
 	public String getMessage() {
 		if (e instanceof PLClass) {
 			PLClass c = (PLClass) e;
-			PLangObject runnable = c.___getkey(BaseException.__messageGetter);
+			PLangObject runnable = c.___getkey(BaseException.__messageGetter, false);
 			if (runnable != null) {
 				PLangObject str = PLRuntime.getRuntime().run(runnable, c);
 				return str.toString(str);

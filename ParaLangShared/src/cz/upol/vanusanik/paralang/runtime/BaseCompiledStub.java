@@ -77,7 +77,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 	 * @param key
 	 * @return
 	 */
-	public PLangObject ___getkey(String key) {
+	public PLangObject ___getkey(String key, boolean askedParent) {
 		if (!___isInited) {
 			___init_class();
 		}
@@ -105,6 +105,10 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 	 * @param var
 	 */
 	public void ___setkey(String key, PLangObject var) {
+		___setkey_internal(key, var);
+	}
+
+	protected boolean ___setkey_internal(String key, PLangObject var) {
 		if (!___isInited)
 			___init_class();
 
@@ -112,7 +116,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 			PLRuntime.getRuntime().checkRestrictedAccess(this);
 
 		___fieldsAndMethods.put(key, var);
-
+		return true;
 	}
 
 	@Override
@@ -192,8 +196,8 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 
 	@Override
 	public String toString() {
-		if (___fieldsAndMethods.containsKey("__str")) {
-			PLangObject str = ___getkey("__str");
+		if (___fieldsAndMethods.containsKey("_str")) {
+			PLangObject str = ___getkey("_str", false);
 			if (str instanceof FunctionWrapper) {
 				return PLRuntime.getRuntime()
 						.run(str, (BaseCompiledStub) this.___getThis())

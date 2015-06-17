@@ -29,7 +29,7 @@ public abstract class PLClass extends BaseCompiledStub {
 	}
 
 	@Override
-	public PLangObject ___getkey(String key) {
+	public PLangObject ___getkey(String key, boolean askedParent) {
 		if (!___isInited) {
 			___init_class();
 		}
@@ -37,13 +37,44 @@ public abstract class PLClass extends BaseCompiledStub {
 		PLClass parent = null;
 		if (!___fieldsAndMethods.containsKey(key)
 				&& ((parent = ___getSuper()) != null))
-			return parent.___getkey(key);
+			return parent.___getkey(key, askedParent);
 		else if (!___fieldsAndMethods.containsKey(key)) {
 			return null;
 		}
+		
+		return ___getkey_internal(key, askedParent);
+	}
 
-		PLangObject data = ___fieldsAndMethods.get(key);
-		return data;
+	private PLangObject ___getkey_internal(String key, boolean parent) {
+		if (!___isInited) {
+			___init_class();
+		}
+		
+		if (!parent && !key.startsWith("$$") && !key.startsWith("__") && !key.equals("init")){
+			if (___fieldsAndMethods.containsKey(___derivedKey)){
+				PLangObject value = ((PLClass) ___fieldsAndMethods.get(___derivedKey)).___getkey_internal(key, parent);
+				if (value != null)
+					return value;
+			}
+		}
+		
+		return ___fieldsAndMethods.get(key); 
+	}
+
+	@Override
+	protected boolean ___setkey_internal(String key, PLangObject var) {
+		// we need to check if derived exists and if so, we need to save values there instead of here
+		if (!___isInited) {
+			___init_class();
+		}
+		
+		if (___fieldsAndMethods.containsKey(___derivedKey)){
+			if (!key.startsWith("$$") && !key.startsWith("__") && !key.equals("init"))
+				if (((PLClass) ___fieldsAndMethods.get(___derivedKey)).___setkey_internal(key, var))
+					return true;
+		}
+		
+		return super.___setkey_internal(key, var);
 	}
 
 	/**
@@ -59,7 +90,7 @@ public abstract class PLClass extends BaseCompiledStub {
 		if (!___fieldsAndMethods.containsKey(___superKey))
 			return null;
 
-		return (PLClass) ___getkey(___superKey);
+		return (PLClass) ___getkey(___superKey, true);
 	}
 
 	/**
@@ -78,7 +109,7 @@ public abstract class PLClass extends BaseCompiledStub {
 	public boolean ___eq(PLangObject self, PLangObject b) {
 		return BooleanValue
 				.toBoolean(PLRuntime.getRuntime().run(
-						___getkey(Operator.EQ.classMethod),
+						___getkey(Operator.EQ.classMethod, false),
 						(BaseCompiledStub) self, b));
 	}
 
@@ -91,7 +122,7 @@ public abstract class PLClass extends BaseCompiledStub {
 
 	@Override
 	public String toString(PLangObject self) {
-		PLangObject str = ___getkey("__str");
+		PLangObject str = ___getkey("__str", false);
 		if (str != null && str instanceof FunctionWrapper) {
 			PLangObject o = PLRuntime.getRuntime().run(str,
 					(BaseCompiledStub) self);

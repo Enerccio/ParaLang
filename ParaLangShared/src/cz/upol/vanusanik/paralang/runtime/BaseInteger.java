@@ -39,7 +39,7 @@ public class BaseInteger extends BaseNumber {
 
 	public PLangObject __ubn_base(PLangObject self) {
 		return asObject(TypeOperations.ubneg(((PLClass) self)
-				.___getkey(__valKey)));
+				.___getkey(__valKey, false)));
 	}
 
 	@Override
@@ -48,13 +48,13 @@ public class BaseInteger extends BaseNumber {
 	}
 
 	public PLangObject sqrt(PLangObject self) {
-		Int value = (Int) ___getkey(__valKey);
+		Int value = (Int) ___getkey(__valKey, false);
 		Flt result = new Flt((float) Math.sqrt(value.getValue()));
 		return asObject(result);
 	}
 
 	public PLangObject toInt(PLangObject self) {
-		Int value = (Int) ___getkey(__valKey);
+		Int value = (Int) ___getkey(__valKey, false);
 		return value;
 	}
 }

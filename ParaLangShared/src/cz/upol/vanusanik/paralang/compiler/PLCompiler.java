@@ -328,9 +328,10 @@ public class PLCompiler {
 					}
 					bc.addLdc(cacheStrings(identifier)); // load string from
 															// constants
+					bc.addIconst(0);
 					bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 							Strings.BASE_COMPILED_STUB__GETKEY, "("
-									+ Strings.STRING_L + ")"
+									+ Strings.STRING_L + "Z)"
 									+ Strings.PLANGOBJECT_L);
 
 				}
@@ -2330,6 +2331,7 @@ public class PLCompiler {
 				compileExpression((ExpressionContext) expression.getChild(0),
 						true, stack);
 				isStatementExpression.pop();
+				
 				// we load result of that expression from local passed into
 				// compile expression
 				// then we call run method of PLRuntime
@@ -2458,9 +2460,11 @@ public class PLCompiler {
 						bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 						bc.addLdc(cacheStrings(identifier)); // load string from
 																// constants
+						// check whether previous call was from parent
+						bc.addIconst(determineParentCall((ExpressionContext) expression.getChild(0)) ? 1 : 0);
 						bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 								Strings.BASE_COMPILED_STUB__GETKEY, "("
-										+ Strings.STRING_L + ")"
+										+ Strings.STRING_L + "Z)"
 										+ Strings.PLANGOBJECT_L);
 
 						int kkey = labelCounter++;
@@ -2575,6 +2579,16 @@ public class PLCompiler {
 				bc.add(Opcode.POP);
 			}
 		}
+	}
+
+	private boolean determineParentCall(ExpressionContext child) {
+		if (!compilingClass)
+			return false;
+		if (child.primary() != null){
+			if (child.primary().constExpr() != null)
+				return child.primary().constExpr().getText().equals("parent");
+		}
+		return false;
 	}
 
 	/**
@@ -3083,9 +3097,10 @@ public class PLCompiler {
 				}
 				bc.addLdc(cacheStrings(identifier)); // load string from
 														// constants
+				bc.addIconst(identifier.equals(PLClass.___superKey) ? 1 : 0);
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 						Strings.BASE_COMPILED_STUB__GETKEY, "("
-								+ Strings.STRING_L + ")"
+								+ Strings.STRING_L + "Z)"
 								+ Strings.PLANGOBJECT_L);
 				break;
 			case LOCAL_VARIABLE:
@@ -3110,9 +3125,10 @@ public class PLCompiler {
 				}
 				bc.addLdc(cacheStrings(identifier)); // load string from
 														// constants
+				bc.addIconst(0);
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 						Strings.BASE_COMPILED_STUB__GETKEY, "("
-								+ Strings.STRING_L + ")"
+								+ Strings.STRING_L + "Z)"
 								+ Strings.PLANGOBJECT_L);
 				bc.add(Opcode.DUP);
 
@@ -3133,9 +3149,10 @@ public class PLCompiler {
 				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 				bc.addLdc(cacheStrings(identifier)); // load string from
 														// constants
+				bc.addIconst(0);
 				bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 						Strings.BASE_COMPILED_STUB__GETKEY, "("
-								+ Strings.STRING_L + ")"
+								+ Strings.STRING_L + "Z)"
 								+ Strings.PLANGOBJECT_L);
 
 				setLabelPos(key);

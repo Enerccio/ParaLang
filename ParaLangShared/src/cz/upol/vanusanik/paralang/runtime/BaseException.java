@@ -40,8 +40,8 @@ public class BaseException extends PLClass implements Serializable {
 	public PLangObject __init__base(PLangObject self, PLangObject message) {
 		// run super init
 		___restrictedOverride = true;
-		BaseClass bc = (BaseClass) ___getkey(PLClass.___superKey);
-		PLRuntime.getRuntime().run(bc.___getkey("init"), bc);
+		BaseClass bc = (BaseClass) ___getkey(PLClass.___superKey, true);
+		PLRuntime.getRuntime().run(bc.___getkey("init", true), bc);
 
 		___setkey(__messageField, message);
 		___restrictedOverride = false;
@@ -49,12 +49,12 @@ public class BaseException extends PLClass implements Serializable {
 	}
 
 	public PLangObject get_message(BaseCompiledStub self) {
-		return self.___getkey(__messageField);
+		return self.___getkey(__messageField, false);
 	}
 
 	public PLangObject __str(BaseCompiledStub self) {
 		return new Str(PLRuntime.getRuntime()
-				.run(self.___getkey(__messageGetter), self).toString());
+				.run(self.___getkey(__messageGetter, false), self).toString());
 	}
 
 	@Override

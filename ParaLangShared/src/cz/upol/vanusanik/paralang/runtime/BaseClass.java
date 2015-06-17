@@ -27,7 +27,7 @@ public class BaseClass extends PLClass implements Serializable {
 		this.___restrictedOverride = true;
 
 		___setkey("init", new FunctionWrapper("__init", this, true));
-		___setkey("__str", new FunctionWrapper("__str_base", this, true));
+		___setkey("_str", new FunctionWrapper("__str_base", this, true));
 		___setkey(Operator.EQ.classMethod, new FunctionWrapper("__eq__base",
 				this, true));
 		___setkey(Operator.NEQ.classMethod, new FunctionWrapper("__neq__base",

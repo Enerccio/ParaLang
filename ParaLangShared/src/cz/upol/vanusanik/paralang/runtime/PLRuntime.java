@@ -347,7 +347,7 @@ public class PLRuntime {
 				while (entries.hasMoreElements()) {
 					JarEntry e = entries.nextElement();
 					String name = e.getName();
-					if (name.startsWith(path + "/")) { // filter according to
+					if (name.endsWith(".plang")) { // filter according to
 														// the path
 						InputStream is = jar.getInputStream(jar.getEntry(name));
 						StringDesignator sd = new StringDesignator();
@@ -438,7 +438,7 @@ public class PLRuntime {
 			PLClass instance = (PLClass) classMap.get(components[0])
 					.get(components[1]).newInstance();
 			if (!skipInit)
-				run(instance.___getkey("init"), instance, inits); // run
+				run(instance.___getkey("init", true), instance, inits); // run
 																	// constructor
 			return instance;
 		} catch (Throwable e) {
@@ -516,7 +516,7 @@ public class PLRuntime {
 		PLModule mod = getModule(module);
 
 		try {
-			return run(mod.___getkey(runnable), mod, args);
+			return run(mod.___getkey(runnable, true), mod, args);
 		} catch (RuntimeException e) {
 			throw new PLException(e);
 		}
@@ -589,7 +589,7 @@ public class PLRuntime {
 		} else if (runner.___getType() == PlangObjectType.CLASS) {
 			// class runner, ie runner with __apply method
 			PLClass c = (PLClass) runner;
-			PLangObject callableMethod = c.___getkey(Function.__applyMethod);
+			PLangObject callableMethod = c.___getkey(Function.__applyMethod, false);
 			if (callableMethod != null) {
 				return run(callableMethod, c, args);
 			}
@@ -613,6 +613,8 @@ public class PLRuntime {
 			PLangObject... args) {
 		try {
 			return runner.runMethod(mname, args);
+		} catch (BaseException e){
+			throw e;
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}
@@ -804,7 +806,7 @@ public class PLRuntime {
 			PLClass c = (PLClass) o;
 			if (c.___fieldsAndMethods.containsKey(PLClass.___superKey))
 				return checkExceptionHierarchy(
-						c.___getkey(PLClass.___superKey), className);
+						c.___getkey(PLClass.___superKey, true), className);
 		}
 
 		return false;
@@ -857,7 +859,7 @@ public class PLRuntime {
 		if (o instanceof PLClass) {
 			PLClass c = (PLClass) o;
 			if (c.___fieldsAndMethods.containsKey(PLClass.___superKey))
-				return checkInstanceOf(c.___getkey(PLClass.___superKey),
+				return checkInstanceOf(c.___getkey(PLClass.___superKey, true),
 						className);
 		}
 
@@ -885,7 +887,7 @@ public class PLRuntime {
 				tcount = (int) ((Int) tcounto).getValue();
 			} else if (tcounto instanceof BaseCompiledStub) {
 				tcount = (int) ((Int) PLRuntime.getRuntime().run(
-						((PLClass) tcounto).___getkey(BaseNumber.__toInt),
+						((PLClass) tcounto).___getkey(BaseNumber.__toInt, false),
 						(BaseCompiledStub) tcounto)).getValue();
 			}
 		} catch (Exception e) {
@@ -1391,7 +1393,7 @@ public class PLRuntime {
 	 */
 	public PLangObject runByObjectId(long oid, String methodName, Int arg0,
 			PLangObject arg, long argId) {
-		return run(instanceInternalMap.get(oid).___getkey(methodName),
+		return run(instanceInternalMap.get(oid).___getkey(methodName, false),
 				instanceInternalMap.get(oid), arg0, argId < 0 ? arg
 						: instanceInternalMap.get(argId));
 	}
