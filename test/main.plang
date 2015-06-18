@@ -4,6 +4,7 @@ using Math.Matrix;
 using Random;
 using Collections;
 using Collections.List;
+using Distributed;
 
 module Main {
 
@@ -67,15 +68,41 @@ module Main {
     }
     
     defn restricted calculate(a, b){
-        var ia = Collections.integer_array(4);
-        ia.set(3, new System.Integer(1024));
+        IO.out.lerp();
         
-        var aa = Collections.array_array(1);
-        aa.set(0, ia);
+        //var x = 4;
+        //var y = Collections.integer_array(4);
+        //y.set(0, 1);
+        //y.set(1, 2);
+        //y.set(2, 4);
+        //y.set(3, 8);
+        //var retvals = (dist (x, y) { var hodnota = passed_arg.get(run_id); return hodnota*2; });
         
-        IO.out.println(aa.get(0).get(3));
-        // throw new XExc("yay!");
-        //(dist (2, 0) { while (true) ; });
-        // new X().calculate(a, b);
+        //IO.out.println(retvals);
+        
+        //var ct = 0;
+        //var etime = 0;
+        
+        ct = System.current_time();
+        var ia = Collections.integer_array(50000);
+        for (var i=0; i<50000; i++)
+            ia.set(i, Random.random.get_int(9999999));
+        
+        etime = (System.current_time() - ct);
+        IO.out.println("    Run time: " + etime);
+        
+        ct = System.current_time();
+        Collections.simple_sort(ia);
+        etime = (System.current_time() - ct);
+        IO.out.println("    Run time: " + etime);
+        
+        var ia = Collections.integer_array(50000);
+        for (var i=0; i<50000; i++)
+            ia.set(i, Random.random.get_int(9999999));
+            
+        ct = System.current_time();
+        var res = Distributed.distributed_sort(ia);
+        etime = (System.current_time() - ct);
+        IO.out.println("    Run time: " + etime);
     }
 };

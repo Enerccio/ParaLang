@@ -7,3 +7,11 @@ findbugs*
 *.class
 a.html
 /doc2/
+*.pdf
+*.doc*
+x.zip
+run_client
+index.html
+cz*
+/package
+*.bat

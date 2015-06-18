@@ -1,0 +1,1236 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+		<title>ParaLang language specification and User Manual</title>
+		<style>
+        @font-face {
+  font-family: octicons-anchor;
+  src: url(data:font/woff;charset=utf-8;base64,d09GRgABAAAAAAYcAA0AAAAACjQAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAABMAAAABwAAAAca8vGTk9TLzIAAAFMAAAARAAAAFZG1VHVY21hcAAAAZAAAAA+AAABQgAP9AdjdnQgAAAB0AAAAAQAAAAEACICiGdhc3AAAAHUAAAACAAAAAj//wADZ2x5ZgAAAdwAAADRAAABEKyikaNoZWFkAAACsAAAAC0AAAA2AtXoA2hoZWEAAALgAAAAHAAAACQHngNFaG10eAAAAvwAAAAQAAAAEAwAACJsb2NhAAADDAAAAAoAAAAKALIAVG1heHAAAAMYAAAAHwAAACABEAB2bmFtZQAAAzgAAALBAAAFu3I9x/Nwb3N0AAAF/AAAAB0AAAAvaoFvbwAAAAEAAAAAzBdyYwAAAADP2IQvAAAAAM/bz7t4nGNgZGFgnMDAysDB1Ml0hoGBoR9CM75mMGLkYGBgYmBlZsAKAtJcUxgcPsR8iGF2+O/AEMPsznAYKMwIkgMA5REMOXicY2BgYGaAYBkGRgYQsAHyGMF8FgYFIM0ChED+h5j//yEk/3KoSgZGNgYYk4GRCUgwMaACRoZhDwCs7QgGAAAAIgKIAAAAAf//AAJ4nHWMMQrCQBBF/0zWrCCIKUQsTDCL2EXMohYGSSmorScInsRGL2DOYJe0Ntp7BK+gJ1BxF1stZvjz/v8DRghQzEc4kIgKwiAppcA9LtzKLSkdNhKFY3HF4lK69ExKslx7Xa+vPRVS43G98vG1DnkDMIBUgFN0MDXflU8tbaZOUkXUH0+U27RoRpOIyCKjbMCVejwypzJJG4jIwb43rfl6wbwanocrJm9XFYfskuVC5K/TPyczNU7b84CXcbxks1Un6H6tLH9vf2LRnn8Ax7A5WQAAAHicY2BkYGAA4teL1+yI57f5ysDNwgAC529f0kOmWRiYVgEpDgYmEA8AUzEKsQAAAHicY2BkYGB2+O/AEMPCAAJAkpEBFbAAADgKAe0EAAAiAAAAAAQAAAAEAAAAAAAAKgAqACoAiAAAeJxjYGRgYGBhsGFgYgABEMkFhAwM/xn0QAIAD6YBhwB4nI1Ty07cMBS9QwKlQapQW3VXySvEqDCZGbGaHULiIQ1FKgjWMxknMfLEke2A+IJu+wntrt/QbVf9gG75jK577Lg8K1qQPCfnnnt8fX1NRC/pmjrk/zprC+8D7tBy9DHgBXoWfQ44Av8t4Bj4Z8CLtBL9CniJluPXASf0Lm4CXqFX8Q84dOLnMB17N4c7tBo1AS/Qi+hTwBH4rwHHwN8DXqQ30XXAS7QaLwSc0Gn8NuAVWou/gFmnjLrEaEh9GmDdDGgL3B4JsrRPDU2hTOiMSuJUIdKQQayiAth69r6akSSFqIJuA19TrzCIaY8sIoxyrNIrL//pw7A2iMygkX5vDj+G+kuoLdX4GlGK/8Lnlz6/h9MpmoO9rafrz7ILXEHHaAx95s9lsI7AHNMBWEZHULnfAXwG9/ZqdzLI08iuwRloXE8kfhXYAvE23+23DU3t626rbs8/8adv+9DWknsHp3E17oCf+Z48rvEQNZ78paYM38qfk3v/u3l3u3GXN2Dmvmvpf1Srwk3pB/VSsp512bA/GG5i2WJ7wu430yQ5K3nFGiOqgtmSB5pJVSizwaacmUZzZhXLlZTq8qGGFY2YcSkqbth6aW1tRmlaCFs2016m5qn36SbJrqosG4uMV4aP2PHBmB3tjtmgN2izkGQyLWprekbIntJFing32a5rKWCN/SdSoga45EJykyQ7asZvHQ8PTm6cslIpwyeyjbVltNikc2HTR7YKh9LBl9DADC0U/jLcBZDKrMhUBfQBvXRzLtFtjU9eNHKin0x5InTqb8lNpfKv1s1xHzTXRqgKzek/mb7nB8RZTCDhGEX3kK/8Q75AmUM/eLkfA+0Hi908Kx4eNsMgudg5GLdRD7a84npi+YxNr5i5KIbW5izXas7cHXIMAau1OueZhfj+cOcP3P8MNIWLyYOBuxL6DRylJ4cAAAB4nGNgYoAALjDJyIAOWMCiTIxMLDmZedkABtIBygAAAA==) format('woff');
+}
+
+.markdown-body {
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  color: #333;
+  overflow: hidden;
+  font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.markdown-body a {
+  background: transparent;
+}
+
+.markdown-body a:active,
+.markdown-body a:hover {
+  outline: 0;
+}
+
+.markdown-body strong {
+  font-weight: bold;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+.markdown-body img {
+  border: 0;
+}
+
+.markdown-body hr {
+  box-sizing: content-box;
+  height: 0;
+}
+
+.markdown-body pre {
+  overflow: auto;
+}
+
+.markdown-body code,
+.markdown-body kbd,
+.markdown-body pre {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+.markdown-body input {
+  color: inherit;
+  font: inherit;
+  margin: 0;
+}
+
+.markdown-body html input[disabled] {
+  cursor: default;
+}
+
+.markdown-body input {
+  line-height: normal;
+}
+
+.markdown-body input[type="checkbox"] {
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.markdown-body td,
+.markdown-body th {
+  padding: 0;
+}
+
+.markdown-body * {
+  box-sizing: border-box;
+}
+
+.markdown-body input {
+  font: 13px/1.4 Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.markdown-body a {
+  color: #4183c4;
+  text-decoration: none;
+}
+
+.markdown-body a:hover,
+.markdown-body a:active {
+  text-decoration: underline;
+}
+
+.markdown-body hr {
+  height: 0;
+  margin: 15px 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.markdown-body hr:before {
+  display: table;
+  content: "";
+}
+
+.markdown-body hr:after {
+  display: table;
+  clear: both;
+  content: "";
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  line-height: 1.1;
+}
+
+.markdown-body h1 {
+  font-size: 30px;
+}
+
+.markdown-body h2 {
+  font-size: 21px;
+}
+
+.markdown-body h3 {
+  font-size: 16px;
+}
+
+.markdown-body h4 {
+  font-size: 14px;
+}
+
+.markdown-body h5 {
+  font-size: 12px;
+}
+
+.markdown-body h6 {
+  font-size: 11px;
+}
+
+.markdown-body blockquote {
+  margin: 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown-body ol ol,
+.markdown-body ul ol {
+  list-style-type: lower-roman;
+}
+
+.markdown-body ul ul ol,
+.markdown-body ul ol ol,
+.markdown-body ol ul ol,
+.markdown-body ol ol ol {
+  list-style-type: lower-alpha;
+}
+
+.markdown-body dd {
+  margin-left: 0;
+}
+
+.markdown-body code {
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 12px;
+}
+
+.markdown-body pre {
+  margin-top: 0;
+  margin-bottom: 0;
+  font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+.markdown-body .octicon {
+  font: normal normal normal 16px/1 octicons-anchor;
+  display: inline-block;
+  text-decoration: none;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.markdown-body .octicon-link:before {
+  content: '\f05c';
+}
+
+.markdown-body>*:first-child {
+  margin-top: 0 !important;
+}
+
+.markdown-body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+.markdown-body a:not(:link):not(:visited) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.markdown-body .anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  padding-right: 6px;
+  padding-left: 30px;
+  margin-left: -30px;
+}
+
+.markdown-body .anchor:focus {
+  outline: none;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  position: relative;
+  margin-top: 1em;
+  margin-bottom: 16px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.markdown-body h1 .octicon-link,
+.markdown-body h2 .octicon-link,
+.markdown-body h3 .octicon-link,
+.markdown-body h4 .octicon-link,
+.markdown-body h5 .octicon-link,
+.markdown-body h6 .octicon-link {
+  display: none;
+  color: #000;
+  vertical-align: middle;
+}
+
+.markdown-body h1:hover .anchor,
+.markdown-body h2:hover .anchor,
+.markdown-body h3:hover .anchor,
+.markdown-body h4:hover .anchor,
+.markdown-body h5:hover .anchor,
+.markdown-body h6:hover .anchor {
+  padding-left: 8px;
+  margin-left: -30px;
+  text-decoration: none;
+}
+
+.markdown-body h1:hover .anchor .octicon-link,
+.markdown-body h2:hover .anchor .octicon-link,
+.markdown-body h3:hover .anchor .octicon-link,
+.markdown-body h4:hover .anchor .octicon-link,
+.markdown-body h5:hover .anchor .octicon-link,
+.markdown-body h6:hover .anchor .octicon-link {
+  display: inline-block;
+}
+
+.markdown-body h1 {
+  padding-bottom: 0.3em;
+  font-size: 2.25em;
+  line-height: 1.2;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-body h1 .anchor {
+  line-height: 1;
+}
+
+.markdown-body h2 {
+  padding-bottom: 0.3em;
+  font-size: 1.75em;
+  line-height: 1.225;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-body h2 .anchor {
+  line-height: 1;
+}
+
+.markdown-body h3 {
+  font-size: 1.5em;
+  line-height: 1.43;
+}
+
+.markdown-body h3 .anchor {
+  line-height: 1.2;
+}
+
+.markdown-body h4 {
+  font-size: 1.25em;
+}
+
+.markdown-body h4 .anchor {
+  line-height: 1.2;
+}
+
+.markdown-body h5 {
+  font-size: 1em;
+}
+
+.markdown-body h5 .anchor {
+  line-height: 1.1;
+}
+
+.markdown-body h6 {
+  font-size: 1em;
+  color: #777;
+}
+
+.markdown-body h6 .anchor {
+  line-height: 1.1;
+}
+
+.markdown-body p,
+.markdown-body blockquote,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-body hr {
+  height: 4px;
+  padding: 0;
+  margin: 16px 0;
+  background-color: #e7e7e7;
+  border: 0 none;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+}
+
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ol,
+.markdown-body ol ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown-body li>p {
+  margin-top: 16px;
+}
+
+.markdown-body dl {
+  padding: 0;
+}
+
+.markdown-body dl dt {
+  padding: 0;
+  margin-top: 16px;
+  font-size: 1em;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.markdown-body dl dd {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.markdown-body blockquote {
+  padding: 0 15px;
+  color: #777;
+  border-left: 4px solid #ddd;
+}
+
+.markdown-body blockquote>:first-child {
+  margin-top: 0;
+}
+
+.markdown-body blockquote>:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+}
+
+.markdown-body table th {
+  font-weight: bold;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 6px 13px;
+  border: 1px solid #ddd;
+}
+
+.markdown-body table tr {
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+}
+
+.markdown-body table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.markdown-body code {
+  padding: 0;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(0,0,0,0.04);
+  border-radius: 3px;
+}
+
+.markdown-body code:before,
+.markdown-body code:after {
+  letter-spacing: -0.2em;
+  content: "\00a0";
+}
+
+.markdown-body pre>code {
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+
+.markdown-body .highlight {
+  margin-bottom: 16px;
+}
+
+.markdown-body .highlight pre,
+.markdown-body pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f7f7f7;
+  border-radius: 3px;
+}
+
+.markdown-body .highlight pre {
+  margin-bottom: 0;
+  word-break: normal;
+}
+
+.markdown-body pre {
+  word-wrap: normal;
+}
+
+.markdown-body pre code {
+  display: inline;
+  max-width: initial;
+  padding: 0;
+  margin: 0;
+  overflow: initial;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+
+.markdown-body pre code:before,
+.markdown-body pre code:after {
+  content: normal;
+}
+
+.markdown-body kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 10px;
+  color: #555;
+  vertical-align: middle;
+  background-color: #fcfcfc;
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #bbb;
+}
+
+.markdown-body .pl-c {
+  color: #969896;
+}
+
+.markdown-body .pl-c1,
+.markdown-body .pl-mdh,
+.markdown-body .pl-mm,
+.markdown-body .pl-mp,
+.markdown-body .pl-mr,
+.markdown-body .pl-s1 .pl-v,
+.markdown-body .pl-s3,
+.markdown-body .pl-sc,
+.markdown-body .pl-sv {
+  color: #0086b3;
+}
+
+.markdown-body .pl-e,
+.markdown-body .pl-en {
+  color: #795da3;
+}
+
+.markdown-body .pl-s1 .pl-s2,
+.markdown-body .pl-smi,
+.markdown-body .pl-smp,
+.markdown-body .pl-stj,
+.markdown-body .pl-vo,
+.markdown-body .pl-vpf {
+  color: #333;
+}
+
+.markdown-body .pl-ent {
+  color: #63a35c;
+}
+
+.markdown-body .pl-k,
+.markdown-body .pl-s,
+.markdown-body .pl-st {
+  color: #a71d5d;
+}
+
+.markdown-body .pl-pds,
+.markdown-body .pl-s1,
+.markdown-body .pl-s1 .pl-pse .pl-s2,
+.markdown-body .pl-sr,
+.markdown-body .pl-sr .pl-cce,
+.markdown-body .pl-sr .pl-sra,
+.markdown-body .pl-sr .pl-sre,
+.markdown-body .pl-src {
+  color: #183691;
+}
+
+.markdown-body .pl-v {
+  color: #ed6a43;
+}
+
+.markdown-body .pl-id {
+  color: #b52a1d;
+}
+
+.markdown-body .pl-ii {
+  background-color: #b52a1d;
+  color: #f8f8f8;
+}
+
+.markdown-body .pl-sr .pl-cce {
+  color: #63a35c;
+  font-weight: bold;
+}
+
+.markdown-body .pl-ml {
+  color: #693a17;
+}
+
+.markdown-body .pl-mh,
+.markdown-body .pl-mh .pl-en,
+.markdown-body .pl-ms {
+  color: #1d3e81;
+  font-weight: bold;
+}
+
+.markdown-body .pl-mq {
+  color: #008080;
+}
+
+.markdown-body .pl-mi {
+  color: #333;
+  font-style: italic;
+}
+
+.markdown-body .pl-mb {
+  color: #333;
+  font-weight: bold;
+}
+
+.markdown-body .pl-md,
+.markdown-body .pl-mdhf {
+  background-color: #ffecec;
+  color: #bd2c00;
+}
+
+.markdown-body .pl-mdht,
+.markdown-body .pl-mi1 {
+  background-color: #eaffea;
+  color: #55a532;
+}
+
+.markdown-body .pl-mdr {
+  color: #795da3;
+  font-weight: bold;
+}
+
+.markdown-body .pl-mo {
+  color: #1d3e81;
+}
+
+.markdown-body kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  line-height: 10px;
+  color: #555;
+  vertical-align: middle;
+  background-color: #fcfcfc;
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #bbb;
+}
+
+.markdown-body .task-list-item {
+  list-style-type: none;
+}
+
+.markdown-body .task-list-item+.task-list-item {
+  margin-top: 3px;
+}
+
+.markdown-body .task-list-item input {
+  margin: 0 0.35em 0.25em -1.6em;
+  vertical-align: middle;
+}
+
+.markdown-body :checked+.radio-label {
+  z-index: 1;
+  position: relative;
+  border-color: #4183c4;
+}
+        
+			body {
+				min-width: 200px;
+				max-width: 790px;
+				margin: 0 auto;
+				padding: 30px;
+			}
+		</style>
+	</head>
+	<body>
+		<article class="markdown-body">
+			<h1 id="toc">Table of Content</h1>
+            <ol>
+                <li><a href="#usage">How to Use</a></li>
+                <li>
+                    <a href="#examples">Examples</a>
+                    <ol>
+                        <li><a href="#ex-moduledef">Module Definition</a></li>
+                        <li><a href="#ex-classdef">Class Definition</a></li>
+                        <li><a href="#ex-fielddef">Field Definition</a></li>
+                        <li><a href="#ex-funcdef">Function/Method definition</a></li>
+                        <li><a href="#ex-cex">Complete Example</a></li>
+                    </ol>    
+                </li>
+                <li>
+                    <a href="#documentation">Documentation</a>
+                    <ol>
+                        <li><a href="#doc-basetypes">Base Types</a></li>
+                        <li>
+                            <a href="#doc-statements">Statements</a>
+                            <ol>
+                                <li><a href="#doc-st-block">Block</a></li>
+                                <li><a href="#doc-st-ifelse">If/Else</a></li>
+                                <li><a href="#doc-st-for">For</a></li>
+                                <li><a href="#doc-st-while">While</a></li>
+                                <li><a href="#doc-st-do">Do</a></li>
+                                <li><a href="#doc-st-breakcont">Break/Continue</a></li>
+                                <li><a href="#doc-st-throw">Try/Catch/Finally and Throw - handling exceptions</a></li>
+                                <li><a href="#doc-st-return">Return</a></li>
+                                <li><a href="#doc-st-empty">Empty Statement</a></li>
+                            </ol>
+                        </li>
+                        <li><a href="#doc-expressions">Expressions</a></li>
+                        <li>
+                            <a href="#doc-stdlib">Standard Library</a>
+                            <ol>
+                                <li><a href="#doc-sl-string">Type: string</a></li>
+                                <li><a href="#doc-sl-pointer">Type: pointer</a></li>
+                                <li>
+                                    <a href="#doc-sl-system-moduledef">Module: System</a>
+                                    <ol>
+                                        <li><a href="#doc-sl-system-BaseClass">Class: BaseClass</a></li>
+                                        <li><a href="#doc-sl-system-BaseInteger">Class: BaseInteger</a></li>
+                                        <li><a href="#doc-sl-system-BaseFloat">Class: BaseFloat</a></li>
+                                        <li><a href="#doc-sl-system-BaseException">Class: BaseException</a></li>
+                                        <li><a href="#doc-sl-system-NetworkException">Class: NetworkException</a></li>
+                                        <li><a href="#doc-sl-system-Function">Class: Function</a></li>
+                                    </ol>
+                                    <li><a href="#doc-sl-moduledef-Collections">Module: Collections</a><ol><li><a href="#doc-sl-moduledef-Collections-Array">Class: Array</a><li><a href="#doc-sl-moduledef-Collections-HashSet">Class: HashSet</a><li><a href="#doc-sl-moduledef-Collections-Iterator">Class: Iterator</a><li><a href="#doc-sl-moduledef-Collections-List">Class: List</a><li><a href="#doc-sl-moduledef-Collections-Map">Class: Map</a></ol></li><li><a href="#doc-sl-moduledef-Distributed">Module: Distributed</a><ol></ol></li><li><a href="#doc-sl-moduledef-IO">Module: IO</a><ol><li><a href="#doc-sl-moduledef-IO-SystemPrinter">Class: SystemPrinter</a></ol></li><li><a href="#doc-sl-moduledef-Math">Module: Math</a><ol><li><a href="#doc-sl-moduledef-Math-MathException">Class: MathException</a><li><a href="#doc-sl-moduledef-Math-Matrix">Class: Matrix</a><li><a href="#doc-sl-moduledef-Math-SquareMatrix">Class: SquareMatrix</a></ol></li><li><a href="#doc-sl-moduledef-Random">Module: Random</a><ol><li><a href="#doc-sl-moduledef-Random-JavaRandom">Class: JavaRandom</a><li><a href="#doc-sl-moduledef-Random-Random">Class: Random</a><li><a href="#doc-sl-moduledef-Random-SecureRandom">Class: SecureRandom</a></ol></li><li><a href="#doc-sl-moduledef-Utils">Module: Utils</a><ol><li><a href="#doc-sl-moduledef-Utils-ArrayIndexOutOfBoundsException">Class: ArrayIndexOutOfBoundsException</a><li><a href="#doc-sl-moduledef-Utils-IllegalArgumentException">Class: IllegalArgumentException</a><li><a href="#doc-sl-moduledef-Utils-Time">Class: Time</a></ol></li>
+                                </li>
+                            </ol>
+                        </li>
+                    </ol>    
+                </li>
+            </ol>
+            
+            <h1 id="usage">How to Use</h1>
+            <a href="#toc">Back to top</a>
+            <h1 id="examples">Examples</h1>
+            
+            <h2 id="ex-moduledef">Module Definition</h2>
+            
+            Every <code>.plang</code> file represents a module. There can only be one module defined in every <code>.plang</code> file. Every module 
+            definition starts with <code>module</code> keyword followed by the name of the module, followed by module body definition. 
+            Module definition body starts with <code>{</code> and ends with <code>};</code>.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+
+};</pre></div>
+            
+            Every module can have functions, classes or variables defined. Prior to the module definition, modules or classes which are 
+            used by this module must be declared via <code>using</code> keyword:
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> IO;
+<span class="pl-k">using</span> System;
+<span class="pl-k">using</span> System.BaseException;
+
+<span class="pl-k">module</span> ExampleModule {
+
+};</pre></div>
+
+            Module can have initialization method called <code>init</code> which is called when module is initialized for the first time. This method
+            has no parameters and whatever it returns is ignored.
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> IO;
+<span class="pl-k">using</span> System;
+<span class="pl-k">using</span> System.BaseException;
+
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn init()</span>{
+		<span class="pl-s3">IO</span>.out.println(<span class="pl-s2"><span class="pl-pds">"Hello, world"</span></span>);
+	}
+};</pre></div>
+
+            <h2 id="ex-classdef">Class Definition</h2>
+            
+            Every class is defined via <code>class</code> keyword, followed by identifier followed by class body.
+            
+            <div class="highlight highlight-js"><pre>
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">class</span> HelloWorld {
+	
+	}
+};</pre></div>
+
+            You can specify one parent class from which this class will be derived by prepending the class body with <code>></code> followed by identifier:
+            
+            <div class="highlight highlight-js"><pre>
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">class</span> HelloWorld > HelloWorldBase {
+	
+	}
+};</pre></div>
+
+            Every class is automatically derived from <i>System.BaseClass</i> if there is no parent class specified. Every class can have one <code>init</code> method defined 
+            that can take defined amount of parameters and will be called when new instance is created automatically. New instance is created via 'new' keyword.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">class</span> ExampleClass {
+		<span class="pl-s3">defn init(a, b, c)</span>{
+		}
+	}
+	<span class="pl-k">var</span> x = new ExampleClass(<span class="pl-s2"><span class="pl-pds">1</span></span>, <span class="pl-s2"><span class="pl-pds">2</span></span>, <span class="pl-s2"><span class="pl-pds">3</span></span>);
+};</pre></div>
+            
+            <h2 id="ex-fielddef">Field Definition</h2>
+                Field is defined via <code>var</code> keyword followed by field definition and optional initialization. 
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-k">var</span> x;
+	<span class="pl-k">var</span> y = <span class="pl-s2"><span class="pl-pds">""</span></span>, z;
+	<span class="pl-k">var</span> z = <span class="pl-s2"><span class="pl-pds">10</span></span>;
+};</pre></div>
+            
+                Fields can be defined for either module or class. Any uninitialized field will have value of <b>NoValue</b>.
+            
+            <h2 id="ex-funcdef">Function/Method definition</h2>
+            
+            Function/Method (the only difference is where they are defined, functions are defined at module level, methods are defined
+            at class level) are defined via <code>defn</code> keyword followed by optional 'restricted' keyword followed by parameter definition and function/method body.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn method(x, y)</span>{
+	
+	}
+};</pre></div>
+
+            <h2 id="ex-cex">Complete Example</h2>
+            
+            <hr/><a href="#toc">Back to top</a>
+            <h1 id="documentation">Documentation</h1>
+            
+            <h2 id="doc-basetypes">Base Types</h2>
+            
+            There are 9 types in ParaLang. 7 of those are base types and include: <b>integer, float, string, boolean, NoValue, Method/Function</b> and <b>Jawa wrapped Object</b>. You cannot derive 
+            these types. <b>String</b> type has methods that create modified variants while <b>integer</b> and <b>float</b> have their class variant as <code>System.Integer</code> and <code>System.Float</code>
+            respectively. The following table lists all the types of objects in ParaLang, along with <code>instanceof</code> type that can be used to determine if value is the type that is being tested. 
+            Module type cannot be extended while class type can be extended.
+            
+            <table>
+                <tr><td width="10%"><b>Type</b></td><td width="10%"><b>instanceof/catch type</b></td><td width="10%"><b>class variant</b></td><td width="70%"><b>description</b></td><tr>
+                <tr><td width="10%">integer</td><td width="10%">integer, number</td><td width="10%"><i>System.Integer</i></td><td width="70%">Base integers from -9223372036854775808 to 9223372036854775807, data value corresponds to java long</td><tr>
+                <tr><td width="10%">float</td><td width="10%">float, number</td><td width="10%"><i>System.Float</i></td><td width="70%">Float point numbers, data value corresponds to java float</td><tr>
+                <tr><td width="10%">string</td><td width="10%">string</td><td width="10%">N/A</td><td width="70%">Strings enclosed by "". Immutable, data value corresponds to java String.</td><tr>
+                <tr><td width="10%">boolean</td><td width="10%">boolean</td><td width="10%">N/A</td><td width="70%">Two possible values: true or false. Immutable.</td><tr>
+                <tr><td width="10%">NoValue</td><td width="10%">null</td><td width="10%">N/A</td><td width="70%">Represents no value. Every function automatically returns this value. This value is considered false.</td><tr>
+                <tr><td width="10%">Method or function</td><td width="10%">func</td><td width="10%">N/A</td><td width="70%">Function of module or method of class. System only type.</td><tr>
+                <tr><td width="10%">Java wrapped object</td><td width="10%">pointer</td><td width="10%">N/A</td><td width="70%">Java wrapped objects are represented as this type. Only serializable java classes can be represented by pointer type.</td><tr>
+                <tr><td width="10%">Module</td><td width="10%">mod</td><td width="10%">N/A</td><td width="70%">Module instance. Used to access module fields and functions.</td><tr>
+                <tr><td width="10%">Class</td><td width="10%">cls</td><td width="10%"><i>System.BaseClass</i></td><td width="70%">Class instance.</td><tr>
+            </table>
+            
+            <h2 id="doc-statements">Statements</h2>
+            
+            Method or function body is defined as 0 or more statements. Every statement except <code>block</code> must be ended with semicolon <code>&#59;</code>. 
+            
+            <h3 id="doc-st-block">Block</h3>
+            
+            Every block starts with <code>{</code> and ends with <code>}</code>. Inside the block, you can have any number of statements and any number of variable declarators. Variable declarators have 
+            the same syntax as field declarators, <code>var</code> followed by one or more variable declaration consisting either of identifier or identifier followed by <code>=</code> followed by expression.
+            You can nest blocks.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		{
+			{
+			}
+		}
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-ifelse">If/Else</h3>
+            
+            If/Else branching statement has following syntax: <code>if (expression) statement</code> or <code>if (expression) statement else statement</code>. Depending on whether expression evaluates to true or false
+            first or second statement (if there is one) will be executed. Remember, every value that is not FALSE or NoValue is considered true.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">if</span> (<span class="pl-s3">x</span> == <span class="pl-s3">y</span>) {
+		
+		}<span class="pl-k"> else </span>{
+		
+		}
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-for">For</h3>
+            
+            For statement has same syntax as in java or c++: <code>for (initializer; expression; expression) statement</code>. <code>initializer</code> can either be expression, variable declaration or empty. 
+            Other two expressions can be empty as well.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">for</span> (<span class="pl-k">var</span> i=<span class="pl-s2"><span class="pl-pds">0</span></span>; <span class="pl-s3">i</span><<span class="pl-s3">x</span>; <span class="pl-s3">i</span>++)
+			;
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-while">While</h3>
+            
+            While statement has following syntax: <code>while (expression) statement</code>. While expression resolves to true, statement will continue to be executed.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">while</span> (<span class="pl-s3">x</span>++ < <span class="pl-s3">y</span>) 
+			;
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-do">Do</h3>
+            
+            Do statement has following syntax: <code>do statement while (expression)</code>. The statement will be executed at least once and then depending on the expression it will continue to be executed or not.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">do</span> {
+			++<span class="pl-s3">x</span>;
+		}<span class="pl-k"> while </span>(<span class="pl-s3">x</span> < <span class="pl-s3">y</span>);
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-breakcont">Break/Continue</h3>
+            
+            These statements can only be used during loops. <code>break</code> statement will exit the most recent nested loop of where it is written, while <code>continue</code> will return to the beginning 
+            of the loop.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">while</span> (<span class="pl-s3">true</span>){
+			<span class="pl-k">if</span> (<span class="pl-s3">x</span> % <span class="pl-s2"><span class="pl-pds">2</span></span> == <span class="pl-s3">true</span>) <span class="pl-k">continue</span>;
+			<span class="pl-k">if</span> (<span class="pl-s3">x</span> >= <span class="pl-s3">y</span>) <span class="pl-k">break</span>;
+		}
+	}
+};</pre></div>
+
+            <h3 id="doc-st-throw">Try/Catch/Finally and Throw - handling exceptions</h3>
+            
+            ParaLang has same exception handling system as Java. You can enclose the statements in <code>try block</code> and if any value is thrown, it will be handled by proper handler you provide.
+            You can throw any ParaLang value, however, only objects that are instance of classes derived from <code>System.BaseException</code> will have stack trace generated. You can provide handlers 
+            via <code>catch (type identifier) block</code> followed the try block. If the type matches, the handler will be executed, if not, the next handler will be tried. Finally, you can have <code>finally block</code>
+            after all handlers, which will be executed every time you exit the try or catch block, even via break or return.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> System.BaseException;
+<span class="pl-k">using</span> System.NetworkException;
+
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">try</span> {
+			<span class="pl-k">throw</span> new NetworkException(<span class="pl-s2"><span class="pl-pds">"NO!"</span></span>);
+		} <span class="pl-k">catch</span> (NetworkException e){
+		
+		} <span class="pl-k">catch</span> (BaseException e){
+		
+		} <span class="pl-k">finally</span> {
+		
+		}
+	}
+};</pre></div>
+
+            <h3 id="doc-st-return">Return</h3>
+            
+            Return statement is optional statement that has following syntax: <code>return expression</code>. It will return the value of expression from the function/method it is located in. 
+            If function/method ends without return statement, NoValue is returned instead.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">using</span> System.BaseException;
+<span class="pl-k">using</span> System.NetworkException;
+
+<span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">return</span> <span class="pl-s3">x</span> * <span class="pl-s3">y</span>;
+	}
+};</pre></div>
+            
+            <h3 id="doc-st-empty">Empty Statement</h3>
+            
+            Single semicolon <code>;</code> can be used for empty statement. Such statement does nothing.
+            
+            <div class="highlight highlight-js"><pre><span class="pl-k">module</span> ExampleModule {
+	<span class="pl-s3">defn example(x, y)</span>{
+		<span class="pl-k">while</span> (<span class="pl-s3">x</span>++ < <span class="pl-s3">y</span>) 
+			;
+	}
+};</pre></div>
+
+            <h2 id="doc-expression">Expressions</h2>
+            
+            An expression in ParaLang can be identifier, <code>( expression ) </code> or literars: integers, floats, strings enclosed by <code>""</code> or following expressions (in order of 
+            priority):
+            
+            <table>
+                <tr><td width="40%"><b>Expression</b></td></td><td width="10%"><b>method call</b></td><td width="50%"><b>description</b></td><tr>
+                <tr><td width="40%"><code>'(' dist '(' IntegerLiterar (',' expression)? ')' block ')'</code><td width="10%">N/A</td><td width="50%">Calls the block code distributively and waits for the execution to complete. Block has <code>run_id</code> accessible and result of passed expression is also reachable as <code>passed_arg</code> This expression returns <code>Collections.List</code> instance or throws <code>System.NetworkException</code> on failure.</td><tr>
+                <tr><td width="40%"><code>expression '.' Identifier</code></td><td width="10%">N/A</td><td width="50%">Returns the value stored in module/instance field identified by Identifier.</td><tr>
+                <tr><td width="40%"><code>expression '->' Identifier '(' parameters ')'</code></td><td width="10%">N/A</td><td width="50%">Calls java method identified by Identifier of Pointer value returned by expression.*</td><tr>
+                <tr><td width="40%"><code>Identifier '->' Identifier '(' parameters ')'</code></td><td width="10%">N/A</td><td width="50%">Creates new Pointer instance with new java class instance identified by Identifier. The identifiers must be equal!*</td><tr>
+                <tr><td width="40%"><code>expression '(' parameters ')'</code></td><td width="10%"><code>protected _apply</code></td><td width="50%">Calls function/method with arguments presented. You may define method <code>protected _apply</code> in any object or derive class from <code>System.Function</code> to call that method when this is executed.</td><tr>
+                <tr><td width="40%"><code>new Identifier '(' parameters ')'</code></td><td width="10%"><code>init</code></td><td width="50%">Creates new object of specified class. Class must be either local class or type specified by <code>using</code> directive. The parameters must be exactly the same as specified by init method, which will be called.</td><tr>
+                <tr><td width="40%"><code>new Identifier '.' Identifier '(' parameters ')'</code></td><td width="10%"><code>init</code></td><td width="50%">Creates new object of specified module and class. Module must be specified by <code>using</code> directive.  The parameters must be exactly the same as specified by init method, which will be called.</td><tr>
+                <tr><td width="40%"><code>(Identifier | ( expression '.' Identifier )) ('++' | '--')</code></td><td width="10%">N/A</td><td width="50%">Increase the value of Identifier by calling (x + 1) but returns the previous value.</td><tr>
+                <tr><td width="40%"><code>('+' | '-') expression </code></td><td width="10%"><code>protected _uplus()</code>, <code>protected _uminus()</code></td><td width="50%">On numbers, - returns negative number while + is ignored.</td><tr>
+                <tr><td width="40%"><code>('++' | '--') expression </code></td><td width="10%"><code>protected _lplusplus()</code>, <code>protected _lminusminus()</code></td><td width="50%">Increase/decrease the value by 1</td><tr>
+                <tr><td width="40%"><code>('~' | '!') expression </code></td><td width="10%"><code>protected _ulogneg()</code>, <code>protected _ubinneg()</code></td><td width="50%">~ performs binary negation while ! performs logical negation</td><tr>
+                <tr><td width="40%"><code>expression ('*' | '/' | '%') expression </code></td><td width="10%"><code>protected _mul(other)</code>, <code>protected _div(other)</code>, <code>protected _mod(other)</code></td><td width="50%">Math operations of multiplication, division and modulo.</td><tr>
+                <tr><td width="40%"><code>expression ('+' | '-' ) expression </code></td><td width="10%"><code>protected _plus(other)</code>, <code>protected _minus(other)</code></td><td width="50%">Math operations of addition and subtraction.</td><tr>
+                <tr><td width="40%"><code>expression ('<<' | '>>' | '>>>' ) expression </code></td><td width="10%"><code>protected _right_shift(other)</code>, <code>protected _left_shift(other)</code>, <code>protected _right_ushift(other)</code></td><td width="50%">Math operations of left shift, right shift and right unsigned shift.</td><tr>
+                <tr><td width="40%"><code>expression ('<=' | '<' | '>' | '>=' ) expression </code></td><td width="10%"><code>protected _leq(other)</code>, <code>protected _less(other)</code>, <code>protected _meq(other)</code>, <code>protected _more(other)</code></td><td width="50%">Compare operations. Returns boolean value.</td><tr>
+                <tr><td width="40%"><code>expression 'instanceof' type </code></td><td width="10%">N/A</td><td width="50%">Returns true if expression is instance of the type. Types are defined in Base Types presented above.</td><tr>
+                <tr><td width="40%"><code>expression ('==' | '!=' ) expression </code></td><td width="10%"><code>protected _eq(other)</code>, <code>protected _neq(other)</code></td><td width="50%">Equality and non equality operator. Returns boolean value.</td><tr>
+                <tr><td width="40%"><code>expression '&' expression </code></td><td width="10%"><code>protected _bit_or(other)</code></td><td width="50%">Math operation, performs binary and.</td><tr>
+                <tr><td width="40%"><code>expression '|' expression </code></td><td width="10%"><code>protected _bit_and(other)</code></td><td width="50%">Math operation, performs binary or.</td><tr>
+                <tr><td width="40%"><code>expression '^' expression </code></td><td width="10%"><code>protected _bit_xor(other)</code></td><td width="50%">Math operation, performs binary xor.</td><tr>
+                <tr><td width="40%"><code>expression '&&' expression </code></td><td width="10%">N/A</td><td width="50%">Logical and operation, performs the logical expression short-cutting.</td><tr>
+                <tr><td width="40%"><code>expression '||' expression </code></td><td width="10%">N/A</td><td width="50%">Logical or operation, performs the logical expression short-cutting.</td><tr>
+                <tr><td width="40%"><code>expression '?' expression ':' expression </code></td><td width="10%">N/A</td><td width="50%">Ternary operator.</td><tr>
+                <tr><td width="40%"><code>(Identifier | ( expression '.' Identifier )) set-type expression </code></td><td width="10%">N/A</td><td width="50%">Set operator. In selected field/local variable, stores the value of expression if set-type is <code>=</code>. Variants with operator in front of equals for associated operation prior to the assignment with old value: <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>, <code>&=</code>, <code>|=</code>, <code>^=</code>, <code>>>=</code>, <code><<=</code>, <code>>>>=</code>, <code>%=</code>. All of these operators including <code>=</code> have right priority.</td><tr>
+            </table>
+            * - Can only be compiled in safe context, which is default on only when compiling base ParaLang library.
+            
+            <hr/>
+            In methods, <code>inst</code> denotes current instance and <code>parent</code> denotes parent class.
+            
+            <h2 id="doc-stdlib">Standard Library</h2>
+            
+            These modules and classes are available for every ParaLang program.
+
+            <h3 id="doc-sl-string">Type: string</h3>    
+
+            Strings along pointers have methods that can be called on them. All of these methods are immutable and always return a new, fresh copy of string of what the result of the method is if it returns string.
+            However, string type by itself is NOT a class type (and instanceof operator will return false on that test) and thus cannot be derived from.
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>character_at</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns single string character at location of index or throws BaseException if index value is invalid.</td></tr>
+                <tr><td width="10%"><code>from</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns substring of original string from location of index or throws BaseException if index value is invalid.</td></tr>
+                <tr><td width="10%"><code>to</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns substring of original string to location of index or throws BaseException if index value is invalid.</td></tr>
+                <tr><td width="10%"><code>starts_with</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string starts with passed argument or not.</td></tr>
+                <tr><td width="10%"><code>ends_with</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string ends with passed argument or not.</td></tr>
+                <tr><td width="10%"><code>is_empty</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is empty or not.</td></tr>
+                <tr><td width="10%"><code>abbreviate</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns abbreviated form on a string with dots at the end.</td></tr>
+                <tr><td width="10%"><code>center</code></td><td width="20%">integer</td><td width="10%"><code>string</code></td><td width="60%">Returns string off-setted by space characters.</td></tr>
+                <tr><td width="10%"><code>contains</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string contains string provided as argument.</td></tr>
+                <tr><td width="10%"><code>count_matches</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns number of times argument matches in this string.</td></tr>
+                <tr><td width="10%"><code>protected _eq_ignorecase</code></td><td width="20%">string</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether string is equal with argument ignoring case.</td></tr>
+                <tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr><tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr>
+                <tr><td width="10%"><code>last_index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of last match of parameter in this string, -1 if not found.</td></tr><tr><td width="10%"><code>index_of</code></td><td width="20%">string</td><td width="10%"><code>integer</code></td><td width="60%">Returns index of first match of parameter in this string, -1 if not found.</td></tr>
+                <tr><td width="10%"><code>is_all_uppercase</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is all upper case.</td></tr>
+                <tr><td width="10%"><code>is_all_lowercase</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is all lower case.</td></tr>
+                <tr><td width="10%"><code>is_alphanumeric</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is alphanumeric.</td></tr>
+                <tr><td width="10%"><code>is_alphanumeric_with_space</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is alphanumeric with spaces.</td></tr>
+                <tr><td width="10%"><code>is_ascii_printable</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this string is printable in ascii console.</td></tr>
+                <tr><td width="10%"><code>strip_accents</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string stripped of all accents.</td></tr>
+                <tr><td width="10%"><code>strip</code></td><td width="20%">string</td><td width="10%"><code>string</code></td><td width="60%">Returns this string stripped of all characters in provided string.</td></tr>
+                <tr><td width="10%"><code>strip_whitespace</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string stripped of all whitespace.</td></tr>
+                <tr><td width="10%"><code>to_upper_case</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string in all uppercase.</td></tr>
+                <tr><td width="10%"><code>to_lower_case</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns this string in all lowercase.</td></tr>
+            </table>
+            
+            Also, string has special interaction with some operations. <code>+</code> combines string with another element, which will be converted to string before adding expression. 
+            <code>*</code> expression with one argument being string and one being integer will return that string concatenated that many times together. <code>%</code> expression with left argument string 
+            and right argument integer between 1 and 16 will convert string into integer with that radix. <code><<</code> is a shortcut for <code>from</code> method and <code>>></code> is a shortcut for
+            <code>to</code> method. <code>>>></code> will rotate provided string by provided index to the right. Strings can also be compared via <code><, <=, ==, !=, >=, ></code>.
+            
+            <h3 id="doc-sl-pointer">Type: pointer</h3> 
+            
+            Pointer type represents java objects wrapped in ParaLang type. You can access methods of said objects via <code>-></code> operator. However, you can only compile such code in <code>safe context</code>.
+            Creating new instances of pointer object is done via <code>Identifier->Identifier '(' params ')'</code> call. However, for pointer to be valid in remote calls, the java object has to implement
+            <code>serializable</code> interface. If you attempt to call java method of pointer whose java object does not implement this interface in remote calls, it will fail with BaseException. 
+            
+            Pointer has two methods which you can use to query whether the wrapped object implements serializable or not:
+            
+            <table>
+                <tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>is_transient_pointer</code></td><td width="20%">0</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this pointer has value or not.</td></tr>
+                <tr><td width="10%"><code>will_be_transient_pointer</code></td><td width="20%">0</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this pointer will have transient value when in remote call.</td></tr>
+            </table>
+            
+            Some other classes in standard library will implement same methods if they deal with potential transient pointers (such as <code>Iterator</code> class).
+            
+            <h3 id="doc-sl-system-moduledef">Module: System</h3>
+            
+            System module contains functions related to the current runtime or current process/computer. 
+            
+            <table>
+                <tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>current_time</code></td><td width="20%">0</td><td width="10%"><code>integer</code></td><td width="60%">Returns integer with current unix time of the local machine this code is running in.</td></tr>
+                <tr><td width="10%"><code>free_nodes</code></td><td width="20%">0</td><td width="10%"><code>integer >= 0</code></td><td width="60%">Returns number of available workers across all nodes. This information is however only approximate!</td></tr>
+            </table>
+            
+            <h4 id="doc-sl-system-BaseClass">Class: BaseClass</h4>
+            
+            BaseClass is the root hierarchy object of all other classes. Provides some base methods that every instance must have.
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>protected _str</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns string representation of this instance.</td></tr>
+                <tr><td width="10%"><code>protected _eq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether value passed is equal. Base implementation compares pointer value of underline java objects.</td></tr>
+                <tr><td width="10%"><code>protected _neq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether value passed is inequal. Base implementation returns logical negation of <code>protected _eq</code> method.</td></tr>
+            </table>
+            
+            <h4 id="doc-sl-system-BaseNumber">Class: BaseInteger</h4>
+            
+            <b>Parent class: </b> <code>System.BaseClass</code> <hr/>
+            This class represents class variant of type integer.
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>init</code></td><td width="20%">integer</td><td width="10%">N/A</td><td width="60%">Constructor of this class.</td></tr>
+                <tr><td width="10%"><code>protected _bit_and</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit and operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_or</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit or operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_xor</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns bit xor operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _div</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns div operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mod</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns mod operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mul</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns mul operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _plus</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns plus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _minus</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns minus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns right shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _left_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns left shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_ushift</code></td><td width="20%">any value</td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns right unsigned shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _leq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _less</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _meq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _more</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>sqrt</code></td><td width="20%"></td><td width="10%"><code>BaseInteger</code></td><td width="60%">Returns square root of itself.</td></tr>
+            </table>
+            
+            <h4 id="doc-sl-system-BaseNumber">Class: BaseFloat</h4>
+            
+            <b>Parent class: </b> <code>System.BaseClass</code> <hr/>
+            This class represents class variant of primitive type float.
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>init</code></td><td width="20%">float</td><td width="10%">N/A</td><td width="60%">Constructor of this class.</td></tr>
+                <tr><td width="10%"><code>protected _bit_and</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit and operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_or</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit or operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _bit_xor</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns bit xor operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _div</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns div operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mod</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns mod operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _mul</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns mul operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _plus</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns plus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _minus</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns minus operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns right shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _left_shift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns left shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _right_ushift</code></td><td width="20%">any value</td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns right unsigned shift operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _leq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _less</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns less operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _meq</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more or equal operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>protected _more</code></td><td width="20%">any value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns more operation on this instance and argument</td></tr>
+                <tr><td width="10%"><code>sqrt</code></td><td width="20%"></td><td width="10%"><code>BaseFloat</code></td><td width="60%">Returns square root of itself.</td></tr>
+            </table>
+            
+            <h4 id="doc-sl-system-BaseException">Class: BaseException</h4>
+            
+            <b>Parent class: </b> <code>System.BaseClass</code> <hr/>
+            
+            Base class for any exceptions thrown in ParaLang. Unlike other objects, which are throwable, only BaseClass and its derived classes will generate stack trace.
+            
+            <table>
+                <tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>protected _message</code></td><td width="20%"><code>string</code></td><td width="10%">NoValue</td><td width="60%">Message of this exception.</td></tr>
+            </table>
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>init</code></td><td width="20%">string</td><td width="10%">N/A</td><td width="60%">Constructs new BaseException with provided string as text.</td></tr>
+                <tr><td width="10%"><code>get_message</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns message of this exception.</td></tr>
+            </table>
+            
+            <h4 id="doc-sl-system-NetworkException">Class: NetworkException</h4>
+            
+            <b>Parent class: </b> <code>System.BaseException</code> <hr/>
+            
+            Exception that is thrown from the distributed expression if there is any failure. 
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>init</code></td><td width="20%">string</td><td width="10%">N/A</td><td width="60%">Constructs new NetworkException with provided string as text.</td></tr>
+                <tr><td width="10%"><code>protected _get_exceptions</code></td><td width="20%"></td><td width="10%"><code>Collections.List</code></td><td width="60%">Returns list of all exceptions that happened in same order as were the calling runtimes. NoValue indicates that particular runtime finished successfully.</td></tr>
+            </table>
+            
+            <h4 id="doc-sl-system-Function">Class: Function</h4>
+            
+            <b>Parent class: </b> <code>System.BaseClass</code> <hr/>
+            
+            This class represents basic interface of classes which instance can be called by method/function call. You are not required to derive from this class, you can use <code>protected _apply</code> freely in any class. 
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>protected _apply</code></td><td width="20%">any values</td><td width="10%"><code>any type</code></td><td width="60%">This method is called when instance is asked to run itself with arguments.</td></tr>
+            </table>
+            
+            <hr/><a href="#toc">Back to top</a>
+            <h3 id="doc-sl-moduledef-Collections">Module: Collections</h3>
+Collections is a module containing easy to use collections, such as List, HashSet or Map.<br />Also provides wrapper to java Interator via Iterator class.<table><tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>boolean_array</code></td><td width="20%">n</td><td width="10%"><code>Array</code></td><td width="60%">Constructs boolean array which will convert all arguments passed in as a boolean<br /></td></tr><tr><td width="10%"><code>integer_array</code></td><td width="20%">n</td><td width="10%"><code>Array</code></td><td width="60%">Constructs integer array which will only allow int/Integer to be passed in<br /></td></tr><tr><td width="10%"><code>float_array</code></td><td width="20%">n</td><td width="10%"><code>Array</code></td><td width="60%">Constructs float array which will only allow float/Float to be passed in<br /></td></tr><tr><td width="10%"><code>string_array</code></td><td width="20%">n</td><td width="10%"><code>Array</code></td><td width="60%">Constructs string array which will only allow string to be passed in<br /></td></tr><tr><td width="10%"><code>array_array</code></td><td width="20%">n</td><td width="10%"><code>Array</code></td><td width="60%">Constructs array of arrays which will only allow Array to be passed in<br /></td></tr><tr><td width="10%"><code>simple_sort</code></td><td width="20%">gettable</td><td width="10%"><code></code></td><td width="60%">Sorts anything that has get method with index argument, set method with index and object and size method with no arguments in place.<br /></td></tr><table><h4 id="doc-sl-moduledef-Collections-Array">Class: Array</h4>
+Fixed size array, used to get and set elements. Used to fast access and modification.This class is abstract and should not be used. Use functions above to instantiate arrays.<br /><table><tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>_array</code></td><td width="20%"><code></code></td><td width="10%"></td><td width="60%">Fixed size array, used to get and set elements. Used to fast access and modification.This class is abstract and should not be used. Use functions above to instantiate arrays.<br /></td></tr><tr><td width="10%"><code>_type_exception</code></td><td width="20%"><code></code></td><td width="10%"></td><td width="60%"></td></tr><tr><td width="10%"><code>_length</code></td><td width="20%"><code></code></td><td width="10%"></td><td width="60%"></td></tr><tr><td width="10%"><code>_atype</code></td><td width="20%"><code></code></td><td width="10%"></td><td width="60%"></td></tr><table><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">len</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>get</code></td><td width="20%">index</td><td width="10%"><code>underline object or NoValue</code></td><td width="60%">Returns object at index index, or NoValue if there is no object<br /></td></tr><tr><td width="10%"><code>set</code></td><td width="20%">index, object</td><td width="10%"><code></code></td><td width="60%">Sets the object at index in this array.<br /></td></tr><tr><td width="10%"><code>size</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%">Returns length of this array<br /></td></tr><tr><td width="10%"><code>get_type</code></td><td width="20%"></td><td width="10%"><code>string</code></td><td width="60%">Returns type of this array. Types can be "boolean", "int", "float", "string" or "array";<br /></td></tr><tr><td width="10%"><code>_eq</code></td><td width="20%">other</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>_str</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><table><h4 id="doc-sl-moduledef-Collections-HashSet">Class: HashSet</h4>
+HashSet is container that may contain only one copy of any object. You can query the objects via iterator or via contains method.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>insert</code></td><td width="20%">o</td><td width="10%"><code></code></td><td width="60%">Adds this object into this set.<br /></td></tr><tr><td width="10%"><code>push</code></td><td width="20%">o</td><td width="10%"><code>HashSet</code></td><td width="60%">Nonmodifiable version of insert method. Clones this set and returns new copy with added element.<br /></td></tr><tr><td width="10%"><code>contains</code></td><td width="20%">o</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether object is in the set.<br /></td></tr><tr><td width="10%"><code>remove</code></td><td width="20%">o</td><td width="10%"><code></code></td><td width="60%">Removes object from the set.<br /></td></tr><tr><td width="10%"><code>purge</code></td><td width="20%">o</td><td width="10%"><code>HashSet</code></td><td width="60%">Nonmutable version of remove. Removes object from the copy of this set and returns it.<br /></td></tr><tr><td width="10%"><code>clear</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%">Clears this set.<br /></td></tr><tr><td width="10%"><code>size</code></td><td width="20%"></td><td width="10%"><code>integer</code></td><td width="60%">Returns number of elements in this set.<br /></td></tr><tr><td width="10%"><code>iterator</code></td><td width="20%"></td><td width="10%"><code>Iterator</code></td><td width="60%">Returns iterator to this set<br /></td></tr><tr><td width="10%"><code>_str</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><table><h4 id="doc-sl-moduledef-Collections-Iterator">Class: Iterator</h4>
+Wraps java.lang.Iterator<> pointer.<br />Provides iterator interface.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">iterator</td><td width="10%"><code></code></td><td width="60%"><br />Creates new iterator out of java.lang.Iterator pointer.<br /></td></tr><tr><td width="10%"><code>next</code></td><td width="20%"></td><td width="10%"><code>any value</code></td><td width="60%"><br />Returns next element from iterator.<br /></td></tr><tr><td width="10%"><code>has_next</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this iterator has value or not.<br /></td></tr><tr><td width="10%"><code>remove</code></td><td width="20%"></td><td width="10%"><code>value removed</code></td><td width="60%">Removes this element from this iterator (optional operation).<br /></td></tr><tr><td width="10%"><code>_str</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>will_be_transient_pointer</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether underline pointer will be transient.<br /></td></tr><tr><td width="10%"><code>is_transient_pointer</code></td><td width="20%"></td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether underline pointer is transient.<br /></td></tr><table><h4 id="doc-sl-moduledef-Collections-List">Class: List</h4>
+List of items. Items are ordered in order of adding to the list.<br />Search operations are O(n) while access operations are O(1).<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>add</code></td><td width="20%">o</td><td width="10%"><code></code></td><td width="60%">Adds object into this list.<br /></td></tr><tr><td width="10%"><code>append</code></td><td width="20%">o</td><td width="10%"><code>List</code></td><td width="60%">Nonmutable version of add. Clones this list and then adds object into it and returns new list.<br /></td></tr><tr><td width="10%"><code>insert</code></td><td width="20%">index, o</td><td width="10%"><code></code></td><td width="60%">Inserts object at index index.<br /></td></tr><tr><td width="10%"><code>append_at</code></td><td width="20%">o, index</td><td width="10%"><code>List</code></td><td width="60%">Nonmutable version of insert. Inserts object at index index in clone of this list which is returned.<br /></td></tr><tr><td width="10%"><code>remove</code></td><td width="20%">o</td><td width="10%"><code></code></td><td width="60%">Removes object o from this list.<br /></td></tr><tr><td width="10%"><code>remove_at</code></td><td width="20%">index</td><td width="10%"><code>any value</code></td><td width="60%">Removes element at index index and returns it.<br /></td></tr><tr><td width="10%"><code>set</code></td><td width="20%">index, o</td><td width="10%"><code></code></td><td width="60%">Swaps the object at index index with object o.<br /></td></tr><tr><td width="10%"><code>get</code></td><td width="20%">index</td><td width="10%"><code></code></td><td width="60%">Returns object at index index.<br /></td></tr><tr><td width="10%"><code>find</code></td><td width="20%">o</td><td width="10%"><code></code></td><td width="60%">Returns index of object o in this List.<br /></td></tr><tr><td width="10%"><code>clear</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%">Clears this list.<br /></td></tr><tr><td width="10%"><code>size</code></td><td width="20%"></td><td width="10%"><code>integer</code></td><td width="60%">Returns number of elements in this list.<br /></td></tr><tr><td width="10%"><code>iterator</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%">Returns iterator to this list.<br /></td></tr><tr><td width="10%"><code>_str</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><table><h4 id="doc-sl-moduledef-Collections-Map">Class: Map</h4>
+Dictionary implementation. Handles key->value association.<br />Implements it via java.lang.HashMap, so operations are O(1).<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>put</code></td><td width="20%">key, value</td><td width="10%"><code>any value</code></td><td width="60%">Adds association between key and value in this map. Returns previous association, if any.<br /></td></tr><tr><td width="10%"><code>push</code></td><td width="20%">key, value</td><td width="10%"><code>Map</code></td><td width="60%">Nonmutable version of put. Returns new map with that association.<br /></td></tr><tr><td width="10%"><code>get</code></td><td width="20%">key</td><td width="10%"><code></code></td><td width="60%">Returns association with this key, if any.*ref any value<br /></td></tr><tr><td width="10%"><code>contains</code></td><td width="20%">key</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether key has association in this map.<br /></td></tr><tr><td width="10%"><code>contains_value</code></td><td width="20%">value</td><td width="10%"><code>boolean</code></td><td width="60%">Returns whether this value is contained in this map as value.<br /></td></tr><tr><td width="10%"><code>remove</code></td><td width="20%">key</td><td width="10%"><code>any value</code></td><td width="60%">Removes key from this map. Returns associated value, if any.<br /></td></tr><tr><td width="10%"><code>keys</code></td><td width="20%"></td><td width="10%"><code>HashSet</code></td><td width="60%">Returns all keys in this map as HashSet.<br /></td></tr><tr><td width="10%"><code>values</code></td><td width="20%"></td><td width="10%"><code>List</code></td><td width="60%">Returns all values in this map as List.<br /></td></tr><tr><td width="10%"><code>size</code></td><td width="20%"></td><td width="10%"><code>integer</code></td><td width="60%">Returns number of associations in this map.<br /></td></tr><tr><td width="10%"><code>clear</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%">Clears this map.<br /></td></tr><tr><td width="10%"><code>_str</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><table><hr/><a href="#toc">Back to top</a><h3 id="doc-sl-moduledef-Distributed">Module: Distributed</h3>
+<table><tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>distributed_sort</code></td><td width="20%">gettable</td><td width="10%"><code></code></td><td width="60%">Sorts anything that has get method with index argument, set method with index and object and size method with no arguments in place distributed.<br /></td></tr><table><hr/><a href="#toc">Back to top</a><h3 id="doc-sl-moduledef-IO">Module: IO</h3>
+IO module implements various functions related to IO, such as printing.<br />Some methods or functions might be restricted!<table><tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>out</code></td><td width="20%"><code>SystemPrinter</code></td><td width="10%">out system printer</td><td width="60%">SystemPrinter that prints to system out.<br /></td></tr><tr><td width="10%"><code>err</code></td><td width="20%"><code>SystemPrinter</code></td><td width="10%">err system printer</td><td width="60%">SystemPrinter that prints to system err.<br /></td></tr><table><h4 id="doc-sl-moduledef-IO-SystemPrinter">Class: SystemPrinter</h4>
+SystemPrinter wraps java printstreams (out and err). Should not be instantiated by itself.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">wp</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>print</code></td><td width="20%">object</td><td width="10%"><code></code></td><td width="60%"><b>Restricted function</b>. Prints object to the print stream.<br /></td></tr><tr><td width="10%"><code>println</code></td><td width="20%">object</td><td width="10%"><code></code></td><td width="60%"><b>Restricted function</b>. Prints object to the print stream and prints end of line afterwards.<br /></td></tr><tr><td width="10%"><code>lerp</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"><b>Restricted function</b>. Prints end of line to the print stream.<br /></td></tr><table><hr/><a href="#toc">Back to top</a><h3 id="doc-sl-moduledef-Math">Module: Math</h3>
+Math module contains classes and functions related to math.<table><tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>random_matrix</code></td><td width="20%">i, j, r, maxv</td><td width="10%"><code>Matrix</code></td><td width="60%">Returns random matrix of size i, j. Random data is provided via r random generator's get_int and maxv is max value passed to get_int.<br /></td></tr><tr><td width="10%"><code>abs</code></td><td width="20%">a</td><td width="10%"><code>number</code></td><td width="60%">Returns absolute value of passed number.<br /></td></tr><tr><td width="10%"><code>max</code></td><td width="20%">a, b</td><td width="10%"><code>number</code></td><td width="60%">Returns maximum of a and b.<br /></td></tr><tr><td width="10%"><code>min</code></td><td width="20%">a, b</td><td width="10%"><code>number</code></td><td width="60%">Returns minimum of a and b.<br /></td></tr><tr><td width="10%"><code>sqr</code></td><td width="20%">a</td><td width="10%"><code>number</code></td><td width="60%">Returns a to the power of 2.<br /></td></tr><tr><td width="10%"><code>sqrt</code></td><td width="20%">a</td><td width="10%"><code>number</code></td><td width="60%">Returns square root of a.<br /></td></tr><table><h4 id="doc-sl-moduledef-Math-MathException">Class: MathException</h4>
+<b>Parent class: </b> <code>BaseException</code> <hr/>
+Encapsulates exceptions that happens in this module.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">message</td><td width="10%"><code></code></td><td width="60%">Encapsulates exceptions that happens in this module.<br /></td></tr><table><h4 id="doc-sl-moduledef-Math-Matrix">Class: Matrix</h4>
+Matrix class. Encapsulates any sized dense matrix. You can multiply matrix by simply using * operator with either compatible matrix or scalar number.<br /><table><tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>n</code></td><td width="20%"><code>integer</code></td><td width="10%"></td><td width="60%">Number of rows<br /></td></tr><tr><td width="10%"><code>m</code></td><td width="20%"><code>integer</code></td><td width="10%"></td><td width="60%">Number of columns<br /></td></tr><table><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">n, m</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>get</code></td><td width="20%">i, j</td><td width="10%"><code>number</code></td><td width="60%">Returns value at i, j.<br /></td></tr><tr><td width="10%"><code>set</code></td><td width="20%">i, j, v</td><td width="10%"><code></code></td><td width="60%">Sets the value at i, j to v<br /></td></tr><tr><td width="10%"><code>_str</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>_mul</code></td><td width="20%">other</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>mul_scalar</code></td><td width="20%">scalar</td><td width="10%"><code>Matrix</code></td><td width="60%">Multiplies this matrix by scalar value as new copy.<br /></td></tr><tr><td width="10%"><code>mul_matrix</code></td><td width="20%">b</td><td width="10%"><code>Matrix</code></td><td width="60%">Multiplies this matrix by other matrix as new matrix.<br />Throws MathException if matrices are incompatible.<br /></td></tr><table><h4 id="doc-sl-moduledef-Math-SquareMatrix">Class: SquareMatrix</h4>
+<b>Parent class: </b> <code>Matrix</code> <hr/>
+SquareMatrix is Matrix that can be inited only with single argument n and is squared (n == m).<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">n</td><td width="10%"><code></code></td><td width="60%">SquareMatrix is Matrix that can be inited only with single argument n and is squared (n == m).<br /></td></tr><table><hr/><a href="#toc">Back to top</a><h3 id="doc-sl-moduledef-Random">Module: Random</h3>
+Random module provides various random generator classes.<table><tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>random</code></td><td width="20%"><code>Random</code></td><td width="10%">Random instance</td><td width="60%">PLang random initialized to random seed.<br /></td></tr><tr><td width="10%"><code>java_random</code></td><td width="20%"><code>JavaRandom</code></td><td width="10%">JavaRandom instance</td><td width="60%">Java random initialized to random seed.<br /></td></tr><tr><td width="10%"><code>secure_random</code></td><td width="20%"><code>SecureRandom</code></td><td width="10%">SecureRandom instance</td><td width="60%">Secure random initialized to random seed.<br /></td></tr><table><h4 id="doc-sl-moduledef-Random-JavaRandom">Class: JavaRandom</h4>
+<b>Parent class: </b> <code>Random</code> <hr/>
+Random generator wrapping java Random generator.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">seed</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>get_int</code></td><td width="20%">max</td><td width="10%"><code>integer</code></td><td width="60%">Returns random integer up to max value<br /></td></tr><table><h4 id="doc-sl-moduledef-Random-Random">Class: Random</h4>
+Native PLang implementation of random generator.<br /><table><tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>seed</code></td><td width="20%"><code>integer</code></td><td width="10%"></td><td width="60%">Active seed<br /></td></tr><table><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">seed</td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>get_int</code></td><td width="20%">max</td><td width="10%"><code>integer</code></td><td width="60%">Returns random integer up to max value<br /></td></tr><tr><td width="10%"><code>get_float</code></td><td width="20%">a</td><td width="10%"><code>float</code></td><td width="60%">Returns random float.<br /></td></tr><tr><td width="10%"><code>get_clamp</code></td><td width="20%"></td><td width="10%"><code>float</code></td><td width="60%">Returns random float between 0 and 1<br /></td></tr><table><h4 id="doc-sl-moduledef-Random-SecureRandom">Class: SecureRandom</h4>
+<b>Parent class: </b> <code>Random</code> <hr/>
+Random generator wrapping java SecureRandom generator.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr><tr><td width="10%"><code>get_int</code></td><td width="20%">max</td><td width="10%"><code>integer</code></td><td width="60%">Returns random integer up to max value<br /></td></tr><table><hr/><a href="#toc">Back to top</a><h3 id="doc-sl-moduledef-Utils">Module: Utils</h3>
+Utility module providing utility functions and classes.<h4 id="doc-sl-moduledef-Utils-ArrayIndexOutOfBoundsException">Class: ArrayIndexOutOfBoundsException</h4>
+<b>Parent class: </b> <code>BaseException</code> <hr/>
+Denotes that index was out of bounds<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%">Denotes that index was out of bounds<br /></td></tr><table><h4 id="doc-sl-moduledef-Utils-IllegalArgumentException">Class: IllegalArgumentException</h4>
+<b>Parent class: </b> <code>BaseException</code> <hr/>
+Denotes that argument passed was undexpected<br /><h4 id="doc-sl-moduledef-Utils-Time">Class: Time</h4>
+Time instance encapsulates unix time.<br /><table><tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr><tr><td width="10%"><code>init</code></td><td width="20%">unixTime</td><td width="10%"><code></code></td><td width="60%"><br />Creates new Time instance. If provided value is NoValue, it is initialized into current time, otherwise passed argument must be integer.<br /></td></tr><tr><td width="10%"><code>get_time</code></td><td width="20%"></td><td width="10%"><code>integer</code></td><td width="60%">Returns unix time value as integer.<br /></td></tr><table><hr/><a href="#toc">Back to top</a>
+        </article>
+        <a href="https://github.com/Enerccio/ParaLang/"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="http://aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
+        </body>
+    </html>
+
+<!--
+    <table>
+        <tr><td width="10%"><b>Name of field</b></td><td width="20%"><b>type of field</b></td><td width="10%"><b>initial value</b></td><td width="60%"><b>Description</b></td></tr>
+        <tr><td width="10%"><code></code></td><td width="20%"><code></code></td><td width="10%"></td><td width="60%"></td></tr>
+    </table>
+    
+    <table>
+        <tr><td width="10%"><b>Name of function</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+        <tr><td width="10%"><code></code></td><td width="20%"></td><td width="10%"><code></code></td><td width="60%"></td></tr>
+    </table>
+-->
