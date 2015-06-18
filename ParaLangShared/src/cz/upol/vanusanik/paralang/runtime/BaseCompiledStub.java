@@ -112,9 +112,6 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		if (!___isInited)
 			___init_class();
 
-		if (!___restrictedOverride)
-			PLRuntime.getRuntime().checkRestrictedAccess(this);
-
 		___fieldsAndMethods.put(key, var);
 		return true;
 	}

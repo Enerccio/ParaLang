@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
@@ -93,11 +94,7 @@ public class NodeController {
 
 		initialize(no);
 
-		SSLServerSocketFactory sslServerFactory = (SSLServerSocketFactory) SSLServerSocketFactory
-				.getDefault();
-		ServerSocket server = sslServerFactory
-				.createServerSocket(no.portNumber);
-		((SSLServerSocket)server).getNeedClientAuth();
+		ServerSocket server = createServer(no);
 
 		while (true) {
 			final Socket s = server.accept();
@@ -124,6 +121,20 @@ public class NodeController {
 
 			});
 		}
+	}
+
+	private ServerSocket createServer(NodeOptions no) throws Exception {
+		ServerSocket server;
+		if (no.useSSL){
+			SSLServerSocketFactory sslServerFactory = (SSLServerSocketFactory) SSLServerSocketFactory
+					.getDefault();
+			server = sslServerFactory
+					.createServerSocket(no.portNumber);
+			((SSLServerSocket)server).getNeedClientAuth();
+			return server;
+		} else 
+			server = ServerSocketFactory.getDefault().createServerSocket(no.portNumber);
+		return server;
 	}
 
 	/**
@@ -405,9 +416,15 @@ public class NodeController {
 			}
 		}
 
-		// Set up the keystores for ssl/tsl communication
-		System.setProperty("javax.net.ssl.keyStore", no.keystore);
-		System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
+		if (no.useSSL){
+			// Set up the keystores for ssl/tsl communication
+			System.setProperty("javax.net.ssl.keyStore", no.keystore);
+			System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
+		}
+		
+		NodeList.setUseSSL(no.useSSL);
+		
+		NodeList.addNode("localhost", no.portNumber);
 	}
 
 }

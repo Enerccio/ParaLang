@@ -24,7 +24,6 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.ClassDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.CompilationUnitContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ConstExprContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ConstantExpressionContext;
-import cz.upol.vanusanik.paralang.plang.PLangParser.ConstructorBodyContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ConstructorCallContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ExpressionContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ExpressionListContext;
@@ -365,11 +364,6 @@ public class GenerateMarkdown {
 				}
 
 				return super.visitStatement(ctx);
-			}
-
-			@Override
-			public Void visitConstructorBody(ConstructorBodyContext ctx) {
-				return super.visitConstructorBody(ctx);
 			}
 
 			@Override

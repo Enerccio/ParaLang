@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.io.IOUtils;
@@ -26,6 +27,9 @@ public final class NodeList {
 	private NodeList() {
 
 	}
+	
+	/**	Whether or not to use SSL */
+	private static boolean useSSL = false;
 
 	/** Nodes stored as set */
 	private static Set<Node> nodes = new HashSet<Node>();
@@ -122,6 +126,8 @@ public final class NodeList {
 	public static synchronized Node getRandomNode() {
 		boolean hasFreeNodes = false;
 		Node n;
+		long ttime = System.nanoTime();
+		long ctime = System.nanoTime();
 		do {
 			try {
 				Thread.sleep(0, 10);
@@ -132,8 +138,11 @@ public final class NodeList {
 			try {
 				hasFreeNodes = getFreeNodes(n) > 0;
 			} catch (Exception e) {
-				continue;
+				
 			}
+			ctime = System.nanoTime();
+			if (ctime - ttime > 2000000000) // 2s
+				return null;
 		} while (hasFreeNodes == false);
 		return n;
 	}
@@ -146,28 +155,38 @@ public final class NodeList {
 	 * @throws Exception
 	 */
 	private static int getFreeNodes(Node n) throws Exception {
-		Socket s = SSLSocketFactory.getDefault().createSocket(n.getAddress(),
-				n.getPort());
-
-		JsonObject o = new JsonObject();
-		o.add("header", Protocol.GET_STATUS_REQUEST);
-		Protocol.send(s.getOutputStream(), o);
-
-		o = Protocol.receive(s.getInputStream());
-		s.close();
-		if (!o.getString("header", "").equals(Protocol.GET_STATUS_RESPONSE))
-			throw new Exception("Wrong reply from the server");
-
-		int wtc = o.get("payload").asObject().get("workerThreads").asInt();
-		int c = 0;
-
-		for (int i = 0; i < wtc; i++) {
-			if (!o.get("payload").asObject().get("workerThreadStatus")
-					.asObject().getBoolean("node" + i, false))
-				++c;
+		Socket s = null;
+		try {
+			if (useSSL)
+				s = SSLSocketFactory.getDefault().createSocket(n.getAddress(),
+					n.getPort());
+			else
+				s = SocketFactory.getDefault().createSocket(n.getAddress(),
+						n.getPort());
+	
+			JsonObject o = new JsonObject();
+			o.add("header", Protocol.GET_STATUS_REQUEST);
+			Protocol.send(s.getOutputStream(), o);
+	
+			o = Protocol.receive(s.getInputStream());
+			s.close();
+			if (!o.getString("header", "").equals(Protocol.GET_STATUS_RESPONSE))
+				throw new Exception("Wrong reply from the server");
+	
+			int wtc = o.get("payload").asObject().get("workerThreads").asInt();
+			int c = 0;
+	
+			for (int i = 0; i < wtc; i++) {
+				if (!o.get("payload").asObject().get("workerThreadStatus")
+						.asObject().getBoolean("node" + i, false))
+					++c;
+			}
+	
+			return c;
+		} finally {
+			if (s != null)
+				s.close();
 		}
-
-		return c;
 	}
 
 	/**
@@ -185,4 +204,13 @@ public final class NodeList {
 			}
 		return sum;
 	}
+
+	public static boolean isUseSSL() {
+		return useSSL;
+	}
+
+	public static void setUseSSL(boolean useSSL) {
+		NodeList.useSSL = useSSL;
+	}
+	
 }

@@ -95,10 +95,6 @@ functionBody
     :   block
     ;
 
-constructorBody
-    :   block
-    ;
-
 qualifiedName
     :   Identifier ('.' Identifier)*
     ;

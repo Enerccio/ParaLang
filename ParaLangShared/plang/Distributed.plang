@@ -1,4 +1,6 @@
 using System;
+using System.NetworkException;
+using Collections;
 
 module Distributed {
 
@@ -7,7 +9,7 @@ module Distributed {
     Sorts anything that has get method with index argument, set method with index and object and size method with no arguments in place distributed.
     ###
 	defn distributed_sort(gettable){
-		__distributed_sort(gettable, 0, gettable.size());
+		return __distributed_sort(gettable, 0, gettable.size());
 	}
     
     class __DistributedSortHelper {
@@ -18,11 +20,15 @@ module Distributed {
     defn __distributed_sort(source, start, end){
     
         var n = System.free_nodes();
-		if (n < 2)
-			return Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+		if (n < 2){
+			Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+            return source;
+        }
         
-        if (end - start < 65)
-            return Collections.simple_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+        if (end - start < 65){
+            Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+            return source;
+        }
             
         var pd = new __DistributedSortHelper();
         pd.source = source;
@@ -34,12 +40,23 @@ module Distributed {
         pd.end.set(0, mid);
         pd.start.set(1, mid);
         pd.end.set(1, end);
+        
+        try {
+            var result = (dist (2, pd) {
+                var start = passed_arg.start.get(run_id);
+                var end = passed_arg.end.get(run_id);
+                
+                return __distributed_sort(passed_arg.source, start, end);
+            });
             
-        Collections.__merge_sort_copy(source, (dist (2, pd) {
-            var start = passed_arg.start.get(run_id);
-            var end = passed_arg.end.get(run_id);
             
-            __distributed_sort(passed_arg.source, start, end);
-        }), start, end);
+            Collections.__merge_sort_copy(result.get(0), source, start, mid);
+            Collections.__merge_sort_copy(result.get(1), source, mid, end);
+        } catch (NetworkException e){
+            Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+            return source;
+        }
+        
+        return source;
     }
 };

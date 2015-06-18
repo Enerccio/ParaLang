@@ -35,9 +35,13 @@ public class ParaLangCLI {
 
 	private static void run(ParaLangCLIOptions no) throws Exception {
 		// Set up ssl/tsl truststores and keystores
-		System.setProperty("javax.net.ssl.keyStore", no.keystore);
-		System.setProperty("javax.net.ssl.trustStore", no.keystore);
-		System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
+		if (no.useSSL){
+			System.setProperty("javax.net.ssl.keyStore", no.keystore);
+			System.setProperty("javax.net.ssl.trustStore", no.keystore);
+			System.setProperty("javax.net.ssl.keyStorePassword", no.keystorepass);
+		}
+		
+		NodeList.setUseSSL(no.useSSL);
 
 		File workingDir = no.sourcesDirectory;
 		PLRuntime runtime = new PLRuntime();

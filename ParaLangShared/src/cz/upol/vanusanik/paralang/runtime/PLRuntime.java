@@ -34,6 +34,7 @@ import java.util.jar.JarFile;
 import javassist.ClassPool;
 import javassist.CtClass;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.codec.binary.Base64;
@@ -955,7 +956,7 @@ public class PLRuntime {
 		try {
 			nnodes = NodeList.getBestLoadNodes(tcount);
 		} catch (Exception e) {
-			throw PLRuntime.getRuntime().newInstance("System.BaseException",
+			throw PLRuntime.getRuntime().newInstance("System.NetworkException",
 					new Str("No hosts available"));
 		}
 
@@ -1026,8 +1027,18 @@ public class PLRuntime {
 
 		do {
 			try {
-				s = SSLSocketFactory.getDefault().createSocket(
-						node.getAddress(), node.getPort());
+				if (node == null){ // no node available
+					result.exceptions[tId] = newInstance("System.NetworkException",
+							new Str("No hosts available"));
+					return;
+				}
+				
+				if (NodeList.isUseSSL())
+					s = SSLSocketFactory.getDefault().createSocket(
+							node.getAddress(), node.getPort());
+				else
+					s = SocketFactory.getDefault().createSocket(
+							node.getAddress(), node.getPort());
 				Protocol.send(s.getOutputStream(), new JsonObject().add(
 						"header", Protocol.RESERVE_SPOT_REQUEST));
 				JsonObject response = Protocol.receive(s.getInputStream());

@@ -1,5 +1,7 @@
 import java.util.Date;
 
+using System.BaseException;
+
 ###
     Utility module providing utility functions and classes.
 ###
@@ -30,4 +32,19 @@ module Utils {
         }
     }
 
+	###
+	Denotes that index was out of bounds
+	###
+    class ArrayIndexOutOfBoundsException > BaseException {
+    	defn init(){
+    		parent.init("Incorrect index");
+    	}
+    }
+    
+    ###
+    Denotes that argument passed was undexpected
+    ###
+    class IllegalArgumentException > BaseException {
+    	
+    }
 };

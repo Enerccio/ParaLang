@@ -14,11 +14,14 @@ public class NodeOptions {
 
 	@Parameter(required = true, names = { "-p", "--port" }, description = "Port on which this node will listen")
 	public Integer portNumber;
+	
+	@Parameter(required = false, names = { "-s", "--use-ssl" }, description = "Whether or not to use SSL")
+	public boolean useSSL;
 
-	@Parameter(required = true, names = { "-ks", "--keystore" }, description = "Keystore for SSL conecction.  Must be in same dir as running process.")
+	@Parameter(required = false, names = { "-ks", "--keystore" }, description = "Keystore for SSL conecction.  Must be in same dir as running process.")
 	public String keystore;
 
-	@Parameter(required = true, names = { "-ksp", "--keystore-password" }, description = "Keystore password for SSL conecction.")
+	@Parameter(required = false, names = { "-ksp", "--keystore-password" }, description = "Keystore password for SSL conecction.")
 	public String keystorepass;
 
 	@Parameter(names = { "-tc", "--thread-count" }, description = "Number of available node threads, default is number of cpu hardware threads available")
