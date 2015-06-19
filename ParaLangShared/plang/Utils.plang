@@ -47,4 +47,11 @@ module Utils {
     class IllegalArgumentException > BaseException {
     	
     }
+    
+    ###
+    Thrown when object should provide some implementation but does not
+    ###
+    class NotDefinedException > BaseException {
+    
+    }
 };

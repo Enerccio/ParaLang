@@ -13,8 +13,10 @@ import cz.upol.vanusanik.paralang.plang.types.NoValue;
 public class NetworkException extends PLClass {
 	private static final long serialVersionUID = -1870114368385241652L;
 
-	public static final String listKey = "___prevExps";
-	public static final String getExceptions = "get_exceptions";
+	public static final String listKey 				= "___prevExps";
+	public static final String getExceptions 		= "get_exceptions";
+	public static final String partialValues 		= "___partialValues";
+	public static final String getPartialReslts		= "get_partial_result";
 
 	public NetworkException() {
 
@@ -32,12 +34,19 @@ public class NetworkException extends PLClass {
 		___setkey(listKey, NoValue.NOVALUE);
 		___setkey(getExceptions, new FunctionWrapper("__get_exceptions", this,
 				true));
-
+		___setkey(partialValues, NoValue.NOVALUE);
+		___setkey(getPartialReslts, new FunctionWrapper("__get_partial_result", this,
+				true));
+		
 		this.___restrictedOverride = false;
 	}
 
 	public PLangObject __get_exceptions(PLangObject self) {
 		return ((PLClass) self).___getkey(listKey, false);
+	}
+	
+	public PLangObject __get_partial_result(PLangObject self) {
+		return ((PLClass) self).___getkey(getPartialReslts, false);
 	}
 
 	public PLangObject __init__base(PLangObject self, PLangObject message) {

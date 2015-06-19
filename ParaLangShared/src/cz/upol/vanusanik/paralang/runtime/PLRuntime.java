@@ -902,9 +902,13 @@ public class PLRuntime {
 		PLClass c = newInstance("Collections.List");
 		List<PLangObject> data = ((Pointer) c.___fieldsAndMethods
 				.get("__wrappedList")).getPointer();
-
+		
 		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(),
 				runner, methodName, tcount, arg);
+		
+		for (PLangObject o : r.results)
+			data.add(o);
+		
 		if (r.hasExceptions()) {
 			NetworkException e = (NetworkException) newInstance(
 					"System.NetworkException",
@@ -917,10 +921,9 @@ public class PLRuntime {
 				else
 					data.add(NoValue.NOVALUE);
 			e.___setkey(NetworkException.listKey, c);
+			
+			e.___setkey(NetworkException.partialValues, c);
 			throw e;
-		} else {
-			for (PLangObject o : r.results)
-				data.add(o);
 		}
 
 		return c;
@@ -1030,6 +1033,7 @@ public class PLRuntime {
 				if (node == null){ // no node available
 					result.exceptions[tId] = newInstance("System.NetworkException",
 							new Str("No hosts available"));
+					result.results[tId] = NoValue.NOVALUE;
 					return;
 				}
 				
@@ -1088,8 +1092,10 @@ public class PLRuntime {
 
 				if (payload.getBoolean("hasResult", false)) {
 					result.results[tId] = deserialized;
+					result.exceptions[tId] = NoValue.NOVALUE;
 				} else {
 					result.exceptions[tId] = deserialized;
+					result.results[tId] = NoValue.NOVALUE;
 				}
 
 				executed = true;

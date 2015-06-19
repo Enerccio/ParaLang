@@ -1,5 +1,6 @@
 using IO;
 using System;
+using Math;
 using Math.Matrix;
 using Random;
 using Collections;
@@ -83,13 +84,16 @@ module Main {
         //var ct = 0;
         //var etime = 0;
         
+        /*
         ct = System.current_time();
-        var ia = Collections.integer_array(50000);
-        for (var i=0; i<50000; i++)
+        var ia = Collections.integer_array(10000);
+        for (var i=0; i<10000; i++)
             ia.set(i, Random.random.get_int(9999999));
         
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
+        
+        
         
         ct = System.current_time();
         Collections.simple_sort(ia);
@@ -104,5 +108,29 @@ module Main {
         var res = Distributed.distributed_sort(ia);
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
+        */
+        
+        var ia = Collections.integer_array(10);
+        for (var i=0; i<10; i++)
+            ia.set(i, Random.random.get_int(100));
+        
+        IO.out.println(ia);
+        ct = System.current_time();
+        var res = Collections.reduce(ia, new AddFunctor());
+        etime = (System.current_time() - ct);
+        IO.out.println("    Run time: " + etime);
+        IO.out.println(res);
+    }
+    
+    class AddFunctor {
+        defn _apply(collector, arg){
+            return collector + arg;
+        }
+    }
+    
+    class EvenFunctor {
+        defn _apply(arg){
+            return Math.is_even(arg);
+        }
     }
 };

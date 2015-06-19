@@ -190,4 +190,18 @@ module Math {
             return new Float(a).sqrt().__val;
         }
     }
+    
+    ###
+        Returns TRUE or FALSE if argument is even
+    ###
+    defn is_even(number){
+        return (number % 2) == 0;
+    }
+    
+    ###
+        Returns TRUE or FALSE if argument is odd
+    ###
+    defn is_odd(number){
+        return (number % 2) == 1;
+    }
 };
