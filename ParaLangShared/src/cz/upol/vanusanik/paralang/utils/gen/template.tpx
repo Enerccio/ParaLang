@@ -1017,7 +1017,7 @@
             * - Can only be compiled in safe context, which is default on only when compiling base ParaLang library.
             
             <hr/>
-            In methods, <code>inst</code> denotes current instance and <code>parent</code> denotes parent class.
+            In methods, <code>inst</code> denotes current instance and <code>super</code> denotes parent class.
             
             <h2 id="doc-stdlib">Standard Library</h2>
             

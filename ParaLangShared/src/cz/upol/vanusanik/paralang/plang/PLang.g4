@@ -284,7 +284,7 @@ primary
     
 constExpr
 	:   'inst'
-    |   'parent'
+    |   'super'
     |   id
     ;
     

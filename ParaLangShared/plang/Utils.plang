@@ -37,7 +37,7 @@ module Utils {
 	###
     class ArrayIndexOutOfBoundsException > BaseException {
     	defn init(){
-    		parent.init("Incorrect index");
+    		super.init("Incorrect index");
     	}
     }
     

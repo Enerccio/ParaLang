@@ -110,8 +110,8 @@ module Main {
         IO.out.println("    Run time: " + etime);
         */
         
-        var ia = Collections.integer_array(10);
-        for (var i=0; i<10; i++)
+        var ia = Collections.integer_array(100000);
+        for (var i=0; i<100000; i++)
             ia.set(i, Random.random.get_int(100));
         
         IO.out.println(ia);
@@ -120,17 +120,17 @@ module Main {
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
         IO.out.println(res);
+        
+        ct = System.current_time();
+        res = Collections.map(ia, Math.is_even);
+        etime = (System.current_time() - ct);
+        IO.out.println("    Run time: " + etime);
+        IO.out.println(res);
     }
     
     class AddFunctor {
         defn _apply(collector, arg){
             return collector + arg;
-        }
-    }
-    
-    class EvenFunctor {
-        defn _apply(arg){
-            return Math.is_even(arg);
         }
     }
 };

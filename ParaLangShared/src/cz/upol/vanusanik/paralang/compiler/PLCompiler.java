@@ -2587,7 +2587,7 @@ public class PLCompiler {
 			return false;
 		if (child.primary() != null){
 			if (child.primary().constExpr() != null)
-				return child.primary().constExpr().getText().equals("parent");
+				return child.primary().constExpr().getText().equals("super");
 		}
 		return false;
 	}
@@ -3018,12 +3018,12 @@ public class PLCompiler {
 		}
 
 		if (primary.constExpr() != null || primary.getText().startsWith("inst")
-				|| primary.getText().startsWith("parent")) {
+				|| primary.getText().startsWith("super")) {
 			// compile the const expression or special keywords inst and parent
 			String identifier = primary.constExpr().id() != null ? primary
 					.constExpr().id().getText() : primary.getText();
 
-			if (identifier.equals("parent"))
+			if (identifier.equals("super"))
 				identifier = PLClass.___superKey;
 
 			// check for illegal identifiers, ie ___ identifiers or identifiers

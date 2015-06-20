@@ -545,7 +545,7 @@ module Collections {
     class __ArrayArray > Array {
     
     	defn get(index){
-    		var array = parent.get(index);
+    		var array = super.get(index);
     		var type = array._str();
     		if (type.starts_with("Boolean")){
     			return __boolean_array(array->get_length(), array);
@@ -569,7 +569,7 @@ module Collections {
     		if (!(object instanceof Array)){
     		}
     			throw new IllegalArgumentException(__type_exception);
-    		parent.set(index, object._array);
+    		super.set(index, object._array);
     	}
     }
     

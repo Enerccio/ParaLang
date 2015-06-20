@@ -13,7 +13,7 @@ module Math {
     ###
     class MathException > BaseException {
         defn init(message){
-            parent.init(message);
+            super.init(message);
         }
     }
     
@@ -127,7 +127,7 @@ module Math {
     class SquareMatrix > Matrix {
         
         defn init(n){
-            parent.init(n, n);
+            super.init(n, n);
         }
     
     }
