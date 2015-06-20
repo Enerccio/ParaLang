@@ -250,7 +250,7 @@ public class FunctionWrapper extends BaseCompiledStub implements
 
 	@Override
 	public Float ___getNumber(PLangObject self) {
-		return null;
+		throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("Function cannot be used as number"));
 	}
 
 	@Override

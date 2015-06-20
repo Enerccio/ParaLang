@@ -612,7 +612,7 @@ module Collections {
     	__merge_sort(source, result, start, mid);
     	__merge_sort(source, result, mid, end);
     	__merge_sort_merge(source, result, start, mid, end);
-        __merge_sort_copy(result, source, start, end);
+        copy(result, source, start, end);
     }
     
     defn __merge_sort_merge(source, result, start, mid, end){
@@ -630,9 +630,19 @@ module Collections {
     	}
     }
     
-    defn __merge_sort_copy(result, source, start, end){
+    ###
+    Copies data from collection from into object to with set(ix, obj) method from start to end
+    ###
+    defn copy(from, to, start, end){
+        copy_offset(from, to, start, end, 0);
+    }
+    
+    ###
+    Same as copy, but offsets the index in to by k
+    ###
+    defn copy_offset(from, to, start, end, offset){
         for (var k=start; k<end; k++)
-            source.set(k, result.get(k));
+                to.set(k+offset, from.get(k));
     }
     
     ###

@@ -126,6 +126,12 @@ module Main {
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
         IO.out.println(res);
+        
+        ct = System.current_time();
+        res = Distributed.distributed_map(ia, Math.is_even);
+        etime = (System.current_time() - ct);
+        IO.out.println("    Run time: " + etime);
+        IO.out.println(res);
     }
     
     class AddFunctor {

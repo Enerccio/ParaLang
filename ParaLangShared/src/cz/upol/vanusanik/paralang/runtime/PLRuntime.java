@@ -914,12 +914,16 @@ public class PLRuntime {
 					new Str(
 							"Failed distributed network call because of remote exception(s)"));
 			e.___rebuildStack();
+			PLClass ce = newInstance("Collections.List");
+			List<PLangObject> datae = ((Pointer) c.___fieldsAndMethods
+					.get("__wrappedList")).getPointer();
+			
 			for (PLangObject o : r.exceptions)
 				if (o != null)
-					data.add(o);
+					datae.add(o);
 				else
-					data.add(NoValue.NOVALUE);
-			e.___setkey(NetworkException.listKey, c);
+					datae.add(NoValue.NOVALUE);
+			e.___setkey(NetworkException.listKey, ce);
 			
 			e.___setkey(NetworkException.partialValues, c);
 			throw e;

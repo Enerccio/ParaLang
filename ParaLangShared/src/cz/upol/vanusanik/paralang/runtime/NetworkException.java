@@ -15,7 +15,7 @@ public class NetworkException extends PLClass {
 	public static final String listKey 				= "___prevExps";
 	public static final String getExceptions 		= "get_exceptions";
 	public static final String partialValues 		= "___partialValues";
-	public static final String getPartialReslts		= "get_partial_result";
+	public static final String getPartialReslts		= "get_partial_results";
 
 	public NetworkException() {
 
@@ -45,7 +45,7 @@ public class NetworkException extends PLClass {
 	}
 	
 	public PLangObject __get_partial_result(PLangObject self) {
-		return ((PLClass) self).___getkey(getPartialReslts, false);
+		return ((PLClass) self).___getkey(partialValues, false);
 	}
 
 	public PLangObject __init__base(PLangObject self, PLangObject message) {

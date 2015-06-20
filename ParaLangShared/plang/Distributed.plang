@@ -1,6 +1,8 @@
 using System;
 using System.NetworkException;
 using Collections;
+using Math;
+using IO;
 
 module Distributed {
 
@@ -50,13 +52,75 @@ module Distributed {
             });
             
             
-            Collections.__merge_sort_copy(result.get(0), source, start, mid);
-            Collections.__merge_sort_copy(result.get(1), source, mid, end);
+            Collections.copy(result.get(0), source, start, mid);
+            Collections.copy(result.get(1), source, mid, end);
         } catch (NetworkException e){
             Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
             return source;
         }
         
         return source;
+    }
+    
+    class __DistributedMapHelper {
+        var source;
+        var functor;
+        var start, end;
+    }
+    
+    ###
+    Applies map distributely
+    ###
+    defn distributed_map(collection, n1functor){
+        return __distributed_map(collection, n1functor, 0, collection.size());
+    }
+    
+    defn __distributed_map(source, functor, start, end){
+        var result = Collections.__preload_list(new List(), source.size()); 
+        
+        var n = System.free_nodes();
+		if (n < 2){
+			return Collections.__map(source, result, functor, start, end);
+        }
+        
+        var ratio = (end - start) / n;
+        
+        if (ratio < 64){
+            return Collections.__map(source, result, functor, start, end);
+        }
+        
+        var helper = new __DistributedMapHelper();
+        helper.source = source;
+        helper.functor = functor;
+        helper.start = Collections.integer_array(n);
+        helper.end = Collections.integer_array(n);
+        
+        for (var i=0; i<n; i++){
+            helper.start.set(i, i*ratio);
+            helper.end.set(i, Math.min(i*ratio+ratio, source.size()));
+        }
+        
+        var computed;
+        try {
+            computed = (dist (n, helper) {
+                var start = passed_arg.start.get(run_id);
+                var end = passed_arg.end.get(run_id);
+                return __distributed_map(passed_arg.source, passed_arg.functor, start, end);
+            });
+        } catch (NetworkException e){
+            computed = e.get_partial_results();
+        }
+        
+        IO.out.println(source.size());
+        for (var i=0; i<computed.size(); i++){
+            var partial_result = computed.get(i);
+            if (partial_result == NoValue){
+                Collections.__map(source, result, functor, helper.start.get(i), helper.end.get(i));
+            } else {
+                Collections.copy_offset(partial_result, result, helper.start.get(i), helper.end.get(i), 0);
+            }
+        }
+        
+        return result;
     }
 };

@@ -1,6 +1,7 @@
 package cz.upol.vanusanik.paralang.connector;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
+import cz.upol.vanusanik.paralang.plang.types.NoValue;
 
 /**
  * Holds the result of network execution, either exceptions or results are non
@@ -22,7 +23,7 @@ public class NetworkExecutionResult {
 		if (exceptions == null)
 			return false;
 		for (PLangObject e : exceptions)
-			if (e != null)
+			if (e != NoValue.NOVALUE)
 				return true;
 		return false;
 	}

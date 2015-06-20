@@ -102,7 +102,7 @@ public class Protocol {
 	public static void send(OutputStream os, JsonObject payload)
 			throws Exception {
 		
-		
+		os.write(clearBit);
 
 		String data = payload.toString(WriterConfig.PRETTY_PRINT);
 		byte[] array = ByteBuffer.allocate(4).putInt(data.length()).array();
