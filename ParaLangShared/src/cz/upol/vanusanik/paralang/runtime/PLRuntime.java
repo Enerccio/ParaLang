@@ -57,7 +57,6 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.Flt;
-import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
@@ -573,7 +572,7 @@ public class PLRuntime {
 			// function wrapper runner
 			FunctionWrapper wrapper = (FunctionWrapper) runner;
 			try {
-				return wrapper.run(currentRunner, args);
+				return wrapper.___run(currentRunner, args);
 			} catch (WrongMethodTypeException e) {
 				throw newInstance("System.BaseException", new Str(
 						"Wrong number of arguments.")).___rebuildStack();

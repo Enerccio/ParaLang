@@ -192,16 +192,16 @@ module Math {
     }
     
     ###
-        Returns TRUE or FALSE if argument is even
+    Returns whether number is even
     ###
-    defn is_even(number){
-        return (number % 2) == 0;
+    defn is_even(n){
+        return (n % 2) == 0;
     }
     
     ###
-        Returns TRUE or FALSE if argument is odd
+    Returns whether number is odd
     ###
-    defn is_odd(number){
-        return (number % 2) == 1;
+    defn is_odd(n){
+        return (n % 2) == 1;
     }
 };

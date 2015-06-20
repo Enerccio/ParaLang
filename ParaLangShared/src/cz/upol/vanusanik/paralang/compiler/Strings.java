@@ -29,6 +29,10 @@ public class Strings {
 	public static final String PL_CLASS__SET_DERIVED_CLASS = "___setDerivedClass";
 	public static final String BASE_CLASS = "cz/upol/vanusanik/paralang/runtime/BaseClass";
 	public static final String BASE_CLASS_L = "L" + BASE_CLASS + ";";
+	
+	public static final String FUNCTION_WRAPPER = "cz/upol/vanusanik/paralang/runtime/FunctionWrapper";
+	public static final String FUNCTION_WRAPPER_L = "L" + FUNCTION_WRAPPER
+			+ ";";
 
 	public static final String RUNTIME = "cz/upol/vanusanik/paralang/runtime/PLRuntime";
 	public static final String RUNTIME_L = "L" + RUNTIME + ";";
@@ -85,9 +89,6 @@ public class Strings {
 	public static final String STRING_TYPE_L = "L" + STRING_TYPE + ";";
 	public static final String BOOLEAN_VALUE = "cz/upol/vanusanik/paralang/plang/types/BooleanValue";
 	public static final String BOOLEAN_VALUE_L = "L" + BOOLEAN_VALUE + ";";
-	public static final String FUNCTION_WRAPPER = "cz/upol/vanusanik/paralang/plang/types/FunctionWrapper";
-	public static final String FUNCTION_WRAPPER_L = "L" + FUNCTION_WRAPPER
-			+ ";";
 	public static final String POINTER = "cz/upol/vanusanik/paralang/plang/types/Pointer";
 	public static final String POINTER_L = "L" + POINTER + ";";
 

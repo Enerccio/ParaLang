@@ -11,7 +11,6 @@ import cz.upol.vanusanik.paralang.runtime.wrappers.ArrayArray;
 using System.BaseException;
 using Utils.ArrayIndexOutOfBoundsException;
 using Utils.IllegalArgumentException;
-using Utils.NoDefinedException;
 
 ###
  Collections is a module containing easy to use collections, such as List, HashSet or Map.
@@ -20,26 +19,26 @@ using Utils.NoDefinedException;
 ###
 module Collections {
 
-	###
-		Base interface, proving get() and count()
-	###
-	class Collection {
-	
-		###
-			Returns ith member of this collection
-		###
-		defn get(index){
-			throw new NoDefinedException("abstract");
-		}
-		
-		###
-			Returns number of elements in the collection
-		###
-		defn size(){
-			throw new NoDefinedException("abstract");
-		}
-	
-	}
+    ###
+        Collection interface.
+    ###
+    class Collection {
+        
+        ###
+            Returns value at index ix
+        ###
+        defn get(ix){
+        
+        }
+        
+        ###
+            Returns size of the collection
+        ###
+        defn size(){
+            return 0;
+        }
+    
+    }
 
     ###
         Wraps java.lang.Iterator<> pointer.
@@ -406,7 +405,7 @@ module Collections {
     Fixed size array, used to get and set elements. Used to fast access and modification.
     This class is abstract and should not be used. Use functions above to instantiate arrays.
     ###
-    class Array > Collection {
+    class Array > Collection{
     	
     	var _array;
     	var _type_exception;
@@ -637,31 +636,29 @@ module Collections {
     }
     
     ###
-    Map function, requires Collection and Functor
+    Maps the values of the provided collection with n1 functor
     ###
-    defn map(collection, functor){
-    	return __map(collection, __preload_list(new List(), collection.size()), 0, collection.size(), functor);
+    defn map(collection, n1functor){
+        return __map(collection, __preload_list(new List(), collection.size()), n1functor, 0, collection.size());
     }
     
-    defn __map(source, target, start, end, functor){
-    	for (var i=start; i<end; i++)
-    		target.set(i, functor(source.get(i)));
-    	return target;
+    defn __map(source, result, functor, start, end){
+        for (var i=start; i<end; i++)
+            result.set(i, functor(source.get(i)));
+        return result;
     }
     
     ###
-    Reduces the collection into single item
+        Reduces elements of collection into single value using n2functor
     ###
-    defn reduce(collection, functor){
-        if (collection.size() == 1)
-            return collection.get(0);
-        return __reduce(collection, collection.get(0), 1, collection.size(), functor);
+    defn reduce(collection, n2functor){
+        var init = collection.get(0);
+        return __reduce(collection, init, n2functor, 1, collection.size());
     }
     
-    defn __reduce(source, value, start, end, functor){
-        for (var i=start; i<end; i++){
-            value = functor(source.get(i), value);
-        }
-        return value;
+    defn __reduce(source, result, functor, start, end){
+        for (var i=start; i<end; i++)
+            result = functor(source.get(i), result);
+        return result;
     }
 };

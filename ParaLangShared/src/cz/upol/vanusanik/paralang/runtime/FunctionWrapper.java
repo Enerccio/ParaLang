@@ -1,4 +1,4 @@
-package cz.upol.vanusanik.paralang.plang.types;
+package cz.upol.vanusanik.paralang.runtime;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,7 +18,7 @@ import com.eclipsesource.json.JsonValue;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
-import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
+import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
 /**
@@ -28,7 +28,7 @@ import cz.upol.vanusanik.paralang.utils.Utils;
  * @author Enerccio
  *
  */
-public class FunctionWrapper extends PrimitivePLangObject implements
+public class FunctionWrapper extends BaseCompiledStub implements
 		Serializable {
 
 	private static final long serialVersionUID = 3998164784189902299L;
@@ -61,6 +61,11 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		} while (nextLowest != null);
 		return lowest;
 	}
+	
+	@Override
+	protected void ___init_internal_datafields(BaseCompiledStub self) {
+		___fieldsAndMethods.put("name", new Str(methodName));
+	}
 
 	/**
 	 * MethodAccessor helper class
@@ -76,7 +81,7 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 	/**
 	 * All method accessors are cached here.
 	 */
-	private transient WeakHashMap<BaseCompiledStub, MethodAccessor> accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
+	private transient WeakHashMap<BaseCompiledStub, MethodAccessor> ___accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
 
 	/**
 	 * Runs the code with arguments
@@ -86,21 +91,27 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 	 * @return
 	 * @throws Throwable
 	 */
-	public PLangObject run(BaseCompiledStub owner, PLangObject... arguments)
+	public PLangObject ___run(BaseCompiledStub owner, PLangObject... arguments)
 			throws Throwable {
-		MethodAccessor ma = accessorCache.get(owner);
+		if (owner instanceof FunctionWrapper){
+			BaseCompiledStub rebase = ((FunctionWrapper) owner).___getOwner();
+			while (rebase.___fieldsAndMethods.containsKey(PLClass.___derivedKey))
+				rebase = (BaseCompiledStub) rebase.___fieldsAndMethods.get(PLClass.___derivedKey);
+			owner = rebase;
+		}
+		MethodAccessor ma = ___accessorCache.get(owner);
 		if (ma == null) {
 			for (MethodAccessor maa : getAllMethods(owner)) {
 				if (maa.m.getName().equals(methodName)) {
 					ma = maa;
-					accessorCache.put(owner, ma);
+					___accessorCache.put(owner, ma);
 					break;
 				}
 			}
 			if (ma == null)
 				throw new RuntimeException("Unknown method: " + methodName);
 		}
-		return run(ma, owner, arguments);
+		return ___run(ma, owner, arguments);
 	}
 
 	/**
@@ -138,7 +149,7 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 	 * @return
 	 * @throws Throwable
 	 */
-	private PLangObject run(MethodAccessor ma, BaseCompiledStub self,
+	private PLangObject ___run(MethodAccessor ma, BaseCompiledStub self,
 			PLangObject[] arguments) throws Throwable {
 		MethodHandle genHandle = methodHandles.get(ma.m);
 
@@ -157,27 +168,27 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		return (PLangObject) handle.invokeWithArguments((Object[]) data);
 	}
 
-	public boolean isMethod() {
+	public boolean ___isMethod() {
 		return isMethod;
 	}
 
-	public void setMethod(boolean isMethod) {
+	public void ___setMethod(boolean isMethod) {
 		this.isMethod = isMethod;
 	}
 
-	public String getMethodName() {
+	public String ___getMethodName() {
 		return methodName;
 	}
 
-	public void setMethodName(String methodName) {
+	public void ___setMethodName(String methodName) {
 		this.methodName = methodName;
 	}
 
-	public BaseCompiledStub getOwner() {
+	public BaseCompiledStub ___getOwner() {
 		return owner;
 	}
 
-	public void setOwner(BaseCompiledStub owner) {
+	public void ___setOwner(BaseCompiledStub owner) {
 		this.owner = owner;
 	}
 
@@ -260,6 +271,6 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 			ClassNotFoundException {
 		in.defaultReadObject();
 
-		accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
+		___accessorCache = new WeakHashMap<BaseCompiledStub, MethodAccessor>();
 	}
 }

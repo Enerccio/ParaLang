@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
-import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;

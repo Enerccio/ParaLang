@@ -22,6 +22,7 @@ import com.eclipsesource.json.JsonValue;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
+import cz.upol.vanusanik.paralang.runtime.FunctionWrapper;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
