@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import com.eclipsesource.json.JsonObject;
@@ -235,11 +236,11 @@ public class FunctionWrapper extends BaseCompiledStub implements
 	}
 
 	@Override
-	public JsonValue ___toObject() {
+	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully) {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value",
 						new JsonObject().add("methodName", methodName)
-								.add("owner", owner.___toObject())
+								.add("owner", owner.___toObject(alreadySerialized, serializeFully))
 								.add("isClassMethod", isMethod));
 	}
 

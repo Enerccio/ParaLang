@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
-import java.io.OutputStream;
 import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +42,6 @@ import org.apache.commons.io.IOUtils;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
-import com.eclipsesource.json.WriterConfig;
 
 import cz.upol.vanusanik.paralang.compiler.DiskFileDesignator;
 import cz.upol.vanusanik.paralang.compiler.FileDesignator;
@@ -53,6 +51,7 @@ import cz.upol.vanusanik.paralang.connector.NetworkExecutionResult;
 import cz.upol.vanusanik.paralang.connector.Node;
 import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.connector.Protocol;
+import cz.upol.vanusanik.paralang.plang.ObjectProxy;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
@@ -732,29 +731,6 @@ public class PLRuntime {
 		isRestricted = restricted;
 	}
 
-	/** Set of all serialized objects so far */
-	private ThreadLocal<HashSet<Object>> serializedObjects = new ThreadLocal<HashSet<Object>>();
-
-	/**
-	 * Marks object as already serialized, so only link is serialized, not the
-	 * whole object
-	 */
-	public void setAsAlreadySerialized(BaseCompiledStub baseCompiledStub) {
-		if (serializedObjects.get() == null)
-			return;
-		serializedObjects.get().add(baseCompiledStub);
-	}
-
-	/**
-	 * Checks whether object is already serialized or not
-	 */
-	public boolean isAlreadySerialized(BaseCompiledStub baseCompiledStub) {
-		if (serializedObjects.get() == null) {
-			serializedObjects.set(new HashSet<Object>());
-		}
-		return serializedObjects.get().contains(baseCompiledStub);
-	}
-
 	/**
 	 * Wraps java object as Pointer object
 	 * 
@@ -949,14 +925,12 @@ public class PLRuntime {
 	 */
 	private NetworkExecutionResult executeDistributed(
 			final long ___getObjectId, final BaseCompiledStub caller,
-			final String methodName, int tcount, final PLangObject arg) {
+			final String methodName, final int tcount, final PLangObject arg) {
 
 		List<Thread> tList = new ArrayList<Thread>();
 		final NetworkExecutionResult result = new NetworkExecutionResult();
 		result.results = new PLangObject[tcount];
 		result.exceptions = new PLangObject[tcount];
-		final JsonObject serializedRuntimeContent = serializeRuntimeContent(
-				caller, arg);
 
 		List<Node> nnodes;
 		try {
@@ -967,6 +941,8 @@ public class PLRuntime {
 		}
 
 		final List<Node> nodes = nnodes;
+		final JsonObject serializedObject = serializeBareboneRuntime(caller, arg);
+		final PLRuntime runtime = PLRuntime.getRuntime();
 
 		for (int i = 0; i < tcount; i++) {
 			final int tId = i;
@@ -974,15 +950,17 @@ public class PLRuntime {
 
 				@Override
 				public void run() {
+					runtime.setAsCurrent();
 					handleDistributedCall(
 							tId,
 							result,
 							getOrFail(nodes, tId),
 							___getObjectId,
 							methodName,
-							serializedRuntimeContent,
+							serializedObject,
 							(arg instanceof BaseCompiledStub) ? ((BaseCompiledStub) arg)
-									.___getObjectId() : -1);
+									.___getObjectId() : -1,
+							tcount);
 				}
 
 				private Node getOrFail(List<Node> nodes, int tId) {
@@ -1027,10 +1005,11 @@ public class PLRuntime {
 	 */
 	protected void handleDistributedCall(int tId,
 			NetworkExecutionResult result, Node node, long oid,
-			String methodName, JsonObject serializedRuntimeContent, long arg) {
+			String methodName, JsonObject serializedRuntimeContent, long arg, int tCount) {
 		boolean executed = false;
 		Socket s = null;
 
+		outer:
 		do {
 			try {
 				if (node == null){ // no node available
@@ -1074,24 +1053,55 @@ public class PLRuntime {
 								.add("id", tId).add("methodName", methodName));
 				Protocol.send(s.getOutputStream(), payload);
 
-				response = Protocol.receive(s.getInputStream());
-
-				if (!response.getString("header", "").equals(
-						Protocol.RETURNED_EXECUTION))
-					continue; // bad chain reply
-
-				payload = response.get("payload").asObject();
-				JsonObject data;
-				if (payload.getBoolean("hasResult", false)) {
-					data = payload.get("result").asObject();
-				} else {
-					data = payload.get("exception").asObject();
+				while (true){
+					response = Protocol.receive(s.getInputStream());
+	
+					if (response.getString("header", "").equals(
+							Protocol.RETURNED_EXECUTION)){
+						
+						break;
+					}
+					
+					if (response.getString("header", "").equals(
+							Protocol.REQUEST_DATA)){
+						JsonObject o = response.get("payload").asObject();
+						long reqOId = o.getLong("requestedObject", -1);
+						Set<Long> alreadyHadObjects = new HashSet<Long>();
+						JsonArray oids = o.get("alreadyContainedObjects").asArray();
+						for (JsonValue v : oids)
+							alreadyHadObjects.add(v.asLong());
+						
+						if (instanceInternalMap.containsKey(reqOId)){
+							payload = new JsonObject().add("header", Protocol.SEND_DATA)
+									.add("payload", new JsonObject().add("object", instanceInternalMap.get(reqOId).___toObject(alreadyHadObjects, false)));
+							Protocol.send(s.getOutputStream(), payload);
+						} else {
+							Utils.sendError(s, new JsonObject(), Protocol.ERROR_UNKNOWN_OBJECT, "No object in internal runtime cache");
+						}
+						
+						continue;
+					}
+					
+					continue outer; // bad chain reply
 				}
+				
+				PLangObject deserialized;
+				
+				synchronized (this){
 
-				Map<Long, Long> imap = new HashMap<Long, Long>();
-				buildInstanceMap(data, imap);
-
-				PLangObject deserialized = deserialize(data, imap);
+					payload = response.get("payload").asObject();
+					JsonObject data;
+					if (payload.getBoolean("hasResult", false)) {
+						data = payload.get("result").asObject();
+					} else {
+						data = payload.get("exception").asObject();
+					}
+	
+					Map<Long, Long> imap = new HashMap<Long, Long>();
+					buildInstanceMap(data, imap, false);
+	
+					deserialized = deserialize(data, imap);
+				}
 
 				if (payload.getBoolean("hasResult", false)) {
 					result.results[tId] = deserialized;
@@ -1155,123 +1165,107 @@ public class PLRuntime {
 
 		return a;
 	}
-
-	/*
-	 * Only serializes the actual content, not class definitions
-	 */
-	/**
-	 * Serializes runtime content into output stream
-	 * 
-	 * @param os
-	 * @param currentCaller
-	 * @param arg
-	 * @throws Exception
-	 */
-	public void serializeRuntimeContent(OutputStream os,
-			BaseCompiledStub currentCaller, PLangObject arg) throws Exception {
-		JsonObject root = serializeRuntimeContent(currentCaller, arg);
-		os.write(root.toString(WriterConfig.PRETTY_PRINT).getBytes("utf-8"));
-	}
-
-	private JsonObject serializeRuntimeContent(BaseCompiledStub currentCaller,
-			PLangObject arg) {
-		serializedObjects.set(new HashSet<Object>());
-
+	
+	private JsonObject serializeBareboneRuntime(BaseCompiledStub caller, PLangObject arg) {
+		Set<Long> set = new HashSet<Long>();
+		
 		JsonObject root = new JsonObject();
+		JsonArray idSet = new JsonArray();
 		JsonArray modules = new JsonArray();
-		JsonArray uniqueIds = new JsonArray();
-
-		for (String key : uuidMap.keySet()) {
-			Long value = uuidMap.get(key);
-			uniqueIds.add(new JsonObject().add("fullyQualifiedName", key).add(
-					"serialVersionUID", value));
-		}
-
-		root.add("serialVersionUIDs", uniqueIds);
-
+		
+		Set<Long> serialized = new HashSet<Long>();
+		
 		for (String moduleName : moduleMap.keySet()) {
 			modules.add(new JsonObject().add("moduleName", moduleName).add(
-					"module", moduleMap.get(moduleName).___toObject()));
+					"module", moduleMap.get(moduleName).___toObject(serialized, false)));
 		}
-
+		
 		root.add("modules", modules);
-		root.add("currentCaller", currentCaller.___toObject());
-		root.add("callerArg", arg.___toObject());
-
-		serializedObjects.get().clear();
+		
+		for (Map.Entry<Long, BaseCompiledStub> instances : instanceInternalMap.entrySet()){
+			idSet.add(instances.getKey());
+		}
+		
+		root.add("ids", idSet);
+		root.add("caller", caller.___toObject(set, false));
+		root.add("arg", arg.___toObject(set, false));
+		
 		return root;
 	}
 
-	/**
-	 * Perpare the runtime into deserialization (load uids)
-	 * 
-	 * @param uuids
-	 */
-	public void prepareForDeserialization(JsonArray uuids) {
-		for (JsonValue v : uuids) {
-			JsonObject o = v.asObject();
-			String name = o.getString("fullyQualifiedName", "");
-			long id = o.getLong("serialVersionUID", 0);
-
-			uuidMap.put(name, id);
+	public PLangObject deserializeBareboneRuntime(JsonArray modules, JsonArray ids, JsonObject caller, JsonObject arg) throws Exception{
+		Map<Long, Long> tm = new HashMap<Long, Long>();
+		Set<Long> nids = new HashSet<Long>();
+		for (JsonValue id : ids){
+			tm.put(id.asLong(), id.asLong());
+			nids.add(id.asLong());
 		}
-	}
-
-	/**
-	 * Store deserialization result here
-	 * 
-	 * @author Enerccio
-	 *
-	 */
-	public static class DeserializationResult {
-		/** Map of old object id into new object id */
-		public Map<Long, Long> ridxMap;
-		/** Current runner deserialized */
-		public PLangObject cobject;
-	}
-
-	/**
-	 * Deserialize runtime from json
-	 * 
-	 * @param modules
-	 *            modules containing all the runtime info
-	 * @param caller
-	 *            runner object
-	 * @param arg
-	 *            passed argument object
-	 * @return result of the deserialization
-	 * @throws Exception
-	 */
-	public DeserializationResult deserialize(JsonArray modules,
-			JsonObject caller, JsonObject arg) throws Exception {
-		DeserializationResult r = new DeserializationResult();
-		r.ridxMap = new HashMap<Long, Long>();
+		
+		
+		
 		for (JsonValue v : modules) {
-			buildInstanceMap(v.asObject().get("module").asObject(), r.ridxMap);
+			buildInstanceMap(v.asObject().get("module").asObject(), tm, true);
 		}
-		buildInstanceMap(caller, r.ridxMap);
-		buildInstanceMap(arg, r.ridxMap);
-
-		for (JsonValue v : modules) {
-			deserialize(v.asObject().get("module").asObject(), r.ridxMap);
+		buildInstanceMap(caller, tm, true);
+		buildInstanceMap(arg, tm, true);
+		
+		for (JsonValue mod : modules){
+			String moduleName = mod.asObject().getString("moduleName", "");
+			PLangObject module = deserialize(mod.asObject().get("module").asObject(), tm);
+			moduleMap.put(moduleName, (PLModule) module);
 		}
-		deserialize(caller, r.ridxMap);
-		r.cobject = deserialize(arg, r.ridxMap);
-
-		return r;
+		
+		deserialize(caller, tm);
+		try {
+			return deserialize(arg, tm);
+		} finally {
+			setNetworkIds(nids);
+		}
 	}
+
+//
+//	/**
+//	 * Deserialize runtime from json
+//	 * 
+//	 * @param modules
+//	 *            modules containing all the runtime info
+//	 * @param caller
+//	 *            runner object
+//	 * @param arg
+//	 *            passed argument object
+//	 * @return result of the deserialization
+//	 * @throws Exception
+//	 */
+//	public DeserializationResult deserialize(JsonArray modules,
+//			JsonObject caller, JsonObject arg) throws Exception {
+//		DeserializationResult r = new DeserializationResult();
+//		r.ridxMap = new HashMap<Long, Long>();
+//		for (JsonValue v : modules) {
+//			buildInstanceMap(v.asObject().get("module").asObject(), r.ridxMap);
+//		}
+//		buildInstanceMap(caller, r.ridxMap);
+//		buildInstanceMap(arg, r.ridxMap);
+//
+//		for (JsonValue v : modules) {
+//			deserialize(v.asObject().get("module").asObject(), r.ridxMap);
+//		}
+//		deserialize(caller, r.ridxMap);
+//		r.cobject = deserialize(arg, r.ridxMap);
+//
+//		return r;
+//	}
 
 	/**
 	 * Deserialize single JsonObject.
 	 * 
 	 * @param o
 	 *            Object to be deserialized
-	 * @param ridxMap
+	 * @param oldIdToNewIdMap
 	 *            map of old id -> new id
 	 * @return deserialized object
 	 * @throws Exception
 	 */
-	public PLangObject deserialize(JsonObject o, Map<Long, Long> ridxMap)
+	public PLangObject deserialize(JsonObject o, Map<Long, Long> oldIdToNewIdMap)
 			throws Exception {
 		PlangObjectType t = PlangObjectType.valueOf(o.getString(
 				"metaObjectType", ""));
@@ -1282,16 +1276,18 @@ public class PLRuntime {
 		case MODULE:
 		case CLASS:
 			if (o.getBoolean("link", false)) {
-				return instanceInternalMap.get(ridxMap.get(o.getLong("linkId",
+				return instanceInternalMap.get(oldIdToNewIdMap.get(o.getLong("linkId",
 						0)));
 			} else {
-				BaseCompiledStub stub = instanceInternalMap.get(ridxMap.get(o
+				BaseCompiledStub stub = instanceInternalMap.get(oldIdToNewIdMap.get(o
 						.getLong("thisLink", 0)));
 				JsonArray fields = o.get("fields").asArray();
 				for (JsonValue v : fields) {
 					JsonObject field = v.asObject();
-					PLangObject fieldValue = deserialize(field
-							.get("fieldValue").asObject(), ridxMap);
+					boolean isProxy = field.getBoolean("fieldProxy", false);
+					PLangObject fieldValue = isProxy ? new ObjectProxy(field
+							.getLong("fieldValue", 0)) : deserialize(field
+							.get("fieldValue").asObject(), oldIdToNewIdMap);
 					if (fieldValue == null)
 						return null;
 					stub.___fieldsAndMethods.put(
@@ -1305,7 +1301,7 @@ public class PLRuntime {
 			JsonObject val = o.get("value").asObject();
 			return new FunctionWrapper(val.getString("methodName", ""),
 					(BaseCompiledStub) deserialize(val.get("owner").asObject(),
-							ridxMap), val.getBoolean("isClassMethod", false));
+							oldIdToNewIdMap), val.getBoolean("isClassMethod", false));
 		case INTEGER:
 			return new Int(o.getLong("value", 0));
 		case JAVAOBJECT:
@@ -1342,9 +1338,10 @@ public class PLRuntime {
 	 * Builds instance map of id -> object
 	 * 
 	 * @param o
-	 * @param ridxMap
+	 * @param oldIdToNewIdMap
+	 * @param override 
 	 */
-	public void buildInstanceMap(JsonObject o, Map<Long, Long> ridxMap) {
+	public void buildInstanceMap(JsonObject o, Map<Long, Long> oldIdToNewIdMap, boolean override) {
 		PlangObjectType t = PlangObjectType.valueOf(o.getString(
 				"metaObjectType", ""));
 
@@ -1362,19 +1359,29 @@ public class PLRuntime {
 					stub = getModule(o.getString("className", ""), true);
 				stub.___isInited = o.getBoolean("isInited", false);
 				if (stub.___isInited) {
-					stub.___fieldsAndMethods = new HashMap<String, PLangObject>();
+					stub.___fieldsAndMethods = new ProxyMap();
+				}
+				
+				if (override){
+					instanceInternalMap.remove(stub.___objectId);
+					stub.___objectId = lid;
+					instanceInternalMap.put(stub.___objectId, stub);
 				}
 
-				if (ridxMap != null) {
-					ridxMap.put(lid, stub.___objectId);
+				if (oldIdToNewIdMap != null) {
+					oldIdToNewIdMap.put(lid, stub.___objectId);
 				}
 
 				JsonArray fields = o.get("fields").asArray();
 				for (JsonValue v : fields) {
 					JsonObject field = v.asObject();
-					buildInstanceMap(field.get("fieldValue").asObject(),
-							ridxMap);
+					if (!field.getBoolean("fieldProxy", false))
+						buildInstanceMap(field.get("fieldValue").asObject(),
+								oldIdToNewIdMap, override);
 				}
+			} else if (o.getBoolean("link", false)){
+				if (!oldIdToNewIdMap.containsKey(o.getLong("linkId", -1)))
+					oldIdToNewIdMap.put(o.getLong("linkId", -1), o.getLong("linkId", -1));
 			}
 		}
 	}
@@ -1472,5 +1479,58 @@ public class PLRuntime {
 		CtClass cls = cp.makeClass(new ByteArrayInputStream(Base64
 				.decodeBase64(bytecontent)));
 		return cls.toClass(classLoader, null);
+	}
+	
+	private Socket requestSocket;
+	
+	public void setRequestSocket(Socket s){
+		requestSocket = s;
+	}
+	
+	private Set<Long> networkIds;
+	
+	public void setNetworkIds(Set<Long> ids){
+		networkIds = ids;
+		objectIdCounter = 0;
+		for (Long id : ids){
+			objectIdCounter = Math.max(objectIdCounter, id);
+		}
+	}
+	
+	public PLangObject getNetworkObject(long id){
+		if (!instanceInternalMap.containsKey(id)){
+			try {
+				JsonArray setArray = new JsonArray();
+				for (Long key : instanceInternalMap.keySet())
+					setArray.add(key);
+				JsonObject payload = new JsonObject().add("header",
+						Protocol.REQUEST_DATA).add(
+						"payload",
+						new JsonObject()
+							.add("requestedObject", id)
+							.add("alreadyContainedObjects", setArray));
+				Protocol.send(requestSocket.getOutputStream(), payload);
+				
+				JsonObject response = Protocol.receive(requestSocket.getInputStream());
+				if (!response.getString("header", "").equals(
+						Protocol.SEND_DATA)){
+					throw new Exception();
+				}
+				
+				payload = response.get("payload").asObject();
+				Map<Long, Long> rm = new HashMap<Long, Long>();
+				rm.put(id, id);
+				buildInstanceMap(payload.get("object").asObject(), rm, true);
+				instanceInternalMap.put(id, (BaseCompiledStub) deserialize(payload.get("object").asObject(), rm));
+			} catch (Exception e){
+				throw newInstance("System.BaseException", new Str("Failed to get network object " + id));
+			}
+		}
+		return instanceInternalMap.get(id);
+	}
+
+
+	public JsonValue serializeFully(PLangObject result) {
+		return result.___toObject(new HashSet<Long>(networkIds), true);
 	}
 }

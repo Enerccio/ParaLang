@@ -1,6 +1,7 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
@@ -65,7 +66,7 @@ public class Int extends PrimitivePLangObject implements Serializable {
 	}
 
 	@Override
-	public JsonValue ___toObject() {
+	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully) {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}

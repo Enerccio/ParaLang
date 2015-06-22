@@ -14,6 +14,12 @@ module Main {
     }
     
     class X {
+        var xxx; 
+        
+        defn init(){
+            xxx = new X2();
+        }
+    
         var itc = 8000;
         var fnodes;
         
@@ -66,7 +72,16 @@ module Main {
             IO.out.println("    Run time: " + etime);
         }
     
+        defn _str(){
+            return "test";
+        }
     }
+    
+    class X2 {
+    
+    }
+    
+    var x = new X();
     
     defn restricted calculate(a, b){
         IO.out.lerp();
@@ -83,6 +98,8 @@ module Main {
         
         //var ct = 0;
         //var etime = 0;
+        
+        IO.out.println((dist (2, NoValue) { var y = new X(); y.xxx = x.xxx; return y; }));
         
         /*
         ct = System.current_time();
@@ -110,6 +127,7 @@ module Main {
         IO.out.println("    Run time: " + etime);
         */
         
+        /*
         var ia = Collections.integer_array(100000);
         for (var i=0; i<100000; i++)
             ia.set(i, Random.random.get_int(100));
@@ -132,6 +150,7 @@ module Main {
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
         IO.out.println(res);
+        */
     }
     
     class AddFunctor {

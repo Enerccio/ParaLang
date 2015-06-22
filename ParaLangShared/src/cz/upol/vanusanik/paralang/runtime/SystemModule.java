@@ -1,6 +1,7 @@
 package cz.upol.vanusanik.paralang.runtime;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
@@ -44,18 +45,17 @@ public class SystemModule extends PLModule implements Serializable {
 	}
 
 	@Override
-	public JsonValue ___toObject() {
-		PLRuntime runtime = PLRuntime.getRuntime();
+	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully) {
 		JsonObject metaData = new JsonObject().add("metaObjectType",
 				___getType().toString());
-		if (runtime.isAlreadySerialized(this)) {
+		if (alreadySerialized.contains(___getObjectId())) {
 			metaData.add("link", true).add("linkId", ___getObjectId());
 		} else {
-			runtime.setAsAlreadySerialized(this);
+			alreadySerialized.add(___getObjectId());
 			metaData.add("isBaseClass", false).add("link", false)
 					.add("isInited", ___isInited)
 					.add("thisLink", ___getObjectId())
-					.add("className", "System").add("fields", ___getFields());
+					.add("className", "System").add("fields", ___getFields(alreadySerialized, serializeFully));
 		}
 		return metaData;
 	}

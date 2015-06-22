@@ -1,6 +1,7 @@
 package cz.upol.vanusanik.paralang.plang.types;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -69,7 +70,7 @@ public class Str extends BaseCompiledStub implements Serializable {
 	}
 
 	@Override
-	public JsonValue ___toObject() {
+	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully) {
 		return new JsonObject().add("metaObjectType", ___getType().toString())
 				.add("value", value);
 	}

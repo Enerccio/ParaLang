@@ -1,5 +1,7 @@
 package cz.upol.vanusanik.paralang.plang;
 
+import java.util.Set;
+
 import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
@@ -24,7 +26,7 @@ public interface PLangObject {
 	 * 
 	 * @return
 	 */
-	public JsonValue ___toObject();
+	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully);
 
 	/**
 	 * Returns whether it is number or not

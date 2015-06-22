@@ -30,12 +30,15 @@ public class Protocol {
 	public static final String RESERVE_SPOT_RESPONSE = "ReserveSpotResponse";
 	public static final String RUN_CODE = "RunCode";
 	public static final String RETURNED_EXECUTION = "ReturnedExecution";
+	public static final String REQUEST_DATA = "RequestData";
+	public static final String SEND_DATA = "SendData";
 
 	// Error codes
 	public static final long ERROR_GENERAL_ERROR = 0x0;
 	public static final long ERROR_NO_RESERVED_NODE = 0x1;
 	public static final long ERROR_COMPILATION_FAILURE = 0x2;
 	public static final long ERROR_DESERIALIZATION_FAILURE = 0x3;
+	public static final long ERROR_UNKNOWN_OBJECT = 0x4;
 
 	/** Clear bit used to mark next payload */
 	private static byte clearBit = 0x1e;

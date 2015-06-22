@@ -1,10 +1,14 @@
 package cz.upol.vanusanik.paralang.utils;
 
 import java.lang.reflect.Array;
+import java.net.Socket;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.eclipsesource.json.JsonObject;
+
 import cz.upol.vanusanik.paralang.compiler.FileDesignator;
+import cz.upol.vanusanik.paralang.connector.Protocol;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.Flt;
@@ -198,6 +202,26 @@ public class Utils {
 		for (int i=no; i<stackTrace.length; i++)
 			ed[i-no] = stackTrace[i]; 
 		return ed;
+	}
+
+	/**
+	 * Sends the error back to the client.
+	 * 
+	 * This is not used to send back exception, instead it is used to send when
+	 * error happened prior to the running of the runtime.
+	 * 
+	 * @param s
+	 * @param payload
+	 * @param ecode
+	 * @param dmesg
+	 * @throws Exception
+	 */
+	public static void sendError(Socket s, JsonObject payload, long ecode,
+			String dmesg) throws Exception {
+		payload.add("payload",
+				new JsonObject().add("error", true).add("errorCode", ecode)
+						.add("errorDetails", dmesg));
+		Protocol.send(s.getOutputStream(), payload);
 	}
 
 }

@@ -1,13 +1,14 @@
 package cz.upol.vanusanik.paralang.runtime;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
+import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
@@ -53,7 +54,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 	 * Initializes this class, called only once
 	 */
 	public void ___init_class() {
-		___fieldsAndMethods = new HashMap<String, PLangObject>();
+		___fieldsAndMethods = new ProxyMap();
 		___isInited = true;
 		___restrictedOverride = true;
 		___init_internal_datafields(this);
@@ -116,19 +117,18 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 	}
 
 	@Override
-	public JsonValue ___toObject() {
-		PLRuntime runtime = PLRuntime.getRuntime();
+	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully) {
 		JsonObject metaData = new JsonObject().add("metaObjectType",
 				___getType().toString());
-		if (runtime.isAlreadySerialized(this)) {
+		if (alreadySerialized.contains(___getObjectId())) {
 			metaData.add("link", true).add("linkId", ___getObjectId());
 		} else {
-			runtime.setAsAlreadySerialized(this);
+			alreadySerialized.add(___getObjectId());
 			metaData.add("isBaseClass", false).add("link", false)
 					.add("isInited", ___isInited)
 					.add("thisLink", ___getObjectId())
 					.add("className", getClass().getSimpleName())
-					.add("fields", ___getFields());
+					.add("fields", ___getFields(alreadySerialized, serializeFully));
 		}
 		return metaData;
 	}
@@ -138,13 +138,21 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 	 * 
 	 * @return
 	 */
-	protected JsonArray ___getFields() {
+	protected JsonArray ___getFields(Set<Long> alreadySerialized, boolean serializeFully) {
 		JsonArray array = new JsonArray();
 		for (String field : ___fieldsAndMethods.keySet()) {
 			JsonObject f = new JsonObject();
 
-			f.add("fieldName", field);
-			f.add("fieldValue", ___fieldsAndMethods.get(field).___toObject());
+			PLangObject serObj = ___fieldsAndMethods.get(field);
+			if (serializeFully || (serObj.___getType() != PlangObjectType.MODULE && serObj.___getType() != PlangObjectType.CLASS)){
+				f.add("fieldName", field);
+				f.add("fieldProxy", false);
+				f.add("fieldValue", serObj.___toObject(alreadySerialized, serializeFully));
+			} else {
+				f.add("fieldName", field);
+				f.add("fieldProxy", true);
+				f.add("fieldValue", ((BaseCompiledStub) serObj).___objectId);
+			}
 
 			array.add(f);
 		}
