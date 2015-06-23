@@ -23,12 +23,12 @@ module Distributed {
     
         var n = System.free_nodes();
 		if (n < 2){
-			Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+			Collections.__merge_sort(source, new [source.size()], start, end);
             return source;
         }
         
         if (end - start < 65){
-            Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+            Collections.__merge_sort(source, new [source.size()], start, end);
             return source;
         }
             
@@ -55,7 +55,7 @@ module Distributed {
             Collections.copy(result.get(0), source, start, mid);
             Collections.copy(result.get(1), source, mid, end);
         } catch (NetworkException e){
-            Collections.__merge_sort(source, Collections.__preload_list(new List(), source.size()), start, end);
+            Collections.__merge_sort(source, new [source.size()], start, end);
             return source;
         }
         
@@ -76,7 +76,7 @@ module Distributed {
     }
     
     defn __distributed_map(source, functor, start, end){
-        var result = Collections.__preload_list(new List(), source.size()); 
+        var result = new [source.size()]; 
         
         var n = System.free_nodes();
 		if (n < 2){

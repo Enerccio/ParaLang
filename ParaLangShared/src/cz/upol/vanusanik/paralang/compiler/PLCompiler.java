@@ -2531,6 +2531,18 @@ public class PLCompiler {
 
 			if (expression.getChild(0).getText().equals("new")) {
 				// new expression compilation
+				
+				if (expression.listExpression() != null){
+					// new array
+					addGetRuntime();
+					isStatementExpression.add(false);
+					compileExpression(expression.listExpression().expression(), false, -1);
+					isStatementExpression.pop();
+					bc.addInvokevirtual(Strings.RUNTIME,
+							Strings.RUNTIME__NEW_ARRAY, "(" + Strings.PLANGOBJECT_L + ")"
+									+ Strings.PLANGOBJECT_L);
+					return;
+				}
 
 				// grab fully qualified name
 				String fqName = null;

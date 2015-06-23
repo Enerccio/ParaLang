@@ -226,6 +226,7 @@ expression
     |   expression methodCall
     |   'new' constructorCall
     |   'new' Identifier '.' constructorCall
+    |   'new' listExpression
     |   extended ('++' | '--')
     |   ('+'|'-') expression
     |   ('++'|'--') extended
@@ -258,6 +259,10 @@ expression
         )
         expression
     ;
+    
+listExpression
+	: '[' expression ']'
+	;
     
 methodCall
 	: '(' expressionList? ')'

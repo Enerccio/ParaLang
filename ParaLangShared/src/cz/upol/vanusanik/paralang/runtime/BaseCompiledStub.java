@@ -84,7 +84,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		}
 
 		if (!___fieldsAndMethods.containsKey(key))
-			throw new RuntimeException("Unknown field or method");
+			throw new RuntimeException("Unknown field or method <" + key + "> for " + this);
 
 		PLangObject data = ___fieldsAndMethods.get(key);
 		return data;

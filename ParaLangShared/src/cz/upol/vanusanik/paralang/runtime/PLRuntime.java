@@ -728,6 +728,11 @@ public class PLRuntime {
 		throw newInstance("System.BaseException", new Str(
 				"No constructor found for arguments " + args)).___rebuildStack();
 	}
+	
+	public PLangObject newArray(PLangObject count){
+		int c = Utils.asIntegerValue(count);
+		return new Array(c);
+	}
 
 	public void setRestricted(boolean restricted) {
 		isRestricted = restricted;
@@ -817,6 +822,9 @@ public class PLRuntime {
 			return BooleanValue.TRUE;
 
 		if (className.equals("null") && o instanceof NoValue)
+			return BooleanValue.TRUE;
+		
+		if (className.equals("array") && o instanceof Array)
 			return BooleanValue.TRUE;
 
 		if (className.equals("func") && o instanceof FunctionWrapper)

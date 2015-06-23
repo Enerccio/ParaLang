@@ -40,6 +40,7 @@ public class Strings {
 	public static final String RUNTIME__CHECK_RESTRICTED_ACCESS = "checkRestrictedAccess";
 	public static final String RUNTIME__GET_MODULE = "getModule";
 	public static final String RUNTIME__NEW_INSTANCE = "newInstance";
+	public static final String RUNTIME__NEW_ARRAY = "newArray";
 	public static final String RUNTIME__WRAP_JAVA_OBJECT = "wrapJavaObject";
 	public static final String RUNTIME__RUN = "run";
 	public static final String RUNTIME__RUN_JAVA_WRAPPER = "runJavaWrapper";
