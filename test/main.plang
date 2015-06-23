@@ -23,12 +23,12 @@ module Main {
         
         IO.out.println(xxx);
         var xxc = xxx.copy();
-        Collections.simple_sort(xxc);
-        IO.out.println(xxc);
         
         var z = new [1];
-        z.set(0, xxx);
-        Utils.apply_timer(IO.err.println, z);
+        z.set(0, xxc);
+        Utils.apply_timer(Collections.simple_sort, z);
+        
+        IO.out.println(xxc);
         
     }
     
