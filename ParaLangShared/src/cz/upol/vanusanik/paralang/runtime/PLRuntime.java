@@ -574,6 +574,9 @@ public class PLRuntime {
 			FunctionWrapper wrapper = (FunctionWrapper) runner;
 			try {
 				return wrapper.___run(currentRunner, args);
+			} catch (ClassCastException e){
+				throw newInstance("System.BaseException", new Str(
+						"Provided primitive does not have supported operation.")).___rebuildStack();
 			} catch (WrongMethodTypeException e) {
 				throw newInstance("System.BaseException", new Str(
 						"Wrong number of arguments.")).___rebuildStack();

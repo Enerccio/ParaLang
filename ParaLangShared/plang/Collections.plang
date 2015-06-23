@@ -9,6 +9,8 @@ using System.BaseException;
 using Utils.ArrayIndexOutOfBoundsException;
 using Utils.IllegalArgumentException;
 
+using IO;
+
 ###
  Collections is a module containing easy to use collections, such as List, Set, Map or Array.
  

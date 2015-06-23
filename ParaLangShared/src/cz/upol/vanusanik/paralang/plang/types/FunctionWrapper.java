@@ -137,6 +137,8 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 	/** Method handle cache */
 	private static Map<Method, MethodHandle> methodHandles = Collections
 			.synchronizedMap(new WeakHashMap<Method, MethodHandle>());
+	private static Map<BaseCompiledStub, Map<MethodHandle, MethodHandle>> boundHandles = Collections
+			.synchronizedMap(new WeakHashMap<BaseCompiledStub, Map<MethodHandle, MethodHandle>>());;
 
 	/**
 	 * Runs the method accessor with the self and arguments
@@ -155,8 +157,16 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 			genHandle = MethodHandles.lookup().unreflect(ma.m);
 			methodHandles.put(ma.m, genHandle);
 		}
-
-		MethodHandle handle = genHandle.bindTo(ma.o);
+		
+		if (!boundHandles.containsKey(ma.o)){
+			boundHandles.put(ma.o, Collections.synchronizedMap(new WeakHashMap<MethodHandle, MethodHandle>()));
+		}
+		
+		MethodHandle handle = boundHandles.get(ma.o).get(genHandle);
+		if (handle == null){
+			handle = genHandle.bindTo(ma.o);
+			boundHandles.get(ma.o).put(genHandle, handle);
+		}
 
 		PLangObject[] data = arguments;
 		if (isMethod) {

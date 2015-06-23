@@ -2393,7 +2393,7 @@ public class PLCompiler {
 				// compile expression
 				// then we call run method of PLRuntime
 				bc.addAload(stack);
-				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
+				bc.addCheckcast(Strings.PLANGOBJECT);
 				compileParameters(expression.methodCall().expressionList());
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, "("
 						+ Strings.PLANGOBJECT_L + Strings.PLANGOBJECT_L

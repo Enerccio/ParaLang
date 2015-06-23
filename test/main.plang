@@ -21,14 +21,13 @@ module Main {
             xxx.set(i, Random.random.get_int(1024));
         }
         
-        IO.out.println(xxx);
         var xxc = xxx.copy();
         
-        var z = new [1];
+        var z = new [2];
+        z.set(1, Math.is_even);
         z.set(0, xxc);
-        Utils.apply_timer(Collections.simple_sort, z);
         
-        IO.out.println(xxc);
+        IO.out.println(Utils.apply_timer(Collections.map, z));
         
     }
     
