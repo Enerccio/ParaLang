@@ -3307,7 +3307,8 @@ public class PLCompiler {
 			register.addInstruction(i);
 		}
 		for (ExceptionHandler handler : eh){
-			register.addException(handler);
+			if (!handler.deleted)
+				register.addException(handler);
 		}
 		
 		markDeadCode(insts, iPosList, eh);
