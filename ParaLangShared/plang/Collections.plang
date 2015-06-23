@@ -203,8 +203,8 @@ module Collections {
     	
     	defn set(index, object){
     		if (!(object instanceof Array)){
+                throw new IllegalArgumentException(__type_exception);
     		}
-    			throw new IllegalArgumentException(__type_exception);
     		super.set(index, object._array);
     	}
     }

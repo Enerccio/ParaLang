@@ -42,9 +42,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.patrikdufresne.util.BidiMultiHashMap;
-import com.patrikdufresne.util.BidiMultiMap;
-
 import cz.upol.vanusanik.paralang.compiler.VariableScopeStack.VariableType;
 import cz.upol.vanusanik.paralang.plang.PLangLexer;
 import cz.upol.vanusanik.paralang.plang.PLangParser;
@@ -227,6 +224,77 @@ public class PLCompiler {
 			bc.addInvokevirtual(Strings.BASE_COMPILED_STUB,
 					Strings.BASE_COMPILED_STUB__SETKEY, "(" + Strings.STRING_L
 							+ Strings.PLANGOBJECT_L + ")V");
+		}
+	}
+	
+	private static class ExceptionShiftRegister {
+		private static class ExceptionBlock {
+			int type;
+		}
+		
+		private static class ByteDescription {
+			private Set<ExceptionBlock> starts = new HashSet<ExceptionBlock>();
+			private Set<ExceptionBlock> ends = new HashSet<ExceptionBlock>();
+			private Set<ExceptionBlock> handlers = new HashSet<ExceptionBlock>();
+			private Instruction inst;
+			private byte bbyte;
+			
+			@Override
+			public String toString(){
+				return inst.toString() + " - " + bbyte + "\n";
+			}
+		}
+		
+		private List<ExceptionBlock> elb = new ArrayList<ExceptionBlock>();
+		private List<ByteDescription> bds = new ArrayList<ByteDescription>();
+		
+		public void addInstruction(Instruction i){
+			for (int j=0; j<i.instBytes.length; j++){
+				ByteDescription bd = new ByteDescription();
+				bd.inst = i;
+				bd.bbyte = i.instBytes[j];
+				bds.add(bd);
+			}
+		}
+		
+		public void addException(ExceptionHandler data) {
+			ExceptionBlock block = new ExceptionBlock();
+			block.type = data.type;
+			
+			bds.get(data.startLink).starts.add(block);
+			bds.get(data.endLink).ends.add(block);
+			bds.get(data.bcLink).handlers.add(block);
+			
+			elb.add(block);
+		}
+		
+		public List<ExceptionHandler> regenerate(){
+			List<ExceptionHandler> handlers = new ArrayList<ExceptionHandler>();
+			
+			for (ExceptionBlock b : elb){
+				ExceptionHandler h = new ExceptionHandler();
+				h.type = b.type;
+				int cc = 0;
+				for (ByteDescription bd : bds){
+					if (bd.starts.contains(b)){
+						h.startLink = cc;
+					}
+					
+					if (bd.ends.contains(b)){
+						h.endLink = cc;
+					}
+					
+					if (bd.handlers.contains(b)){
+						h.bcLink = cc;
+					}
+					
+					if (bd.inst.visited)
+						cc += 1;
+				}
+				handlers.add(h);
+			}
+			
+			return handlers;
 		}
 	}
 
@@ -568,13 +636,16 @@ public class PLCompiler {
 			CodeAttribute at = bc.toCodeAttribute();
 			// set stacker size and maximum number of locals
 			at.computeMaxStack();
+			// at.setMaxStack(128);
 			at.setMaxLocals(stacker.getMax());
 			at.getAttributes().add(lineNubmerInfo);
-
+			
 			// build stackmaps
 			m.getMethodInfo().setCodeAttribute(at);
+			
+			//InstructionPrinter.print(m, System.err);
 			m.getMethodInfo().rebuildStackMap(cp);
-
+			
 			// add method to the class
 			cls.addMethod(m);
 		}
@@ -634,22 +705,7 @@ public class PLCompiler {
 		Integer endLink;
 		Integer bcLink;
 		int type;
-	}
-
-	/**
-	 * IntegerLink is class holding integer value and whether it is start
-	 * position or not
-	 * 
-	 * @author Enerccio
-	 *
-	 */
-	private static class IntegerLink {
-		public IntegerLink(int i) {
-			this.i = i;
-		}
-
-		private int i;
-		private boolean isStartPos = false;
+		boolean deleted = false;
 	}
 
 	/**
@@ -3213,22 +3269,15 @@ public class PLCompiler {
 		byte[] bytecode = bc.get();
 		ExceptionTable etable = bc.getExceptionTable();
 
-		int counter = 0;
 		// store exception handlers so we can later modify them if we prune some
 		// code out
 		List<ExceptionHandler> eh = new ArrayList<ExceptionHandler>();
-		BidiMultiMap<Integer, IntegerLink> linkMap = new BidiMultiHashMap<Integer, IntegerLink>();
 
 		for (int i = 0; i < etable.size(); i++) {
 			ExceptionHandler ehi = new ExceptionHandler();
-			ehi.bcLink = counter++;
-			linkMap.put(ehi.bcLink, new IntegerLink(etable.handlerPc(i)));
-			ehi.startLink = counter++;
-			IntegerLink startLink = new IntegerLink(etable.startPc(i));
-			linkMap.put(ehi.startLink, startLink);
-			startLink.isStartPos = true;
-			ehi.endLink = counter++;
-			linkMap.put(ehi.endLink, new IntegerLink(etable.endPc(i)));
+			ehi.bcLink = etable.handlerPc(i);
+			ehi.startLink = etable.startPc(i);
+			ehi.endLink = etable.endPc(i);
 			ehi.type = etable.catchType(i);
 			eh.add(ehi);
 		}
@@ -3238,36 +3287,43 @@ public class PLCompiler {
 		List<Instruction> insts = parseBytecode(bytecode, iPosList);
 
 		// mark dead code in the bytecode
-		markDeadCode(insts, iPosList, etable);
-
-		// prune dead code and fix exceptions
-		List<ExceptionData> copy = new ArrayList<ExceptionData>();
-		List<Instruction> prunned = new ArrayList<Instruction>();
-		BidiMultiMap<Integer, IntegerLink> cpyMap = new BidiMultiHashMap<Integer, IntegerLink>(
-				linkMap);
+		// first pass, mark dead code for removal of dead exceptions
+		markDeadCode(insts, iPosList, null);
 		for (Instruction i : insts) {
 			if (i.visited)
-				// do not prune this instruction
-				prunned.add(i);
+				i.visited = false;
 			else {
-				// prune the instruction, then fix the exceptions
 				int bcpos = i.originalPos;
-				for (IntegerLink ilink : cpyMap.values()) {
-					if (ilink.i > bcpos) {
-						ilink.i -= i.instBytes.length;
-					} else if (ilink.i == bcpos && ilink.isStartPos) {
-						linkMap.removeValue(ilink);
+				for (ExceptionHandler ehi : eh) {
+					if (ehi.startLink == bcpos){
+						ehi.deleted = true;
 					}
 				}
 			}
 		}
+		
+		ExceptionShiftRegister register = new ExceptionShiftRegister();
+		for (Instruction i : insts){
+			register.addInstruction(i);
+		}
+		for (ExceptionHandler handler : eh){
+			register.addException(handler);
+		}
+		
+		markDeadCode(insts, iPosList, eh);
+
+		// prune dead code and fix exceptions
+		List<ExceptionData> copy = new ArrayList<ExceptionData>();
+		List<Instruction> prunned = new ArrayList<Instruction>();
+		for (Instruction i : insts) {
+			if (i.visited)
+				// do not prune this instruction
+				prunned.add(i);
+		}
 
 		// add exceptions back
-		for (ExceptionHandler ehi : eh) {
-			if (linkMap.get(ehi.startLink) != null)
-				copy.add(new ExceptionData(linkMap.get(ehi.startLink).i,
-						linkMap.get(ehi.endLink).i, linkMap.get(ehi.bcLink).i,
-						ehi.type));
+		for (ExceptionHandler ehi : register.regenerate()) {
+			copy.add(new ExceptionData(ehi.startLink, ehi.endLink, ehi.bcLink, ehi.type));
 		}
 
 		recalculateJumps(prunned);
@@ -3350,17 +3406,18 @@ public class PLCompiler {
 	 * 
 	 * @param insts
 	 * @param iPosList
-	 * @param etable
+	 * @param eh
 	 */
 	private void markDeadCode(List<Instruction> insts,
-			Map<Integer, Instruction> iPosList, ExceptionTable etable) {
+			Map<Integer, Instruction> iPosList, List<ExceptionHandler> eh) {
 		markFrom(insts, 0);
-		for (int i = 0; i < etable.size(); i++) {
-			int startPc = etable.startPc(i);
-			if (iPosList.get(startPc).visited)
-				markFrom(insts,
-						insts.indexOf(iPosList.get(etable.handlerPc(i))));
-		}
+		if (eh != null)
+			for (int i = 0; i < eh.size(); i++) {
+				ExceptionHandler e = eh.get(i);
+				if (!e.deleted)
+					markFrom(insts,
+							insts.indexOf(iPosList.get(e.bcLink)));
+			}
 	}
 
 	/**

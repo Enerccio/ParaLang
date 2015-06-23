@@ -4,8 +4,8 @@ using Math;
 using Math.Matrix;
 using Random;
 using Collections;
-using Collections.List;
 using Distributed;
+using Utils;
 
 module Main {
 
@@ -13,150 +13,23 @@ module Main {
         
     }
     
-    class X {
-        var xxx; 
-        
-        defn init(){
-            xxx = new X2();
-        }
-    
-        var itc = 8000;
-        var fnodes;
-        
-        defn restricted calculate(a, b){ 
-            var ct = 0;
-            var etime = 0;
-            fnodes = System.free_nodes();
-            
-            IO.out.println("Generating random matrices");
-            
-            IO.out.print("[");
-            var list = new List();
-            for (var i=0; i<itc; i++){
-                list.add(Math.random_matrix(10, 10, Random.random, 100));
-                if (i % (itc/100) == 0)
-                    IO.out.print(".");
-            }
-            IO.out.println("]");
-            
-            IO.out.println("Calculating multiplication of " + itc + " matrices.");
-            
-            IO.out.println("  Normally");
-            ct = System.current_time();
-            var mat = list.get(0);
-            for (var i=1; i<list.size(); i++){
-                mat *= list.get(i);
-            }
-            etime = (System.current_time() - ct);
-            IO.out.println("    Result: " + mat);
-            IO.out.println("    Run time: " + etime);
-            
-            IO.out.println("  Distributed");
-            IO.out.println("     Expected node count -  " + fnodes);            
-            var ct = System.current_time();
-            var rl = (dist (fnodes, list) {
-                var start = (itc/fnodes) * run_id;
-                var end = (itc/fnodes) * (run_id + 1);
-                var res = passed_arg.get(start);
-                for (var i=start + 1; i<end; i++){
-                    res *= passed_arg.get(i);
-                }
-                return res;
-            });
-            mat = rl.get(0);
-            for (var i=1; i<rl.size(); i++){
-                mat *= rl.get(i);
-            }            
-            var etime = (System.current_time() - ct);
-            IO.out.println("    Result: " + mat);
-            IO.out.println("    Run time: " + etime);
-        }
-    
-        defn _str(){
-            return "test";
-        }
-    }
-    
-    class X2 {
-    
-    }
-    
-    var x = new X();
-    
     defn restricted calculate(a, b){
         IO.out.lerp();
         
-        var ll = new List();
-        ll.add(new X());
+        var xxx = new [10000];
+        for (var i=0; i<xxx.size(); i++){
+            xxx.set(i, Random.random.get_int(1024));
+        }
         
-        IO.out.println((dist (16, ll){ return passed_arg.get(0); }));
+        IO.out.println(xxx);
+        var xxc = xxx.copy();
+        Collections.simple_sort(xxc);
+        IO.out.println(xxc);
         
-        //var x = 4;
-        //var y = Collections.integer_array(4);
-        //y.set(0, 1);
-        //y.set(1, 2);
-        //y.set(2, 4);
-        //y.set(3, 8);
-        //var retvals = (dist (x, y) { var hodnota = passed_arg.get(run_id); return hodnota*2; });
-        
-        //IO.out.println(retvals);
-        
-        //var ct = 0;
-        //var etime = 0;
-        
-        IO.out.println((dist (2, NoValue) { var y = new X(); y.xxx = x.xxx; return y; }));
-        
-        ct = System.current_time();
-        var ia = Collections.integer_array(10000);
-        for (var i=0; i<10000; i++)
-            ia.set(i, Random.random.get_int(9999999));
-        
-        etime = (System.current_time() - ct);
-        IO.out.println("    Run time: " + etime);
-        
-        ct = System.current_time();
-        Collections.simple_sort(ia);
-        etime = (System.current_time() - ct);
-        IO.out.println("    Run time: " + etime);
-        
-        var ia = Collections.integer_array(50000);
-        for (var i=0; i<50000; i++)
-            ia.set(i, Random.random.get_int(9999999));
-            
-        ct = System.current_time();
-        var res = Distributed.distributed_sort(ia);
-        etime = (System.current_time() - ct);
-        IO.out.println("    Run time: " + etime);
-        
-        
-        ia = Collections.integer_array(100000);
-        for (var i=0; i<100000; i++)
-            ia.set(i, Random.random.get_int(100));
-        
-        IO.out.println(ia);
-        ct = System.current_time();
-        res = Collections.reduce(ia, new AddFunctor());
-        etime = (System.current_time() - ct);
-        IO.out.println("    Run time: " + etime);
-        IO.out.println(res);
-        
-        ct = System.current_time();
-        res = Collections.map(ia, Math.is_even);
-        etime = (System.current_time() - ct);
-        IO.out.println("    Run time: " + etime);
-        IO.out.println(res);
-        
-        ct = System.current_time();
-        res = Distributed.distributed_map(ia, Math.is_even);
-        etime = (System.current_time() - ct);
-        IO.out.println("    Run time: " + etime);
-        IO.out.println(res);
+        var z = new [1];
+        z.set(0, xxx);
+        Utils.apply_timer(IO.err.println, z);
         
     }
     
-    class AddFunctor {
-        defn _apply(collector, arg){
-            return collector + arg;
-        }
-    }
 };
