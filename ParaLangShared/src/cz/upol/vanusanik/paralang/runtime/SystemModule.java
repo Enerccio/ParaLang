@@ -8,9 +8,12 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
+import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.types.Array;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
+import cz.upol.vanusanik.paralang.plang.types.Str;
 
 /**
  * System module
@@ -29,6 +32,7 @@ public class SystemModule extends PLModule implements Serializable {
 		___setkey("current_time", new FunctionWrapper("currentTime", this,
 				false));
 		___setkey("free_nodes", new FunctionWrapper("freeNodes", this, false));
+		___setkey("apply", new FunctionWrapper("apply", this, false));
 
 		this.___restrictedOverride = false;
 	}
@@ -59,5 +63,12 @@ public class SystemModule extends PLModule implements Serializable {
 					.add("className", "System").add("fields", ___getFields(alreadySerialized, serializeFully));
 		}
 		return metaData;
+	}
+	
+	public PLangObject apply(PLangObject runnable, PLangObject array){
+		if (array.___getType() != PlangObjectType.ARRAY){
+			throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("Argument must by type of array"));
+		}
+		return PLRuntime.getRuntime().run(runnable, runnable, ((Array)array).getArray().clone());
 	}
 }
