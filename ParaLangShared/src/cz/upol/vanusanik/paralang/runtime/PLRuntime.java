@@ -56,6 +56,7 @@ import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.Flt;
+import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
 import cz.upol.vanusanik.paralang.plang.types.Pointer;
@@ -561,7 +562,7 @@ public class PLRuntime {
 	 *            arguments of this run
 	 * @return result of the call to this runner
 	 */
-	public PLangObject run(PLangObject runner, BaseCompiledStub currentRunner,
+	public PLangObject run(PLangObject runner, PLangObject currentRunner,
 			PLangObject... args) {
 		if (runner == null)
 			// null means no such method actually happened
@@ -1116,6 +1117,7 @@ public class PLRuntime {
 				node = NodeList.getRandomNode(); // Refresh node since error
 													// might have been node
 													// related
+				e.printStackTrace();
 				executed = false;
 			} finally {
 				if (s != null) {
@@ -1123,6 +1125,7 @@ public class PLRuntime {
 						s.close();
 					} catch (Exception e) {
 						// ignore
+						e.printStackTrace();
 					}
 				}
 			}
@@ -1201,7 +1204,10 @@ public class PLRuntime {
 			nids.add(id.asLong());
 		}
 		
-		
+		objectIdCounter = 0;
+		for (Long id : nids){
+			objectIdCounter = Math.max(objectIdCounter, id);
+		}
 		
 		for (JsonValue v : modules) {
 			buildInstanceMap(v.asObject().get("module").asObject(), tm, true);
@@ -1523,6 +1529,7 @@ public class PLRuntime {
 				buildInstanceMap(payload.get("object").asObject(), rm, true);
 				instanceInternalMap.put(id, (BaseCompiledStub) deserialize(payload.get("object").asObject(), rm));
 			} catch (Exception e){
+				e.printStackTrace();
 				throw newInstance("System.BaseException", new Str("Failed to get network object " + id));
 			}
 		}

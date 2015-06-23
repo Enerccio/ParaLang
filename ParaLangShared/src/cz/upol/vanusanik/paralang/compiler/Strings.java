@@ -30,7 +30,7 @@ public class Strings {
 	public static final String BASE_CLASS = "cz/upol/vanusanik/paralang/runtime/BaseClass";
 	public static final String BASE_CLASS_L = "L" + BASE_CLASS + ";";
 	
-	public static final String FUNCTION_WRAPPER = "cz/upol/vanusanik/paralang/runtime/FunctionWrapper";
+	public static final String FUNCTION_WRAPPER = "cz/upol/vanusanik/paralang/plang/types/FunctionWrapper";
 	public static final String FUNCTION_WRAPPER_L = "L" + FUNCTION_WRAPPER
 			+ ";";
 

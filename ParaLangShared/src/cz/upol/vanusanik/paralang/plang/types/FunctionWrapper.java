@@ -1,4 +1,4 @@
-package cz.upol.vanusanik.paralang.runtime;
+package cz.upol.vanusanik.paralang.plang.types;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,7 +18,10 @@ import com.eclipsesource.json.JsonValue;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
-import cz.upol.vanusanik.paralang.plang.types.Str;
+import cz.upol.vanusanik.paralang.plang.PrimitivePLangObject;
+import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
+import cz.upol.vanusanik.paralang.runtime.PLClass;
+import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
 /**
@@ -28,7 +31,7 @@ import cz.upol.vanusanik.paralang.utils.Utils;
  * @author Enerccio
  *
  */
-public class FunctionWrapper extends BaseCompiledStub implements
+public class FunctionWrapper extends PrimitivePLangObject implements
 		Serializable {
 
 	private static final long serialVersionUID = 3998164784189902299L;
@@ -61,11 +64,6 @@ public class FunctionWrapper extends BaseCompiledStub implements
 		} while (nextLowest != null);
 		return lowest;
 	}
-	
-	@Override
-	protected void ___init_internal_datafields(BaseCompiledStub self) {
-		___fieldsAndMethods.put("name", new Str(methodName));
-	}
 
 	/**
 	 * MethodAccessor helper class
@@ -91,7 +89,7 @@ public class FunctionWrapper extends BaseCompiledStub implements
 	 * @return
 	 * @throws Throwable
 	 */
-	public PLangObject ___run(BaseCompiledStub owner, PLangObject... arguments)
+	public PLangObject ___run(PLangObject owner, PLangObject... arguments)
 			throws Throwable {
 		if (owner instanceof FunctionWrapper){
 			BaseCompiledStub rebase = ((FunctionWrapper) owner).___getOwner();
@@ -101,17 +99,17 @@ public class FunctionWrapper extends BaseCompiledStub implements
 		}
 		MethodAccessor ma = ___accessorCache.get(owner);
 		if (ma == null) {
-			for (MethodAccessor maa : getAllMethods(owner)) {
+			for (MethodAccessor maa : getAllMethods((BaseCompiledStub) owner)) {
 				if (maa.m.getName().equals(methodName)) {
 					ma = maa;
-					___accessorCache.put(owner, ma);
+					___accessorCache.put((BaseCompiledStub) owner, ma);
 					break;
 				}
 			}
 			if (ma == null)
 				throw new RuntimeException("Unknown method: " + methodName);
 		}
-		return ___run(ma, owner, arguments);
+		return ___run(ma, (BaseCompiledStub) owner, arguments);
 	}
 
 	/**

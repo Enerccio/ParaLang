@@ -138,7 +138,7 @@ public final class NodeList {
 			try {
 				hasFreeNodes = getFreeNodes(n) > 0;
 			} catch (Exception e) {
-				
+				e.printStackTrace();
 			}
 			ctime = System.nanoTime();
 			if (ctime - ttime > 2000000000) // 2s
@@ -154,8 +154,9 @@ public final class NodeList {
 	 * @return
 	 * @throws Exception
 	 */
-	private static int getFreeNodes(Node n) throws Exception {
+	private static synchronized  int getFreeNodes(Node n) throws Exception {
 		Socket s = null;
+		//new Exception("req. amount " + n + " : " + Thread.currentThread().getId()).printStackTrace();
 		try {
 			if (useSSL)
 				s = SSLSocketFactory.getDefault().createSocket(n.getAddress(),
@@ -169,7 +170,6 @@ public final class NodeList {
 			Protocol.send(s.getOutputStream(), o);
 	
 			o = Protocol.receive(s.getInputStream());
-			s.close();
 			if (!o.getString("header", "").equals(Protocol.GET_STATUS_RESPONSE))
 				throw new Exception("Wrong reply from the server");
 	

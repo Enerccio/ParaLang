@@ -1,11 +1,11 @@
 package cz.upol.vanusanik.paralang.node;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,7 +29,7 @@ import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
-import cz.upol.vanusanik.paralang.runtime.PLRuntime.DeserializationResult;
+import cz.upol.vanusanik.paralang.utils.Utils;
 
 /**
  * NodeController is main class of the ParaLang Node.
@@ -116,6 +116,11 @@ public class NodeController {
 						localStorage.set(null);
 						if (local != null && local.reservedNode != null)
 							local.reservedNode.release();
+						try {
+							s.close();
+						} catch (IOException e) {
+							log.error(e);
+						}
 					}
 				}
 
@@ -129,7 +134,7 @@ public class NodeController {
 			SSLServerSocketFactory sslServerFactory = (SSLServerSocketFactory) SSLServerSocketFactory
 					.getDefault();
 			server = sslServerFactory
-					.createServerSocket(no.portNumber);
+					.createServerSocket(no.portNumber, 50);
 			((SSLServerSocket)server).getNeedClientAuth();
 			return server;
 		} else 
@@ -189,7 +194,7 @@ public class NodeController {
 
 		final NodeLocalStorage storage = localStorage.get();
 		if (storage.reservedNode == null) {
-			sendError(s, payload, Protocol.ERROR_NO_RESERVED_NODE,
+			Utils.sendError(s, payload, Protocol.ERROR_NO_RESERVED_NODE,
 					"No reserved node for this client");
 			return;
 		}
@@ -215,29 +220,25 @@ public class NodeController {
 						data.getString("content", ""));
 			}
 		}
-		storage.runtime.runtime.prepareForDeserialization(input
-				.get("runtimeData").asObject().get("serialVersionUIDs")
-				.asArray());
-		Map<Long, Long> ridxMap;
+		
 		PLangObject arg;
 		/* Deserializes the json content back to the objects */
 		try {
-			DeserializationResult r = storage.runtime.runtime.deserialize(input
-					.get("runtimeData").asObject().get("modules").asArray(),
-					input.get("runtimeData").asObject().get("currentCaller")
-							.asObject(), input.get("runtimeData").asObject()
-							.get("callerArg").asObject());
-			ridxMap = r.ridxMap;
-			arg = r.cobject;
+			JsonObject barebone = input.get("runtimeData").asObject();
+			arg = storage.runtime.runtime.deserializeBareboneRuntime(
+					barebone.get("modules").asArray(),
+					barebone.get("ids").asArray(),
+					barebone.get("caller").asObject(),
+					barebone.get("arg").asObject());
 		} catch (Exception e) {
-			sendError(s, payload, Protocol.ERROR_DESERIALIZATION_FAILURE,
+			Utils.sendError(s, payload, Protocol.ERROR_DESERIALIZATION_FAILURE,
 					e.getMessage());
 			storage.runtime = null;
 			return;
 		}
 
-		final Map<Long, Long> transMap = ridxMap;
 		final PLangObject farg = arg;
+		storage.runtime.runtime.setRequestSocket(s);
 		storage.runtime.runtime.setRestricted(true);
 		storage.exception = null;
 
@@ -252,11 +253,11 @@ public class NodeController {
 					// binds to current thread
 					storage.runtime.runtime.setAsCurrent();
 					// runs the current object and method asked
-					return storage.runtime.runtime.runByObjectId(transMap
-							.get(input.getLong("runnerId", 0)), input
+					return storage.runtime.runtime.runByObjectId(input.getLong("runnerId", 0), 
+							input
 							.getString("methodName", ""),
 							new Int(input.getInt("id", 0)), farg,
-							argId > 0 ? transMap.get(argId) : argId);
+							argId);
 				} catch (PLClass e) {
 					storage.exception = e;
 					return null;
@@ -291,10 +292,10 @@ public class NodeController {
 		JsonObject p = new JsonObject();
 		if (result != null) {
 			p.add("hasResult", true);
-			p.add("result", result.___toObject());
+			p.add("result", storage.runtime.runtime.serializeFully(result));
 		} else {
 			p.add("hasResult", false);
-			p.add("exception", storage.exception.___toObject());
+			p.add("exception", storage.runtime.runtime.serializeFully(storage.exception));
 		}
 
 		payload.add("payload", p);
@@ -302,26 +303,6 @@ public class NodeController {
 		localStorage.set(null);
 
 		// send the payload back to the requesting client
-		Protocol.send(s.getOutputStream(), payload);
-	}
-
-	/**
-	 * Sends the error back to the client.
-	 * 
-	 * This is not used to send back exception, instead it is used to send when
-	 * error happened prior to the running of the runtime.
-	 * 
-	 * @param s
-	 * @param payload
-	 * @param ecode
-	 * @param dmesg
-	 * @throws Exception
-	 */
-	private void sendError(Socket s, JsonObject payload, long ecode,
-			String dmesg) throws Exception {
-		payload.add("payload",
-				new JsonObject().add("error", true).add("errorCode", ecode)
-						.add("errorDetails", dmesg));
 		Protocol.send(s.getOutputStream(), payload);
 	}
 

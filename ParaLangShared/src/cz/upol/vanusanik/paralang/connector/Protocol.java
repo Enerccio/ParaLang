@@ -1,14 +1,8 @@
 package cz.upol.vanusanik.paralang.connector;
 
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 
@@ -40,19 +34,6 @@ public class Protocol {
 	public static final long ERROR_DESERIALIZATION_FAILURE = 0x3;
 	public static final long ERROR_UNKNOWN_OBJECT = 0x4;
 
-	/** Clear bit used to mark next payload */
-	private static byte clearBit = 0x1e;
-	/** Threads used to provide future access */
-	private static ExecutorService executor = Executors
-			.newCachedThreadPool(new ThreadFactory() {
-				@Override
-				public Thread newThread(Runnable r) {
-					Thread t = Executors.defaultThreadFactory().newThread(r);
-					t.setDaemon(true);
-					return t;
-				}
-			});
-
 	/**
 	 * Receives payload from socket stream
 	 * 
@@ -63,34 +44,29 @@ public class Protocol {
 	 */
 	public static JsonObject receive(final InputStream inputStream)
 			throws Exception {
-		int cb = -1;
-		while ((cb = inputStream.read()) != -1) {
-			if (cb == clearBit)
-				break;
-		}
-
-		if (cb == -1)
-			return null;
-
-		Future<JsonObject> future = executor.submit(new Callable<JsonObject>() {
-			@Override
-			public JsonObject call() {
-				try {
-					byte[] arr = new byte[4];
-					IOUtils.read(inputStream, arr);
-					int length = ByteBuffer.wrap(arr).asIntBuffer().get();
-
-					byte[] data = new byte[length];
-					IOUtils.read(inputStream, data);
-					return JsonObject.readFrom(new String(data, "utf-8"));
-				} catch (Exception e) {
-					e.printStackTrace();
-					return null;
-				}
+		
+		synchronized (inputStream){
+			
+			byte[] lheader = new byte[20];
+			try {
+				IOUtils.readFully(inputStream, lheader);
+			} catch (EOFException e){
+				return null;
 			}
-		});
-
-		return future.get(15, TimeUnit.SECONDS);
+	
+			byte[] data = null;
+			try {
+				data = new byte[Integer.parseInt(new String(lheader, "utf-8").trim())];
+			} catch (NumberFormatException e){
+				return null;
+			}
+			IOUtils.readFully(inputStream, data);
+			
+			String s = new String(data, "utf-8");
+			JsonObject result = JsonObject.readFrom(s);
+			
+			return result;
+		}
 	}
 
 	/**
@@ -105,13 +81,28 @@ public class Protocol {
 	public static void send(OutputStream os, JsonObject payload)
 			throws Exception {
 		
-		os.write(clearBit);
+		synchronized (os){
 
-		String data = payload.toString(WriterConfig.PRETTY_PRINT);
-		byte[] array = ByteBuffer.allocate(4).putInt(data.length()).array();
-
-		IOUtils.write(array, os);
-		IOUtils.write(data, os, "utf-8");
+			String data = payload.toString(WriterConfig.PRETTY_PRINT);
+			byte[] ll = data.getBytes("utf-8");
+			Integer length = ll.length;
+			String content = String.format("%d", length);
+			
+			byte[] lheader = new byte[20 + length];
+			byte[] lsource = content.getBytes("utf-8");
+			for (int i=0; i<20; i++){
+				if (i < lsource.length)
+					lheader[i] = lsource[i];
+				else
+					lheader[i] = ' ';
+			}
+			
+			for (int i=0; i<length; i++)
+				lheader[i+20] = ll[i];
+			
+			IOUtils.write(lheader, os);
+			os.flush();
+		}
 	}
 
 }

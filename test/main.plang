@@ -86,6 +86,11 @@ module Main {
     defn restricted calculate(a, b){
         IO.out.lerp();
         
+        var ll = new List();
+        ll.add(new X());
+        
+        IO.out.println((dist (16, ll){ return passed_arg.get(0); }));
+        
         //var x = 4;
         //var y = Collections.integer_array(4);
         //y.set(0, 1);
@@ -101,7 +106,6 @@ module Main {
         
         IO.out.println((dist (2, NoValue) { var y = new X(); y.xxx = x.xxx; return y; }));
         
-        /*
         ct = System.current_time();
         var ia = Collections.integer_array(10000);
         for (var i=0; i<10000; i++)
@@ -109,8 +113,6 @@ module Main {
         
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
-        
-        
         
         ct = System.current_time();
         Collections.simple_sort(ia);
@@ -125,16 +127,15 @@ module Main {
         var res = Distributed.distributed_sort(ia);
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
-        */
         
-        /*
-        var ia = Collections.integer_array(100000);
+        
+        ia = Collections.integer_array(100000);
         for (var i=0; i<100000; i++)
             ia.set(i, Random.random.get_int(100));
         
         IO.out.println(ia);
         ct = System.current_time();
-        var res = Collections.reduce(ia, new AddFunctor());
+        res = Collections.reduce(ia, new AddFunctor());
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
         IO.out.println(res);
@@ -150,7 +151,7 @@ module Main {
         etime = (System.current_time() - ct);
         IO.out.println("    Run time: " + etime);
         IO.out.println(res);
-        */
+        
     }
     
     class AddFunctor {

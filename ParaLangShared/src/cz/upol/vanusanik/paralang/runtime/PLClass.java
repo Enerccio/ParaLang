@@ -1,8 +1,10 @@
 package cz.upol.vanusanik.paralang.runtime;
 
+import cz.upol.vanusanik.paralang.plang.ObjectProxy;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
+import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations.Operator;
 
 /**
@@ -152,5 +154,9 @@ public abstract class PLClass extends BaseCompiledStub {
 		if (superclass == null)
 			return false;
 		return superclass.___isException(self);
+	}
+	
+	private Object readResolve() {
+		return new ObjectProxy(___objectId);
 	}
 }

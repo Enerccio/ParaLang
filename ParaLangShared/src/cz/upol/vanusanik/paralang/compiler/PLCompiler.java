@@ -2340,7 +2340,7 @@ public class PLCompiler {
 				bc.addCheckcast(Strings.BASE_COMPILED_STUB);
 				compileParameters(expression.methodCall().expressionList());
 				bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__RUN, "("
-						+ Strings.PLANGOBJECT_L + Strings.BASE_COMPILED_STUB_L
+						+ Strings.PLANGOBJECT_L + Strings.PLANGOBJECT_L
 						+ "[" + Strings.PLANGOBJECT_L + ")"
 						+ Strings.PLANGOBJECT_L);
 				// release local variable slot

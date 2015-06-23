@@ -20,10 +20,10 @@ import org.apache.commons.codec.binary.Base64;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import cz.upol.vanusanik.paralang.plang.ObjectProxy;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.runtime.BaseCompiledStub;
-import cz.upol.vanusanik.paralang.runtime.FunctionWrapper;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
@@ -180,6 +180,9 @@ public class Pointer extends BaseCompiledStub implements Serializable {
 					// run the method
 					Object ret = handle.invokeWithArguments(constructedArgs
 							.toArray());
+					
+					if (ret instanceof ObjectProxy)
+						ret = ((ObjectProxy)ret).get();
 
 					// recast the return value back
 					if (ret == null)

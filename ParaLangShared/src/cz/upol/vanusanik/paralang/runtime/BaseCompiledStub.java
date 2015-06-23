@@ -10,6 +10,7 @@ import com.eclipsesource.json.JsonValue;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
+import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.utils.Utils;
 
 /**
@@ -22,7 +23,7 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 		PLangObject {
 	private static final long serialVersionUID = -2885702496818908285L;
 	/** fields and methods are stored here */
-	protected Map<String, PLangObject> ___fieldsAndMethods;
+	public Map<String, PLangObject> ___fieldsAndMethods;
 	/** id used to serialize/deserialize object */
 	public long ___objectId;
 	/** whether restricted check is ignored or not */
