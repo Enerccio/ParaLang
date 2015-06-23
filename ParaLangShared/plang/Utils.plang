@@ -55,7 +55,7 @@ module Utils {
     }
     
     ###
-    Denotes that argument passed was undexpected
+    Denotes that argument passed was unexpected
     ###
     class IllegalArgumentException > BaseException {
     	

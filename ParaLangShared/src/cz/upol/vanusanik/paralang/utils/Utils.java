@@ -236,7 +236,7 @@ public class Utils {
 					(int) ((Int) ((PLClass) datum)
 							.___getkey(BaseNumber.__valKey, false)).getValue());
 		}
-		throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("Incorrect type, must be int or Integer"));
+		throw PLRuntime.getRuntime().newInstance("Utils.IllegalArgumentException", new Str("Incorrect type, must be int or Integer"));
 	}
 
 }

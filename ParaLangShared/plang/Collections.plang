@@ -10,9 +10,9 @@ using Utils.ArrayIndexOutOfBoundsException;
 using Utils.IllegalArgumentException;
 
 ###
- Collections is a module containing easy to use collections, such as List, HashSet or Map.
+ Collections is a module containing easy to use collections, such as List, Set, Map or Array.
  
- Also provides wrapper to java Interator via Iterator class.
+ Also contains additional functions related to the collections.
 ###
 module Collections {
 
@@ -38,8 +38,9 @@ module Collections {
     }
     
     ###
-    Fixed size array, used to get and set elements. Used to fast access and modification.
-    This class is abstract and should not be used. Use functions above to instantiate arrays.
+    Fixed size array, used to get and set elements. Used to fast access and modification. This class is abstract and should not be used. Use functions above to instantiate arrays.
+    
+    This Array is different from system type array, which allows any elements to be set into it. Array, however, is used to store primitives that do not require separate de-serialization and thus is faster to use.
     ###
     class Array > Collection{
     	

@@ -716,6 +716,7 @@
                             <a href="#doc-stdlib">Standard Library</a>
                             <ol>
                                 <li><a href="#doc-sl-string">Type: string</a></li>
+                                <li><a href="#doc-sl-array">Type: array</a></li>
                                 <li><a href="#doc-sl-pointer">Type: pointer</a></li>
                                 <li>
                                     <a href="#doc-sl-system-moduledef">Module: System</a>
@@ -832,7 +833,7 @@
             
             <h2 id="doc-basetypes">Base Types</h2>
             
-            There are 9 types in ParaLang. 7 of those are base types and include: <b>integer, float, string, boolean, NoValue, Method/Function</b> and <b>Jawa wrapped Object</b>. You cannot derive 
+            There are 11 types in ParaLang. 8 of those are base types and include: <b>integer, float, string, boolean, array, NoValue, Method/Function</b> and <b>Jawa wrapped Object</b>. You cannot derive 
             these types. <b>String</b> type has methods that create modified variants while <b>integer</b> and <b>float</b> have their class variant as <code>System.Integer</code> and <code>System.Float</code>
             respectively. The following table lists all the types of objects in ParaLang, along with <code>instanceof</code> type that can be used to determine if value is the type that is being tested. 
             Module type cannot be extended while class type can be extended.
@@ -842,6 +843,7 @@
                 <tr><td width="10%">integer</td><td width="10%">integer, number</td><td width="10%"><i>System.Integer</i></td><td width="70%">Base integers from -9223372036854775808 to 9223372036854775807, data value corresponds to java long</td><tr>
                 <tr><td width="10%">float</td><td width="10%">float, number</td><td width="10%"><i>System.Float</i></td><td width="70%">Float point numbers, data value corresponds to java float</td><tr>
                 <tr><td width="10%">string</td><td width="10%">string</td><td width="10%">N/A</td><td width="70%">Strings enclosed by "". Immutable, data value corresponds to java String.</td><tr>
+                <tr><td width="10%">array</td><td width="10%">array</td><td width="10%">N/A</td><td width="70%">Mutable arrays that can not be resized.</td><tr>
                 <tr><td width="10%">boolean</td><td width="10%">boolean</td><td width="10%">N/A</td><td width="70%">Two possible values: true or false. Immutable.</td><tr>
                 <tr><td width="10%">NoValue</td><td width="10%">null</td><td width="10%">N/A</td><td width="70%">Represents no value. Every function automatically returns this value. This value is considered false.</td><tr>
                 <tr><td width="10%">Method or function</td><td width="10%">func</td><td width="10%">N/A</td><td width="70%">Function of module or method of class. System only type.</td><tr>
@@ -849,6 +851,8 @@
                 <tr><td width="10%">Module</td><td width="10%">mod</td><td width="10%">N/A</td><td width="70%">Module instance. Used to access module fields and functions.</td><tr>
                 <tr><td width="10%">Class</td><td width="10%">cls</td><td width="10%"><i>System.BaseClass</i></td><td width="70%">Class instance.</td><tr>
             </table>
+            
+            Last type that is logically present, <code>ObjectProxy</code> type does exists, but is only used internally by the runtime. You cannot manipulate, create nor edit these objects.
             
             <h2 id="doc-statements">Statements</h2>
             
@@ -1025,7 +1029,7 @@
 
             <h3 id="doc-sl-string">Type: string</h3>    
 
-            Strings along pointers have methods that can be called on them. All of these methods are immutable and always return a new, fresh copy of string of what the result of the method is if it returns string.
+            Strings along pointers and arrays have methods that can be called on them. All of these methods are immutable and always return a new, fresh copy of string of what the result of the method is if it returns string.
             However, string type by itself is NOT a class type (and instanceof operator will return false on that test) and thus cannot be derived from.
             
             <table>
@@ -1059,6 +1063,19 @@
             <code>*</code> expression with one argument being string and one being integer will return that string concatenated that many times together. <code>%</code> expression with left argument string 
             and right argument integer between 1 and 16 will convert string into integer with that radix. <code><<</code> is a shortcut for <code>from</code> method and <code>>></code> is a shortcut for
             <code>to</code> method. <code>>>></code> will rotate provided string by provided index to the right. Strings can also be compared via <code><, <=, ==, !=, >=, ></code>.
+            
+            <h3 id="doc-sl-array">Type: array</h3>
+            
+            Arrays represent collections of elements, both primitive and instances. Arrays are mutable, however they cannot change their size. You create new array via <code>new [ </code><i>count</i></code> ]</code>, where count is expression that must 
+            resolve into int/Integer.  
+            
+            <table>
+                <tr><td width="10%"><b>Name of method</b></td><td width="20%"><b>arity and types of parameters</b></td><td width="10%"><b>return type</b></td><td width="60%"><b>Description</b></td></tr>
+                <tr><td width="10%"><code>get</code></td><td width="20%">integer</td><td width="10%"><code>object</code></td><td width="60%">Returns object at this index. Throws Utils.ArrayIndexOutOfBoundsException if index is incorrect and Utils.IllegalArgumentException if index was not integer.</td></tr>
+                <tr><td width="10%"><code>set</code></td><td width="20%">integer, object</td><td width="10%"><code>this array</code></td><td width="60%">Sets the value at index to object. Throws Utils.ArrayIndexOutOfBoundsException if index is incorrect and Utils.IllegalArgumentException if index was not integer.</td></tr>
+                <tr><td width="10%"><code>size</code></td><td width="20%"></td><td width="10%"><code>int</code></td><td width="60%">Returns length of this array.</td></tr>
+                <tr><td width="10%"><code>copy</code></td><td width="20%"></td><td width="10%"><code>array</code></td><td width="60%">Returns copy of this array.</td></tr>
+            <table> 
             
             <h3 id="doc-sl-pointer">Type: pointer</h3> 
             
