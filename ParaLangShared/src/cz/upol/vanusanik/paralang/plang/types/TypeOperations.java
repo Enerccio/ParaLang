@@ -10,9 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
-import cz.upol.vanusanik.paralang.runtime.BaseInteger;
-import cz.upol.vanusanik.paralang.runtime.BaseNumber;
 import cz.upol.vanusanik.paralang.runtime.PLClass;
+import cz.upol.vanusanik.paralang.runtime.BaseNumber;
 import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
 /**
@@ -121,14 +120,14 @@ public final class TypeOperations {
 		}
 
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va + vb;
 			return new Int(result);
@@ -152,14 +151,14 @@ public final class TypeOperations {
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va - vb;
 			return new Int(result);
@@ -188,14 +187,14 @@ public final class TypeOperations {
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va * vb;
 			return new Int(result);
@@ -219,14 +218,14 @@ public final class TypeOperations {
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va / vb;
 			return new Int(result);
@@ -258,14 +257,14 @@ public final class TypeOperations {
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va % vb;
 			return new Int(result);
@@ -300,14 +299,14 @@ public final class TypeOperations {
 					(PLClass) a, b);
 		}
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va << vb;
 			return new Int(result);
@@ -343,14 +342,14 @@ public final class TypeOperations {
 		}
 
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va >> vb;
 			return new Int(result);
@@ -399,14 +398,14 @@ public final class TypeOperations {
 		}
 
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va >>> vb;
 			return new Int(result);
@@ -431,14 +430,14 @@ public final class TypeOperations {
 		}
 
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va | vb;
 			return new Int(result);
@@ -463,14 +462,14 @@ public final class TypeOperations {
 		}
 
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va & vb;
 			return new Int(result);
@@ -495,14 +494,14 @@ public final class TypeOperations {
 		}
 
 		if (a instanceof Int
-				&& ((b instanceof Int) || (b instanceof BaseInteger))) {
+				&& ((b instanceof Int) || (b instanceof PLClass))) {
 			long va = ((Int) a).value;
 			long vb;
 
 			if (b instanceof Int)
 				vb = ((Int) b).value;
 			else
-				vb = ((Int) ((BaseInteger) b).___getkey(BaseNumber.__valKey, false)).value;
+				vb = ((Int) ((PLClass) b).___getkey(BaseNumber.__valKey, false)).value;
 
 			long result = va ^ vb;
 			return new Int(result);

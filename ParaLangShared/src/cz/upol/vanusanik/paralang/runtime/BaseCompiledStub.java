@@ -162,11 +162,14 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 
 	@Override
 	public boolean ___isNumber() {
-		return false;
+		return PLRuntime.getRuntime().checkInstanceOf(this, "System.Float") == BooleanValue.TRUE
+				|| PLRuntime.getRuntime().checkInstanceOf(this, "System.Integer") == BooleanValue.TRUE;
 	}
 
 	@Override
 	public Float ___getNumber(PLangObject self) {
+		if (___isNumber())
+			return (self=((BaseCompiledStub)self).___getkey(BaseNumber.__valKey, false)).___getNumber(self);
 		return null;
 	}
 

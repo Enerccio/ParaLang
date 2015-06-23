@@ -54,6 +54,7 @@ import cz.upol.vanusanik.paralang.connector.Protocol;
 import cz.upol.vanusanik.paralang.plang.ObjectProxy;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
+import cz.upol.vanusanik.paralang.plang.types.Array;
 import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.Flt;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
@@ -1301,6 +1302,14 @@ public class PLRuntime {
 				}
 				return stub;
 			}
+		case ARRAY:
+			JsonArray values = o.get("value").asArray();
+			PLangObject[] array = new PLangObject[values.size()];
+			int ix = 0;
+			for (JsonValue v : values){
+				array[ix++] = deserialize(v.asObject(), oldIdToNewIdMap); 
+			}
+			return new Array(array);
 		case FLOAT:
 			return new Flt(o.getFloat("value", 0f));
 		case FUNCTION:

@@ -18,9 +18,9 @@ import cz.upol.vanusanik.paralang.plang.types.Pointer;
 import cz.upol.vanusanik.paralang.plang.types.Pointer.PointerMethodIncompatibleException;
 import cz.upol.vanusanik.paralang.plang.types.Str;
 import cz.upol.vanusanik.paralang.plang.types.TypeOperations;
-import cz.upol.vanusanik.paralang.runtime.BaseFloat;
-import cz.upol.vanusanik.paralang.runtime.BaseInteger;
 import cz.upol.vanusanik.paralang.runtime.BaseNumber;
+import cz.upol.vanusanik.paralang.runtime.PLClass;
+import cz.upol.vanusanik.paralang.runtime.PLRuntime;
 
 /**
  * Utility class, providing utility functions
@@ -152,9 +152,9 @@ public class Utils {
 		if (aType == Integer.class || aType == int.class) {
 			if (datum instanceof Int)
 				return new Integer((int) ((Int) datum).getValue());
-			if (datum instanceof BaseInteger) {
+			if (PLRuntime.getRuntime().checkInstanceOf(datum, "System.Integer") == BooleanValue.TRUE) {
 				return new Integer(
-						(int) ((Int) ((BaseInteger) datum)
+						(int) ((Int) ((PLClass) datum)
 								.___getkey(BaseNumber.__valKey, false)).getValue());
 			}
 		}
@@ -162,21 +162,25 @@ public class Utils {
 		if (aType == Long.class || aType == long.class) {
 			if (datum instanceof Int)
 				return new Long(((Int) datum).getValue());
-			if (datum instanceof BaseInteger) {
+			if (PLRuntime.getRuntime().checkInstanceOf(datum, "System.Integer") == BooleanValue.TRUE) {
 				return new Long(
-						((Int) ((BaseInteger) datum)
+						((Int) ((PLClass) datum)
 								.___getkey(BaseNumber.__valKey, false)).getValue());
 			}
 		}
 
 		if (aType == Float.class || aType == float.class) {
-			if (datum instanceof Flt || datum instanceof BaseFloat)
+			if (datum instanceof Flt)
 				return new Float(datum.___getNumber(datum));
+			if ((PLRuntime.getRuntime().checkInstanceOf(datum, "System.Float") == BooleanValue.TRUE))
+				return new Float((float) ((Flt) ((PLClass) datum).___getkey(BaseNumber.__valKey, false)).getValue());
 		}
 
 		if (aType == Double.class || aType == double.class) {
-			if (datum instanceof Flt || datum instanceof BaseFloat)
+			if (datum instanceof Flt)
 				return new Double(datum.___getNumber(datum));
+			if ((PLRuntime.getRuntime().checkInstanceOf(datum, "System.Float") == BooleanValue.TRUE))
+				return new Double((double) ((Flt) ((PLClass) datum).___getkey(BaseNumber.__valKey, false)).getValue());
 		}
 
 		if (aType == Boolean.class || aType == boolean.class) {
@@ -222,6 +226,17 @@ public class Utils {
 				new JsonObject().add("error", true).add("errorCode", ecode)
 						.add("errorDetails", dmesg));
 		Protocol.send(s.getOutputStream(), payload);
+	}
+
+	public static int asIntegerValue(PLangObject datum) {
+		if (datum instanceof Int)
+			return new Integer((int) ((Int) datum).getValue());
+		if (PLRuntime.getRuntime().checkInstanceOf(datum, "System.Integer") == BooleanValue.TRUE) {
+			return new Integer(
+					(int) ((Int) ((PLClass) datum)
+							.___getkey(BaseNumber.__valKey, false)).getValue());
+		}
+		throw PLRuntime.getRuntime().newInstance("System.BaseException", new Str("Incorrect type, must be int or Integer"));
 	}
 
 }

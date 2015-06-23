@@ -96,4 +96,8 @@ public class Flt extends PrimitivePLangObject implements Serializable {
 		return equals ? (value >= other.___getNumber(other)) : (value > other
 				.___getNumber(other));
 	}
+
+	public float getValue() {
+		return value;
+	}
 }
