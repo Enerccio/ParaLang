@@ -6,6 +6,7 @@ using Random;
 using Collections;
 using Distributed;
 using Utils;
+using Collections.List;
 
 module Main {
 
@@ -29,6 +30,25 @@ module Main {
         
         IO.out.println(Utils.apply_timer(Collections.map, z));
         
+        var l = new List();
+        l.add(1);
+        l.add("Hello");
+        l.add(3.14);
+        l.add(z);
+        
+        IO.out.println(l);
+        
+        l.pop();
+        for (var i=0; i<20; i++)
+            l.add(i);
+        
+        IO.out.println(l.contains(3.14));
+        IO.out.println(l);
+        
+        l.insert(1, "BB");
+        l.remove(6);
+        
+        IO.out.println(l);
     }
     
 };

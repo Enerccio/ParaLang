@@ -24,19 +24,138 @@ module Collections {
     class Collection {
         
         ###
-            Returns value at index ix
+            Returns value at index. Defaultly throws ArrayIndexOutOfBoundsException since it is an interface.
+            *ret object
         ###
-        defn get(ix){
-        
+        defn get(index){
+            throw new Utils.ArrayIndexOutOfBoundsException();
         }
         
         ###
-            Returns size of the collection
+            Returns size of the collection. Defaultly 0.
+            *ret integer
         ###
         defn size(){
             return 0;
         }
     
+    }
+    
+    ###
+    Variable sized list that can grow when needed. 
+    ###
+    class List > Collection {
+        
+        var __array = new [16];
+        var __used = 0;
+        
+        ###
+        Returns value at index. May throw ArrayIndexOutOfBoundsException.
+        *ret object
+        ###
+        defn get(index){
+            if (index < 0 || index >= __used)
+                throw new Utils.ArrayIndexOutOfBoundsException();
+            return __array.get(index);
+        }
+        
+        ###
+        Sets value at index. May throw ArrayIndexOutOfBoundsException.
+        ###
+        defn set(index, o){
+            if (index < 0 || index >= __used)
+                throw new Utils.ArrayIndexOutOfBoundsException();
+            __array.set(index, o);
+        }
+        
+        ###
+        Appends new value to the list
+        ###
+        defn add(o){
+            __array.set(__used++, o);
+            if (__used == __array.size())
+                __inflate();
+        }
+        
+        defn __inflate(){
+            var na = new [__array.size() * 2];
+            array_copy(__array, na);
+            __array = na;
+        }
+        
+        ###
+        Returns size of the list.
+        *ret integer
+        ###
+        defn size(){
+            return __used;
+        }
+        
+        ###
+        Removes topright elements and returns it. May throw ArrayIndexOutOfBoundsException.
+        *ret object
+        ###
+        defn pop(){
+            return remove(__used-1);
+        }
+        
+        ###
+        Removes element at index index. May throw ArrayIndexOutOfBoundsException.
+        *ret object
+        ###
+        defn remove(index){
+            var removed = get(index);
+            for (var i=index; i<__array.size()-1; i++)
+                __array.set(i, __array.get(i+1));
+            __array.set(__array.size()-1, NoValue);
+            --__used;
+            return removed;
+        }
+        
+        ###
+        Inserts object at index. May throw ArrayIndexOutOfBoundsException.
+        ###
+        defn insert(index, o){
+            if (index < 0 || index >= __used)
+                throw new Utils.ArrayIndexOutOfBoundsException();
+            for (var i=__used; i>index; i--){
+                __array.set(i, __array.get(i-1));
+            }
+            __array.set(index, o);
+            if (__used == __array.size())
+                __inflate();
+        }
+        
+        ###
+        Returns true or false whether object is in this list or not
+        *ret boolean
+        ###
+        defn contains(o){
+            for (var i=0; i<__used; i++)
+                if (__array.get(i) == o)
+                    return true;
+            return false;
+        }
+        
+        defn _str(){
+            var str = "Collections.List-(" + size() + ")[";
+            for (var i=0; i<__used; i++){
+                var o = __array.get(i);
+                str += o;   // TODO
+                if (i != (__used-1))
+                    str += ", ";
+            }
+                
+            return str + "]";
+        }
+    }
+    
+    ###
+    Copies array to array. Target array must be longer or same sized as source array
+    ###
+    defn array_copy(source, target){
+        for (var i=0; i<source.size(); i++)
+            target.set(i, source.get(i));
     }
     
     ###
