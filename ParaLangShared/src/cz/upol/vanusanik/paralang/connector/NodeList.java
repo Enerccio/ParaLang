@@ -156,8 +156,13 @@ public final class NodeList {
 	 */
 	private static synchronized  int getFreeNodes(Node n) throws Exception {
 		Socket s = null;
-		//new Exception("req. amount " + n + " : " + Thread.currentThread().getId()).printStackTrace();
 		try {
+			int cache = n.checkLastModified(System.nanoTime());
+			if (cache != -1)
+				return cache;
+			
+			// new Exception("req. amount " + n + " : " + Thread.currentThread().getId()).printStackTrace();
+			
 			if (useSSL)
 				s = SSLSocketFactory.getDefault().createSocket(n.getAddress(),
 					n.getPort());
@@ -181,7 +186,9 @@ public final class NodeList {
 						.asObject().getBoolean("node" + i, false))
 					++c;
 			}
-	
+			
+			n.setLastModified(System.nanoTime(), c);
+			
 			return c;
 		} finally {
 			if (s != null)

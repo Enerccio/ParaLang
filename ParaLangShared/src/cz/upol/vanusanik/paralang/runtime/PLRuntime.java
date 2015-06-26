@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -127,6 +128,9 @@ public class PLRuntime {
 		PLRuntime r = localRuntime.get();
 		return r;
 	}
+	
+	private String runtimeUid = UUID.randomUUID().toString();
+	private String clientUid;
 
 	/** tracks all object creations */
 	private long objectIdCounter = 0;
@@ -145,9 +149,13 @@ public class PLRuntime {
 	 * @return object id
 	 */
 	public long registerObject(BaseCompiledStub object) {
-		long id = objectIdCounter++;
-		instanceInternalMap.put(id, object);
-		return id;
+		if (object instanceof PLClass || object instanceof PLModule){
+			long id = objectIdCounter++;
+			instanceInternalMap.put(id, object);
+			return id;
+		} else {
+			return -1;
+		}
 	}
 
 	/** Class loader bound to this runtime */
@@ -174,6 +182,8 @@ public class PLRuntime {
 	private String packageTarget = "";
 	/** Compiler used in this runtime */
 	private PLCompiler compiler = new PLCompiler();
+	
+	private long computingTime;
 
 	/**
 	 * Creates new PLRuntime with standard plang system library.
@@ -498,7 +508,6 @@ public class PLRuntime {
 		}
 		return moduleMap.get(moduleName);
 	}
-
 	/**
 	 * Run function of the module
 	 * 
@@ -511,8 +520,17 @@ public class PLRuntime {
 	 * @return result of the call to this function
 	 * @throws PLException
 	 *             if any exception happened during the run
-	 */
-	public PLangObject run(String module, String runnable, PLangObject... args)
+	 */	
+	public PLangObject start(String module, String runnable, PLangObject... args) throws PLException {
+		long ct = System.nanoTime();
+		try {
+			return run(module, runnable, args);
+		} finally {
+			computingTime += System.nanoTime() - ct;
+		}
+	}
+
+	private PLangObject run(String module, String runnable, PLangObject... args)
 			throws PLException {
 		PLModule mod = getModule(module);
 
@@ -854,6 +872,9 @@ public class PLRuntime {
 
 		return BooleanValue.FALSE;
 	}
+	
+	/** Holds references to already serialized objects for faster operations */
+	private Map<BaseCompiledStub, JsonObject> serializationCache = Collections.synchronizedMap(new HashMap<BaseCompiledStub, JsonObject>());
 
 	/**
 	 * Runs the code distributed
@@ -870,55 +891,68 @@ public class PLRuntime {
 	 */
 	public PLangObject runDistributed(PLangObject tcounto, String methodName,
 			PLangObject arg, BaseCompiledStub runner) {
-		int tcount = 0;
+		long ct = System.nanoTime();
 		try {
-			if (tcounto instanceof Int) {
-				tcount = (int) ((Int) tcounto).getValue();
-			} else if (tcounto instanceof BaseCompiledStub) {
-				tcount = (int) ((Int) PLRuntime.getRuntime().run(
-						((PLClass) tcounto).___getkey(BaseNumber.__toInt, false),
-						(BaseCompiledStub) tcounto)).getValue();
+			int tcount = 0;
+			try {
+				if (tcounto instanceof Int) {
+					tcount = (int) ((Int) tcounto).getValue();
+				} else if (tcounto instanceof BaseCompiledStub) {
+					tcount = (int) ((Int) PLRuntime.getRuntime().run(
+							((PLClass) tcounto).___getkey(BaseNumber.__toInt, false),
+							(BaseCompiledStub) tcounto)).getValue();
+				}
+			} catch (Exception e) {
+				// do nothing, 0 will override error anyways
 			}
-		} catch (Exception e) {
-			// do nothing, 0 will override error anyways
-		}
-
-		if (tcount <= 0)
-			throw newInstance("System.BaseException", new Str(
-					"Incorrect number of run count, expected positive integer"));
-
-		PLClass c = newInstance("Collections.List");
-		List<PLangObject> data = ((Pointer) c.___fieldsAndMethods
-				.get("__wrappedList")).getPointer();
-		
-		NetworkExecutionResult r = executeDistributed(runner.___getObjectId(),
-				runner, methodName, tcount, arg);
-		
-		for (PLangObject o : r.results)
-			data.add(o);
-		
-		if (r.hasExceptions()) {
-			NetworkException e = (NetworkException) newInstance(
-					"System.NetworkException",
-					new Str(
-							"Failed distributed network call because of remote exception(s)"));
-			e.___rebuildStack();
-			PLClass ce = newInstance("Collections.List");
-			List<PLangObject> datae = ((Pointer) c.___fieldsAndMethods
-					.get("__wrappedList")).getPointer();
+	
+			if (tcount <= 0)
+				throw newInstance("System.BaseException", new Str(
+						"Incorrect number of run count, expected positive integer"));
+	
+			PLangObject retVal;
 			
-			for (PLangObject o : r.exceptions)
-				if (o != null)
-					datae.add(o);
-				else
-					datae.add(NoValue.NOVALUE);
-			e.___setkey(NetworkException.listKey, ce);
+			serializationCache.clear();
+			NetworkExecutionResult r = executeDistributed(runner.___getObjectId(),
+					runner, methodName, tcount, arg);
+			serializationCache.clear();
 			
-			e.___setkey(NetworkException.partialValues, c);
-			throw e;
+			retVal = new Array(r.results);
+			
+			if (r.hasExceptions()) {
+				for (int i=0; i<r.exceptions.length; i++)
+					if (r.exceptions[i] == null)
+						r.exceptions[i] = NoValue.NOVALUE;
+				StringBuilder bd = new StringBuilder();
+				bd.append("<");
+				for (int i=0; i<r.exceptions.length; i++){
+					if (r.exceptions[i] == NoValue.NOVALUE)
+						bd.append("NoError");
+					else if (r.exceptions[i] instanceof BaseCompiledStub)
+						bd.append(PLRuntime.getRuntime().run(((BaseCompiledStub)r.exceptions[i]).___getkey(BaseException.__messageGetter, false), r.exceptions[i]).toString());
+					else
+						bd.append(r.exceptions[i].toString(r.exceptions[i]));
+					if (i != r.exceptions.length-1)
+						bd.append(", ");
+				}
+				bd.append(">");
+				
+				Array arr = new Array(r.exceptions);
+				
+				NetworkException e = (NetworkException) newInstance(
+						"System.NetworkException",
+						new Str(
+								"Failed distributed network call because of remote exception(s) - " + bd.toString()));
+				e.___rebuildStack();
+				e.___setkey(NetworkException.listKey, arr);
+				e.___setkey(NetworkException.partialValues, retVal);
+				throw e;
+			}
+	
+			return retVal;
+		} finally {
+			computingTime -= System.nanoTime() - ct;
 		}
-
-		return c;
 	}
 
 	/**
@@ -1020,6 +1054,7 @@ public class PLRuntime {
 			NetworkExecutionResult result, Node node, long oid,
 			String methodName, JsonObject serializedRuntimeContent, long arg, int tCount) {
 		boolean executed = false;
+		int rqc = 0;
 		Socket s = null;
 
 		outer:
@@ -1048,6 +1083,13 @@ public class PLRuntime {
 
 				if (!response.get("payload").asObject()
 						.getBoolean("result", false)) {
+					if (rqc++ > 10){
+						// no nodes available at all because they always get taken, throw exception back to the system
+						result.exceptions[tId] = newInstance("System.NetworkException",
+								new Str("No hosts available"));
+						result.results[tId] = NoValue.NOVALUE;
+						return;
+					}
 					node = NodeList.getRandomNode();
 					continue; // no reserved thread for me :(
 				}
@@ -1060,6 +1102,7 @@ public class PLRuntime {
 						new JsonObject()
 								.add("lastModificationTime",
 										System.currentTimeMillis())
+								.add("uid", PLRuntime.this.runtimeUid)
 								.add("runtimeFiles", buildRuntimeFiles())
 								.add("runtimeData", serializedRuntimeContent)
 								.add("runnerId", oid).add("argId", arg)
@@ -1068,6 +1111,9 @@ public class PLRuntime {
 
 				while (true){
 					response = Protocol.receive(s.getInputStream());
+					
+					if (response == null)
+						continue outer;
 	
 					if (response.getString("header", "").equals(
 							Protocol.RETURNED_EXECUTION)){
@@ -1129,7 +1175,6 @@ public class PLRuntime {
 				node = NodeList.getRandomNode(); // Refresh node since error
 													// might have been node
 													// related
-				e.printStackTrace();
 				executed = false;
 			} finally {
 				if (s != null) {
@@ -1241,38 +1286,6 @@ public class PLRuntime {
 		}
 	}
 
-//
-//	/**
-//	 * Deserialize runtime from json
-//	 * 
-//	 * @param modules
-//	 *            modules containing all the runtime info
-//	 * @param caller
-//	 *            runner object
-//	 * @param arg
-//	 *            passed argument object
-//	 * @return result of the deserialization
-//	 * @throws Exception
-//	 */
-//	public DeserializationResult deserialize(JsonArray modules,
-//			JsonObject caller, JsonObject arg) throws Exception {
-//		DeserializationResult r = new DeserializationResult();
-//		r.ridxMap = new HashMap<Long, Long>();
-//		for (JsonValue v : modules) {
-//			buildInstanceMap(v.asObject().get("module").asObject(), r.ridxMap);
-//		}
-//		buildInstanceMap(caller, r.ridxMap);
-//		buildInstanceMap(arg, r.ridxMap);
-//
-//		for (JsonValue v : modules) {
-//			deserialize(v.asObject().get("module").asObject(), r.ridxMap);
-//		}
-//		deserialize(caller, r.ridxMap);
-//		r.cobject = deserialize(arg, r.ridxMap);
-//
-//		return r;
-//	}
-
 	/**
 	 * Deserialize single JsonObject.
 	 * 
@@ -1370,6 +1383,13 @@ public class PLRuntime {
 	public void buildInstanceMap(JsonObject o, Map<Long, Long> oldIdToNewIdMap, boolean override) {
 		PlangObjectType t = PlangObjectType.valueOf(o.getString(
 				"metaObjectType", ""));
+		
+		if (t == PlangObjectType.ARRAY){
+			JsonArray a = o.get("value").asArray();
+			for (JsonValue ob : a)
+				if (ob.isObject())
+					buildInstanceMap(ob.asObject(), oldIdToNewIdMap, override);
+		}
 
 		if (t == PlangObjectType.MODULE || t == PlangObjectType.CLASS) {
 			if (!o.getBoolean("isBaseClass", false)
@@ -1524,40 +1544,130 @@ public class PLRuntime {
 	}
 	
 	public PLangObject getNetworkObject(long id){
-		if (!instanceInternalMap.containsKey(id)){
-			try {
-				JsonArray setArray = new JsonArray();
-				for (Long key : instanceInternalMap.keySet())
-					setArray.add(key);
-				JsonObject payload = new JsonObject().add("header",
-						Protocol.REQUEST_DATA).add(
-						"payload",
-						new JsonObject()
-							.add("requestedObject", id)
-							.add("alreadyContainedObjects", setArray));
-				Protocol.send(requestSocket.getOutputStream(), payload);
-				
-				JsonObject response = Protocol.receive(requestSocket.getInputStream());
-				if (!response.getString("header", "").equals(
-						Protocol.SEND_DATA)){
-					throw new Exception();
+		long ct = System.nanoTime();
+		try {
+			if (!instanceInternalMap.containsKey(id)){
+				try {
+					instanceInternalMap.put(id, doGetNetworkObject(id));
+				} catch (Exception e){
+					e.printStackTrace();
+					throw newInstance("System.BaseException", new Str("Failed to get network object " + id));
 				}
-				
-				payload = response.get("payload").asObject();
-				Map<Long, Long> rm = new HashMap<Long, Long>();
-				rm.put(id, id);
-				buildInstanceMap(payload.get("object").asObject(), rm, true);
-				instanceInternalMap.put(id, (BaseCompiledStub) deserialize(payload.get("object").asObject(), rm));
-			} catch (Exception e){
-				e.printStackTrace();
-				throw newInstance("System.BaseException", new Str("Failed to get network object " + id));
 			}
+			return instanceInternalMap.get(id);
+		} finally {
+			long diff = System.nanoTime() - ct;
+			networkTime += diff;
+			computingTime -= diff;
 		}
-		return instanceInternalMap.get(id);
 	}
+	
+	private long networkTime;
 
+	public BaseCompiledStub doGetNetworkObject(long id) throws Exception {
+		synchronized (objectRetrievalCache) {
+			if (objectRetrievalCache.containsKey(clientUid))
+				if (objectRetrievalCache.get(clientUid).cache.containsKey(id))
+					return objectRetrievalCache.get(clientUid).cache.get(id);
+		}
+		
+		JsonArray setArray = new JsonArray();
+		for (Long key : instanceInternalMap.keySet())
+			setArray.add(key);
+		JsonObject payload = new JsonObject().add("header",
+				Protocol.REQUEST_DATA).add(
+				"payload",
+				new JsonObject()
+					.add("requestedObject", id)
+					.add("alreadyContainedObjects", setArray));
+		Protocol.send(requestSocket.getOutputStream(), payload);
+		
+		JsonObject response = Protocol.receive(requestSocket.getInputStream());
+		if (!response.getString("header", "").equals(
+				Protocol.SEND_DATA)){
+			throw new Exception();
+		}
+		
+		payload = response.get("payload").asObject();
+		Map<Long, Long> rm = new HashMap<Long, Long>();
+		rm.put(id, id);
+		buildInstanceMap(payload.get("object").asObject(), rm, true);
+		BaseCompiledStub retval = (BaseCompiledStub) deserialize(payload.get("object").asObject(), rm);
+		
+		synchronized (objectRetrievalCache) {
+			if (objectRetrievalCache.containsKey(clientUid))
+				objectRetrievalCache.get(clientUid).cache.put(id, retval);
+		}
+		
+		return retval;
+	}
 
 	public JsonValue serializeFully(PLangObject result) {
 		return result.___toObject(new HashSet<Long>(networkIds), true);
+	}
+
+	public synchronized boolean objectSerialized(BaseCompiledStub baseCompiledStub) {
+		return serializationCache.containsKey(baseCompiledStub);
+	}
+
+	public synchronized JsonValue getSerializedObject(BaseCompiledStub baseCompiledStub) {
+		return serializationCache.get(baseCompiledStub);
+	}
+
+	public synchronized void addSerializedObjectToCache(BaseCompiledStub baseCompiledStub,
+			JsonObject metaData) {
+		if (serializationCache.size() > 128)
+			serializationCache.clear();
+		serializationCache.put(baseCompiledStub, metaData);
+	}
+	
+	private class RuntimeCache {
+		private long counter;
+		private Map<Long, BaseCompiledStub> cache = new HashMap<Long, BaseCompiledStub>();
+	}
+	
+	private static final Map<String, RuntimeCache> objectRetrievalCache = Collections.synchronizedMap(new HashMap<String, RuntimeCache>());
+
+	public String getClientUid() {
+		return clientUid;
+	}
+
+	public void setClientUid(String clientUid) {
+		synchronized (objectRetrievalCache) {
+			
+			if (clientUid == null && objectRetrievalCache.containsKey(this.clientUid)){
+				RuntimeCache rc = objectRetrievalCache.get(this.clientUid);
+				--rc.counter;
+				if (rc.counter <= 0)
+					objectRetrievalCache.remove(this.clientUid);
+				return;
+			}
+				
+			if (!objectRetrievalCache.containsKey(clientUid))
+				objectRetrievalCache.put(clientUid, new RuntimeCache());
+			++objectRetrievalCache.get(clientUid).counter;
+		}
+		
+		this.clientUid = clientUid;
+	}
+
+	public boolean isRestricted() {
+		return isRestricted;
+	}
+
+	public long getComputingTime() {
+		return computingTime;
+	}
+
+	public void setComputingTime(long computingTime) {
+		this.computingTime = computingTime;
+	}
+
+	public long getNetworkTime() {
+		return networkTime;
+	}
+
+	public void setNetworkTime(long networkTime) {
+		this.networkTime = networkTime;
 	}
 }

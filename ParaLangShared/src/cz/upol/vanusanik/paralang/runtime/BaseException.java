@@ -61,5 +61,4 @@ public class BaseException extends PLClass implements Serializable {
 	public String getMessage() {
 		return toString();
 	}
-
 }

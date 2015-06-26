@@ -206,6 +206,7 @@ public class NodeController {
 		/* Initialize the runtime */
 		storage.runtime.runtime = PLRuntime.createEmptyRuntime();
 		storage.runtime.runtime.setAsCurrent();
+		storage.runtime.runtime.setClientUid(m.getString("uid", ""));
 		JsonArray sources = input.get("runtimeFiles").asArray();
 		for (JsonValue v : sources) {
 			JsonObject data = v.asObject();
@@ -253,12 +254,19 @@ public class NodeController {
 					// binds to current thread
 					storage.runtime.runtime.setAsCurrent();
 					// runs the current object and method asked
-					return storage.runtime.runtime.runByObjectId(input.getLong("runnerId", 0), 
-							input
-							.getString("methodName", ""),
-							new Int(input.getInt("id", 0)), farg,
-							argId);
+					long ct = System.nanoTime();
+					log.info("Starting execution");
+					try {
+						return storage.runtime.runtime.runByObjectId(input.getLong("runnerId", 0), 
+								input
+								.getString("methodName", ""),
+								new Int(input.getInt("id", 0)), farg,
+								argId);
+					} finally {
+						storage.runtime.runtime.setComputingTime(storage.runtime.runtime.getComputingTime() + (System.nanoTime() - ct));
+					}
 				} catch (PLClass e) {
+					e.printStackTrace();
 					storage.exception = e;
 					return null;
 				} catch (___TimeoutException te){
@@ -268,6 +276,12 @@ public class NodeController {
 							new Str("Timeout, maximum runtime allowed: " + te.getTimeoutValue()));
 					finished = true;
 					throw te;
+				} catch (Exception e){
+					e.printStackTrace();
+					storage.exception = PLRuntime.getRuntime().newInstance("System.BaseException", 
+							new Str(e.getMessage()));
+					finished = true;
+					return null;
 				} catch (Throwable t) {
 					// cancel unlimited running because throwing will go behind
 					// the usual end of run mechanics
@@ -286,6 +300,7 @@ public class NodeController {
 			Thread.sleep(10);
 		}
 
+		log.info("Finished running");
 		PLangObject result = run.getResult();
 
 		// serialize the return value back to the caller
@@ -299,6 +314,9 @@ public class NodeController {
 		}
 
 		payload.add("payload", p);
+		storage.runtime.runtime.setClientUid(null);
+		log.info("Total run time - " + storage.runtime.runtime.getComputingTime() + " ns");
+		log.info("Total object load time - " + storage.runtime.runtime.getNetworkTime() + " ns");
 
 		localStorage.set(null);
 

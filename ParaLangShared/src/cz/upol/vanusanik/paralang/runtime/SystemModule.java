@@ -10,6 +10,7 @@ import cz.upol.vanusanik.paralang.connector.NodeList;
 import cz.upol.vanusanik.paralang.plang.PLangObject;
 import cz.upol.vanusanik.paralang.plang.PlangObjectType;
 import cz.upol.vanusanik.paralang.plang.types.Array;
+import cz.upol.vanusanik.paralang.plang.types.BooleanValue;
 import cz.upol.vanusanik.paralang.plang.types.FunctionWrapper;
 import cz.upol.vanusanik.paralang.plang.types.Int;
 import cz.upol.vanusanik.paralang.plang.types.NoValue;
@@ -32,6 +33,7 @@ public class SystemModule extends PLModule implements Serializable {
 		___setkey("current_time", new FunctionWrapper("currentTime", this,
 				false));
 		___setkey("free_nodes", new FunctionWrapper("freeNodes", this, false));
+		___setkey("is_restricted", new FunctionWrapper("isRestricted", this, false));
 		___setkey("apply", new FunctionWrapper("apply", this, false));
 
 		this.___restrictedOverride = false;
@@ -47,6 +49,10 @@ public class SystemModule extends PLModule implements Serializable {
 
 	public PLangObject freeNodes() {
 		return new Int(NodeList.expectNumberOfNodes());
+	}
+	
+	public PLangObject isRestricted(){
+		return BooleanValue.fromBoolean(PLRuntime.getRuntime().isRestricted());
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -135,10 +134,23 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 	}
 
 	/** Method handle cache */
-	private static Map<Method, MethodHandle> methodHandles = Collections
-			.synchronizedMap(new WeakHashMap<Method, MethodHandle>());
-	private static Map<BaseCompiledStub, Map<MethodHandle, MethodHandle>> boundHandles = Collections
-			.synchronizedMap(new WeakHashMap<BaseCompiledStub, Map<MethodHandle, MethodHandle>>());;
+	private static ThreadLocal<Map<Method, MethodHandle>> methodHandles = new ThreadLocal<Map<Method, MethodHandle>>(){
+
+		@Override
+		protected Map<Method, MethodHandle> initialValue() {
+			return new WeakHashMap<Method, MethodHandle>();
+		}
+		
+	};
+	private static ThreadLocal<Map<BaseCompiledStub, Map<MethodHandle, MethodHandle>>> boundHandles =  
+			new ThreadLocal<Map<BaseCompiledStub, Map<MethodHandle, MethodHandle>>>(){
+
+		@Override
+		protected Map<BaseCompiledStub, Map<MethodHandle, MethodHandle>> initialValue() {
+			return new WeakHashMap<BaseCompiledStub, Map<MethodHandle, MethodHandle>>();
+		}
+		
+	};
 
 	/**
 	 * Runs the method accessor with the self and arguments
@@ -151,21 +163,21 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 	 */
 	private PLangObject ___run(MethodAccessor ma, BaseCompiledStub self,
 			PLangObject[] arguments) throws Throwable {
-		MethodHandle genHandle = methodHandles.get(ma.m);
+		MethodHandle genHandle = methodHandles.get().get(ma.m);
 
 		if (genHandle == null) {
 			genHandle = MethodHandles.lookup().unreflect(ma.m);
-			methodHandles.put(ma.m, genHandle);
+			methodHandles.get().put(ma.m, genHandle);
 		}
 		
-		if (!boundHandles.containsKey(ma.o)){
-			boundHandles.put(ma.o, Collections.synchronizedMap(new WeakHashMap<MethodHandle, MethodHandle>()));
+		if (!boundHandles.get().containsKey(ma.o)){
+			boundHandles.get().put(ma.o, new WeakHashMap<MethodHandle, MethodHandle>());
 		}
 		
-		MethodHandle handle = boundHandles.get(ma.o).get(genHandle);
+		MethodHandle handle = boundHandles.get().get(ma.o).get(genHandle);
 		if (handle == null){
 			handle = genHandle.bindTo(ma.o);
-			boundHandles.get(ma.o).put(genHandle, handle);
+			boundHandles.get().get(ma.o).put(genHandle, handle);
 		}
 
 		PLangObject[] data = arguments;

@@ -398,6 +398,17 @@ module Collections {
     }
     
     ###
+    Copies data from source starting at source_start position to target starting at target_start, copies n objects. 
+    ###
+    defn copy_fromto(source, target, n, source_start, target_start){
+        var i = 0;
+        do {
+            target.set(target_start+i, source.get(source_start+i));
+            ++i;
+        } while (i < n);
+    }
+    
+    ###
     Maps the values of the provided collection with n1 functor
     ###
     defn map(collection, n1functor){

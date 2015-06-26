@@ -14,41 +14,41 @@ module Main {
         
     }
     
+    defn find_rvalue(seed){
+        var r = new Random.Random(seed);
+        var i=0;
+        while (i++ < 10000)
+            r.get_int(1);
+        return r.seed;
+    }
+    
     defn restricted calculate(a, b){
         IO.out.lerp();
         
+        var t = new [1];
+        t.set(0, 0);
+        IO.out.println("Seed: " + Utils.apply_timer(find_rvalue, t));
+        
         var xxx = new [10000];
         for (var i=0; i<xxx.size(); i++){
-            xxx.set(i, Random.random.get_int(1024));
+            xxx.set(i, i);
         }
         
-        var xxc = xxx.copy();
-        
         var z = new [2];
-        z.set(1, Math.is_even);
-        z.set(0, xxc);
+        z.set(0, xxx.copy());
+        z.set(1, find_rvalue);
         
-        IO.out.println(Utils.apply_timer(Collections.map, z));
+        IO.out.println("Distributed full: ");
+        Utils.apply_timer(Distributed.distributed_map, z);
         
-        var l = new List();
-        l.add(1);
-        l.add("Hello");
-        l.add(3.14);
-        l.add(z);
+        var y = new [2];
+        y.set(0, xxx.copy());
+        y.set(1, find_rvalue);
         
-        IO.out.println(l);
+        IO.out.println("Not distributed full: ");
+        Utils.apply_timer(Collections.map, y);
         
-        l.pop();
-        for (var i=0; i<20; i++)
-            l.add(i);
-        
-        IO.out.println(l.contains(3.14));
-        IO.out.println(l);
-        
-        l.insert(1, "BB");
-        l.remove(6);
-        
-        IO.out.println(l);
+        IO.out.println(y.get(0) == z.get(0));
     }
     
 };

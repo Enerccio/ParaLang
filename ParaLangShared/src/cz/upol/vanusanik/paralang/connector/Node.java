@@ -57,4 +57,18 @@ public class Node {
 		return port;
 	}
 
+	private volatile long lastCheckTime;
+	private volatile int lastActiveNodes;
+	
+	private static final long CACHE_CHECK_TIME = 1350000000L; // 1350ms
+	public synchronized int checkLastModified(long lm){
+		if (lm - lastCheckTime > CACHE_CHECK_TIME)
+			return -1;
+		return lastActiveNodes;
+	}
+	
+	public synchronized void setLastModified(long lm, int wts){
+		lastCheckTime = lm;
+		lastActiveNodes = wts;
+	}
 }

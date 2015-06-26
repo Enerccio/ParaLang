@@ -63,9 +63,14 @@ module Distributed {
     }
     
     class __DistributedMapHelper {
-        var source;
+        var data;
         var functor;
-        var start, end;
+    }
+    
+    class __DistributedMapDataContainer {
+        var data;
+        var start;
+        var end;
     }
     
     ###
@@ -76,6 +81,8 @@ module Distributed {
     }
     
     defn __distributed_map(source, functor, start, end){
+        
+        var time = System.current_time();
         var result = new [source.size()]; 
         
         var n = System.free_nodes();
@@ -85,39 +92,43 @@ module Distributed {
         
         var ratio = (end - start) / n;
         
-        if (ratio < 64){
+        if (ratio < 16){
             return Collections.__map(source, result, functor, start, end);
         }
         
         var helper = new __DistributedMapHelper();
-        helper.source = source;
+        helper.data = new [n];
         helper.functor = functor;
-        helper.start = Collections.integer_array(n);
-        helper.end = Collections.integer_array(n);
         
         for (var i=0; i<n; i++){
-            helper.start.set(i, i*ratio);
-            helper.end.set(i, Math.min(i*ratio+ratio, source.size()));
+            var d = new __DistributedMapDataContainer();
+            d.data = new [ratio];
+            d.start = i * ratio;
+            d.end = Math.min(i*ratio+ratio, source.size());
+            Collections.copy_fromto(source, d.data, ratio, d.start, 0);
+            helper.data.set(i, d);
         }
         
         var computed;
         try {
             computed = (dist (n, helper) {
-                var start = passed_arg.start.get(run_id);
-                var end = passed_arg.end.get(run_id);
-                return __distributed_map(passed_arg.source, passed_arg.functor, start, end);
+                var data = passed_arg.data.get(run_id);
+                var start = 0;
+                var end = data.end - data.start;
+                return __distributed_map(data.data, passed_arg.functor, start, end);
             });
         } catch (NetworkException e){
             computed = e.get_partial_results();
         }
         
-        IO.out.println(source.size());
+        time = System.current_time();
+        
         for (var i=0; i<computed.size(); i++){
             var partial_result = computed.get(i);
             if (partial_result == NoValue){
-                Collections.__map(source, result, functor, helper.start.get(i), helper.end.get(i));
+                Collections.__map(source, result, functor, helper.data.get(i).start, helper.data.get(i).end);
             } else {
-                Collections.copy_offset(partial_result, result, helper.start.get(i), helper.end.get(i), 0);
+                Collections.copy_offset(partial_result, result, 0, (helper.data.get(i).end)-(helper.data.get(i).start), helper.data.get(i).start);
             }
         }
         

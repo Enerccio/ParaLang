@@ -76,7 +76,7 @@ public class ParaLangCLI {
 		}
 
 		// execute code
-		runtime.run(moduleName, methodName, args);
+		runtime.start(moduleName, methodName, args);
 	}
 
 	/**

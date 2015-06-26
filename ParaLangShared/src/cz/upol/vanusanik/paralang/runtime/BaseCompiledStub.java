@@ -119,6 +119,9 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 
 	@Override
 	public JsonValue ___toObject(Set<Long> alreadySerialized, boolean serializeFully) {
+		if (!serializeFully && PLRuntime.getRuntime().objectSerialized(this))
+			return PLRuntime.getRuntime().getSerializedObject(this);
+		
 		JsonObject metaData = new JsonObject().add("metaObjectType",
 				___getType().toString());
 		if (alreadySerialized.contains(___getObjectId())) {
@@ -130,7 +133,10 @@ public abstract class BaseCompiledStub extends RuntimeException implements
 					.add("thisLink", ___getObjectId())
 					.add("className", getClass().getSimpleName())
 					.add("fields", ___getFields(alreadySerialized, serializeFully));
+			if (!serializeFully)
+				PLRuntime.getRuntime().addSerializedObjectToCache(this, metaData);
 		}
+		
 		return metaData;
 	}
 
