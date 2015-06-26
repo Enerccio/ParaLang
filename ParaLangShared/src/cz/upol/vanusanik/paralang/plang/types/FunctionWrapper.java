@@ -186,16 +186,16 @@ public class FunctionWrapper extends PrimitivePLangObject implements
 		}
 		
 		switch (data.length){
-		case 0:	return (PLangObject) handle.invoke();
-		case 1:	return (PLangObject) handle.invoke(data[0]);
-		case 2: return (PLangObject) handle.invoke(data[0], data[1]);
-		case 3: return (PLangObject) handle.invoke(data[0], data[1], data[2]);
-		case 4: return (PLangObject) handle.invoke(data[0], data[1], data[2], data[3]);
-		case 5: return (PLangObject) handle.invoke(data[0], data[1], data[2], data[3], data[4]); 
-		case 6: return (PLangObject) handle.invoke(data[0], data[1], data[2], data[3], data[4], data[5]);
-		case 7: return (PLangObject) handle.invoke(data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
-		case 8: return (PLangObject) handle.invoke(data[0], data[1], data[2], data[3], data[4], data[5], data[7], data[8]);
-		case 9: return (PLangObject) handle.invoke(data[0], data[1], data[2], data[3], data[4], data[5], data[7], data[8], data[9]);
+		case 0:	return (PLangObject) handle.invokeExact();
+		case 1:	return (PLangObject) handle.invokeExact(data[0]);
+		case 2: return (PLangObject) handle.invokeExact(data[0], data[1]);
+		case 3: return (PLangObject) handle.invokeExact(data[0], data[1], data[2]);
+		case 4: return (PLangObject) handle.invokeExact(data[0], data[1], data[2], data[3]);
+		case 5: return (PLangObject) handle.invokeExact(data[0], data[1], data[2], data[3], data[4]); 
+		case 6: return (PLangObject) handle.invokeExact(data[0], data[1], data[2], data[3], data[4], data[5]);
+		case 7: return (PLangObject) handle.invokeExact(data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
+		case 8: return (PLangObject) handle.invokeExact(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+		case 9: return (PLangObject) handle.invokeExact(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]);
 		}
 		
 		return (PLangObject) handle.invokeWithArguments((Object[]) data);
