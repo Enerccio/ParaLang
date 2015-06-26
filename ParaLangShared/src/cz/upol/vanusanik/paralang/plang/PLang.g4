@@ -110,7 +110,12 @@ literal
     |   StringLiteral
     |   BooleanLiteral
     |   'NoValue'
+    |   listExpander
     ;
+    
+listExpander
+	:	'[' expressionList ']'
+	;
 
 block
     :   '{' blockStatement* '}'
@@ -238,12 +243,12 @@ expression
     |   expression 'instanceof' type
     |   expression ('==' | '!=') expression
     |   expression '&' expression
-    |   expression '^' expression
+    |   expression '^' expression 
     |   expression '|' expression
     |   expression '&&' expression
     |   expression '||' expression
     |   expression '?' expression ':' expression
-    |   <assoc=right> extended
+    |   <assoc=right> extended 
         (   '='
         |   '+='
         |   '-='

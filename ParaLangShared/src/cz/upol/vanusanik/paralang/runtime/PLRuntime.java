@@ -754,6 +754,10 @@ public class PLRuntime {
 		int c = Utils.asIntegerValue(count);
 		return new Array(c);
 	}
+	
+	public PLangObject newArray(PLangObject[] inits){
+		return new Array(inits);
+	}
 
 	public void setRestricted(boolean restricted) {
 		isRestricted = restricted;

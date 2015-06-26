@@ -9,10 +9,6 @@ using Utils;
 using Collections.List;
 
 module Main {
-
-    class XExc > BaseException {
-        
-    }
     
     defn find_rvalue(seed){
         var r = new Random.Random(seed);
@@ -25,30 +21,20 @@ module Main {
     defn restricted calculate(a, b){
         IO.out.lerp();
         
-        var t = new [1];
-        t.set(0, 0);
-        IO.out.println("Seed: " + Utils.apply_timer(find_rvalue, t));
+        IO.out.println("Seed: " + Utils.apply_timer(find_rvalue, [0]));
         
         var xxx = new [10000];
         for (var i=0; i<xxx.size(); i++){
             xxx.set(i, i);
         }
         
-        var z = new [2];
-        z.set(0, xxx.copy());
-        z.set(1, find_rvalue);
-        
         IO.out.println("Distributed full: ");
-        Utils.apply_timer(Distributed.distributed_map, z);
-        
-        var y = new [2];
-        y.set(0, xxx.copy());
-        y.set(1, find_rvalue);
+        var result1 = Utils.apply_timer(Distributed.distributed_map, [xxx.copy(), find_rvalue]);
         
         IO.out.println("Not distributed full: ");
-        Utils.apply_timer(Collections.map, y);
+        var result2 = Utils.apply_timer(Collections.map, [xxx.copy(), find_rvalue]);
         
-        IO.out.println(y.get(0) == z.get(0));
+        IO.out.println("Results are equal: " + (result1 == result2));
     }
     
 };

@@ -61,6 +61,7 @@ import cz.upol.vanusanik.paralang.plang.PLangParser.FormalParametersContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FunctionBodyContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.FunctionDeclarationContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ImportDeclarationContext;
+import cz.upol.vanusanik.paralang.plang.PLangParser.ListExpanderContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.LiteralContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.ModuleDeclarationsContext;
 import cz.upol.vanusanik.paralang.plang.PLangParser.PrimaryContext;
@@ -3077,6 +3078,9 @@ public class PLCompiler {
 				else
 					bc.addGetstatic(Strings.BOOLEAN_VALUE, "FALSE",
 							Strings.BOOLEAN_VALUE_L); // load FALSE
+			} else if (l.listExpander() != null){
+				// compile new array with initializers
+				compileNewArrayWithInits(l.listExpander());
 			}
 
 			if (compilingMethod) {
@@ -3231,6 +3235,15 @@ public class PLCompiler {
 			}
 		}
 
+	}
+
+	private void compileNewArrayWithInits(ListExpanderContext listExpander) throws Exception {
+		// load runtime
+		addGetRuntime();
+		compileParameters(listExpander.expressionList());
+		bc.addInvokevirtual(Strings.RUNTIME, Strings.RUNTIME__NEW_ARRAY, "(["
+				+ Strings.PLANGOBJECT_L + ")"
+				+ Strings.PLANGOBJECT_L);
 	}
 
 	/**
