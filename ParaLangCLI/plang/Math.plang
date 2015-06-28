@@ -1,4 +1,3 @@
-using Collections.List;
 using Collections.Map;
 using Collections;
 using IO;
@@ -13,7 +12,7 @@ module Math {
     ###
     class MathException > BaseException {
         defn init(message){
-            parent.init(message);
+            super.init(message);
         }
     }
     
@@ -127,7 +126,7 @@ module Math {
     class SquareMatrix > Matrix {
         
         defn init(n){
-            parent.init(n, n);
+            super.init(n, n);
         }
     
     }
@@ -189,5 +188,19 @@ module Math {
         } else {
             return new Float(a).sqrt().__val;
         }
+    }
+    
+    ###
+    Returns whether number is even
+    ###
+    defn is_even(n){
+        return (n % 2) == 0;
+    }
+    
+    ###
+    Returns whether number is odd
+    ###
+    defn is_odd(n){
+        return (n % 2) == 1;
     }
 };

@@ -15,3 +15,5 @@ index.html
 cz*
 /package
 *.bat
+*.jar
+sources

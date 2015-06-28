@@ -1,11 +1,24 @@
 import java.util.Date;
 
+using System;
 using System.BaseException;
 
 ###
     Utility module providing utility functions and classes.
 ###
 module Utils {
+
+    ###
+        Prints timer information about method call
+    ###
+    defn apply_timer(runnable, argument_array){
+        var ct = System.current_time();
+        try {
+            return System.apply(runnable, argument_array);
+        } finally {
+            IO.out.println("Call took: " + (System.current_time() - ct) + " ms");
+        }
+    }
 
     ###
         Time instance encapsulates unix time. 
@@ -37,12 +50,12 @@ module Utils {
 	###
     class ArrayIndexOutOfBoundsException > BaseException {
     	defn init(){
-    		parent.init("Incorrect index");
+    		super.init("Incorrect index");
     	}
     }
     
     ###
-    Denotes that argument passed was undexpected
+    Denotes that argument passed was unexpected
     ###
     class IllegalArgumentException > BaseException {
     	

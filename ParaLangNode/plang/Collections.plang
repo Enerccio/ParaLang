@@ -1,6 +1,3 @@
-import java.util.HashSet as __JHashSet;
-import java.util.ArrayList;
-import java.util.HashMap;
 import cz.upol.vanusanik.paralang.runtime.wrappers.CollectionsUtils;
 import cz.upol.vanusanik.paralang.runtime.wrappers.BooleanArray;
 import cz.upol.vanusanik.paralang.runtime.wrappers.IntArray;
@@ -12,379 +9,161 @@ using System.BaseException;
 using Utils.ArrayIndexOutOfBoundsException;
 using Utils.IllegalArgumentException;
 
+using IO;
+
 ###
- Collections is a module containing easy to use collections, such as List, HashSet or Map.
+ Collections is a module containing easy to use collections, such as List, Set, Map or Array.
  
- Also provides wrapper to java Interator via Iterator class.
+ Also contains additional functions related to the collections.
 ###
 module Collections {
 
     ###
-        Wraps java.lang.Iterator<> pointer.
-        
-        Provides iterator interface.
+        Collection interface.
     ###
-    class Iterator {
+    class Collection {
         
-        var __iter;
-        
-        ### 
-            Creates new iterator out of java.lang.Iterator pointer. 
         ###
-        defn init(iterator){
-            __iter = iterator;
-        }
-    
-        ### 
-            Returns next element from iterator.
-            *ret any value
+            Returns value at index. Defaultly throws ArrayIndexOutOfBoundsException since it is an interface.
+            *ret object
         ###
-        defn next(){
-            return __iter->next();
+        defn get(index){
+            throw new Utils.ArrayIndexOutOfBoundsException();
         }
         
         ###
-            Returns whether this iterator has value or not.
-            *ret boolean
-        ###
-        defn has_next(){
-            return __iter->hasNext();
-        }
-        
-        ###
-            Removes this element from this iterator (optional operation).
-            *ret value removed
-        ###
-        defn remove(){
-            return __iter->remove();
-        }
-    
-        defn _str(){
-            return __iter;
-        }
-        
-        ###
-            Returns whether underline pointer will be transient.
-            *ret boolean
-        ###
-        defn will_be_transient_pointer(){
-            return __iter.will_be_transient_pointer();
-        }
-        
-        ###
-            Returns whether underline pointer is transient.
-            *ret boolean
-        ###
-        defn is_transient_pointer(){
-            return __iter.is_transient_pointer();
-        }
-    }
-    
-    ###
-        HashSet is container that may contain only one copy of any object. You can query the objects via iterator or via contains method.
-    ###
-	class HashSet {
-		var __wrappedSet = __JHashSet->__JHashSet();
-		
-        ###
-            Adds this object into this set.
-        ###
-		defn insert(o){
-			return __wrappedSet->add(o);
-		}
-		
-        ###
-            Nonmodifiable version of insert method. Clones this set and returns new copy with added element.
-            *ret HashSet
-        ###
-		defn push(o){
-			var set = new HashSet();
-			set.__wrappedSet->addAll(__wrappedSet);
-            set.__wrappedSet->add(o);
-			return set;
-		}
-		
-        ###
-            Returns whether object is in the set.
-            *ret boolean
-        ###
-		defn contains(o){
-			return __wrappedSet->contains(o);
-		}
-		
-        ###
-            Removes object from the set.
-        ###
-		defn remove(o){
-			return __wrappedSet->remove(o);
-		}
-        
-        ###
-            Nonmutable version of remove. Removes object from the copy of this set and returns it.
-            *ret HashSet
-        ###
-		defn purge(o){
-			var set = new HashSet();
-			set.__wrappedSet->addAll(__wrappedSet);
-            set.__wrappedSet->remove(o);
-			return set;
-		}
-		
-        ###
-            Clears this set.
-        ###
-		defn clear(){
-			__wrappedSet->clear();
-		}
-		
-        ###
-            Returns number of elements in this set.
-            *ret integer
-        ###
-		defn size(){
-			return __wrappedSet->size();
-		}
-        
-        ###
-            Returns iterator to this set
-            *ret Iterator
-        ###
-        defn iterator(){
-            return new Iterator(__wrappedSet->iterator());
-        }
-		
-		defn _str(){
-			return "Set=" + __wrappedSet;
-		}
-	}
-	
-    ###
-        List of items. Items are ordered in order of adding to the list.
-        
-        Search operations are O(n) while access operations are O(1).
-    ###
-	class List {
-		var __wrappedList = ArrayList->ArrayList();
-		
-        ###
-            Adds object into this list.
-        ###
-		defn add(o){
-			return __wrappedList->add(o);
-		}
-		
-        ###
-            Nonmutable version of add. Clones this list and then adds object into it and returns new list.
-            *ret List
-        ###
-		defn append(o){
-			var list = new List();
-            list.__wrappedList->addAll(__wrappedList);
-            list.__wrappedList->add(o);
-            return list;
-		}
-		
-        ###
-            Inserts object at index index.
-        ###
-		defn insert(index, o){
-            if (index < 0 || index >= size())
-                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
-			return __wrappedList->add(index, o);
-		}
-		
-        ###
-            Nonmutable version of insert. Inserts object at index index in clone of this list which is returned.
-            *ret List
-        ###
-		defn append_at(o, index){
-            if (index < 0 || index >= size())
-                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
-			var list = new List();
-            list.__wrappedList->addAll(__wrappedList);
-            list.__wrappedList->add(index, o);
-            return list;
-		}
-		
-        ###
-            Removes object o from this list.
-        ###
-		defn remove(o){
-			return __wrappedList->remove(o);
-		}
-		
-        ###
-            Removes element at index index and returns it.
-            *ret any value
-        ###
-		defn remove_at(index){
-            if (index < 0 || index >= size())
-                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
-			return CollectionsUtils->removeAt(__wrappedList, index);
-		}
-        
-        ###
-            Swaps the object at index index with object o.
-        ###
-        defn set(index, o){
-            if (index < 0 || index >= size())
-                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
-            return __wrappedList->set(index, o);
-        }
-		
-        ###
-            Returns object at index index.
-        ###
-		defn get(index){
-            if (index < 0 || index >= size())
-                throw new BaseException("Index value incorrect, expected <0, " + size() + "), got: " + index);
-            return __wrappedList->get(index);
-		}
-		
-        ###
-            Returns index of object o in this List.
-        ###
-		defn find(o){
-			return __wrappedList->indexOf(o);
-		}
-		
-        ###
-            Clears this list.
-        ###
-		defn clear(){
-			__wrappedList->clear();
-		}
-		
-        ###
-            Returns number of elements in this list.
-            *ret integer
-        ###
-		defn size(){
-			return __wrappedList->size();
-		}
-        
-        ###
-            Returns iterator to this list.
-        ###
-        defn iterator(){
-            return new Iterator(__wrappedList->iterator());
-        }
-	
-		defn _str(){
-			return __wrappedList;
-		}
-	}
-
-    ###
-        Dictionary implementation. Handles key->value association.
-        
-        Implements it via java.lang.HashMap, so operations are O(1).
-    ###
-    class Map {
-    
-        var __wrappedMap = HashMap->HashMap(32);
-        
-        ###
-            Adds association between key and value in this map. Returns previous association, if any.
-            *ret any value
-        ###
-        defn put(key, value){
-            return __wrappedMap->put(key, value);
-        }
-        
-        ###
-            Nonmutable version of put. Returns new map with that association.
-            *ret Map
-        ###
-        defn push(key, value){
-            var m = new Map();
-            var it = keys().iterator();
-            while (it.has_next()){
-                var key = it.next();
-                m.__wrappedMap->put(key, get(key));
-            }
-            m.__wrappedMap->put(key, value);
-            return m;
-        }
-        
-        ###
-            Returns association with this key, if any.
-            *ref any value
-        ###
-        defn get(key){
-            return __wrappedMap->get(key);
-        }
-        
-        ###
-            Returns whether key has association in this map.
-            *ret boolean
-        ###
-        defn contains(key){
-            return __wrappedMap->containsKey(key);
-        }
-        
-        ###
-            Returns whether this value is contained in this map as value.
-            *ret boolean
-        ###
-        defn contains_value(value){
-            return __wrappedMap->containsValue(value);
-        }
-        
-        ###
-            Removes key from this map. Returns associated value, if any.
-            *ret any value
-        ###
-        defn remove(key){
-            return __wrappedMap->remove(key);
-        }
-        
-        ###
-            Returns all keys in this map as HashSet.
-            *ret HashSet
-        ###
-        defn keys(){
-            var set = new HashSet();
-            set.wrappedSet->addAll(__wrappedMap->keySet());
-            return set;
-        }
-        
-        ###
-            Returns all values in this map as List.
-            *ret List
-        ###
-        defn values(){
-            var list = new List();
-            list.wrappedList->addAll(__wrappedMap->values());
-            return list;
-        }
-        
-        ###
-            Returns number of associations in this map.
+            Returns size of the collection. Defaultly 0.
             *ret integer
         ###
         defn size(){
-            return __wrappedMap->size();
-        }
-        
-        ###
-            Clears this map.
-        ###
-        defn clear(){
-            __wrappedMap->clear();
-        }
-        
-        defn _str(){
-            return __wrappedMap;
+            return 0;
         }
     
     }
     
     ###
-    Fixed size array, used to get and set elements. Used to fast access and modification.
-    This class is abstract and should not be used. Use functions above to instantiate arrays.
+    Variable sized list that can grow when needed. 
     ###
-    class Array {
+    class List > Collection {
+        
+        var __array = new [16];
+        var __used = 0;
+        
+        ###
+        Returns value at index. May throw ArrayIndexOutOfBoundsException.
+        *ret object
+        ###
+        defn get(index){
+            if (index < 0 || index >= __used)
+                throw new Utils.ArrayIndexOutOfBoundsException();
+            return __array.get(index);
+        }
+        
+        ###
+        Sets value at index. May throw ArrayIndexOutOfBoundsException.
+        ###
+        defn set(index, o){
+            if (index < 0 || index >= __used)
+                throw new Utils.ArrayIndexOutOfBoundsException();
+            __array.set(index, o);
+        }
+        
+        ###
+        Appends new value to the list
+        ###
+        defn add(o){
+            __array.set(__used++, o);
+            if (__used == __array.size())
+                __inflate();
+        }
+        
+        defn __inflate(){
+            var na = new [__array.size() * 2];
+            array_copy(__array, na);
+            __array = na;
+        }
+        
+        ###
+        Returns size of the list.
+        *ret integer
+        ###
+        defn size(){
+            return __used;
+        }
+        
+        ###
+        Removes topright elements and returns it. May throw ArrayIndexOutOfBoundsException.
+        *ret object
+        ###
+        defn pop(){
+            return remove(__used-1);
+        }
+        
+        ###
+        Removes element at index index. May throw ArrayIndexOutOfBoundsException.
+        *ret object
+        ###
+        defn remove(index){
+            var removed = get(index);
+            for (var i=index; i<__array.size()-1; i++)
+                __array.set(i, __array.get(i+1));
+            __array.set(__array.size()-1, NoValue);
+            --__used;
+            return removed;
+        }
+        
+        ###
+        Inserts object at index. May throw ArrayIndexOutOfBoundsException.
+        ###
+        defn insert(index, o){
+            if (index < 0 || index >= __used)
+                throw new Utils.ArrayIndexOutOfBoundsException();
+            for (var i=__used; i>index; i--){
+                __array.set(i, __array.get(i-1));
+            }
+            __array.set(index, o);
+            if (__used == __array.size())
+                __inflate();
+        }
+        
+        ###
+        Returns true or false whether object is in this list or not
+        *ret boolean
+        ###
+        defn contains(o){
+            for (var i=0; i<__used; i++)
+                if (__array.get(i) == o)
+                    return true;
+            return false;
+        }
+        
+        defn _str(){
+            var str = "Collections.List-(" + size() + ")[";
+            for (var i=0; i<__used; i++){
+                var o = __array.get(i);
+                str += o;   // TODO
+                if (i != (__used-1))
+                    str += ", ";
+            }
+                
+            return str + "]";
+        }
+    }
+    
+    ###
+    Copies array to array. Target array must be longer or same sized as source array
+    ###
+    defn array_copy(source, target){
+        for (var i=0; i<source.size(); i++)
+            target.set(i, source.get(i));
+    }
+    
+    ###
+    Fixed size array, used to get and set elements. Used to fast access and modification. This class is abstract and should not be used. Use functions above to instantiate arrays.
+    
+    This Array is different from system type array, which allows any elements to be set into it. Array, however, is used to store primitives that do not require separate de-serialization and thus is faster to use.
+    ###
+    class Array > Collection{
     	
     	var _array;
     	var _type_exception;
@@ -524,7 +303,7 @@ module Collections {
     class __ArrayArray > Array {
     
     	defn get(index){
-    		var array = parent.get(index);
+    		var array = super.get(index);
     		var type = array._str();
     		if (type.starts_with("Boolean")){
     			return __boolean_array(array->get_length(), array);
@@ -546,9 +325,9 @@ module Collections {
     	
     	defn set(index, object){
     		if (!(object instanceof Array)){
+                throw new IllegalArgumentException(__type_exception);
     		}
-    			throw new IllegalArgumentException(__type_exception);
-    		parent.set(index, object._array);
+    		super.set(index, object._array);
     	}
     }
     
@@ -574,13 +353,7 @@ module Collections {
     Sorts anything that has get method with index argument, set method with index and object and size method with no arguments in place.
     ###
     defn simple_sort(gettable){
-    	__merge_sort(gettable, __preload_list(new List(), gettable.size()), 0, gettable.size());
-    }
-    
-    defn __preload_list(list, n){
-        for (var i=0; i<n; i++)
-            list.add(NoValue);
-        return list;
+    	__merge_sort(gettable, new [gettable.size()], 0, gettable.size());
     }
     
     defn __merge_sort(source, result, start, end){
@@ -591,7 +364,7 @@ module Collections {
     	__merge_sort(source, result, start, mid);
     	__merge_sort(source, result, mid, end);
     	__merge_sort_merge(source, result, start, mid, end);
-        __merge_sort_copy(result, source, start, end);
+        copy(result, source, start, end);
     }
     
     defn __merge_sort_merge(source, result, start, mid, end){
@@ -609,8 +382,56 @@ module Collections {
     	}
     }
     
-    defn __merge_sort_copy(result, source, start, end){
+    ###
+    Copies data from collection from into object to with set(ix, obj) method from start to end
+    ###
+    defn copy(from, to, start, end){
+        copy_offset(from, to, start, end, 0);
+    }
+    
+    ###
+    Same as copy, but offsets the index in to by k
+    ###
+    defn copy_offset(from, to, start, end, offset){
         for (var k=start; k<end; k++)
-            source.set(k, result.get(k));
+                to.set(k+offset, from.get(k));
+    }
+    
+    ###
+    Copies data from source starting at source_start position to target starting at target_start, copies n objects. 
+    ###
+    defn copy_fromto(source, target, n, source_start, target_start){
+        var i = 0;
+        do {
+            target.set(target_start+i, source.get(source_start+i));
+            ++i;
+        } while (i < n);
+    }
+    
+    ###
+    Maps the values of the provided collection with n1 functor
+    ###
+    defn map(collection, n1functor){
+        return __map(collection, new [collection.size()], n1functor, 0, collection.size());
+    }
+    
+    defn __map(source, result, functor, start, end){
+        for (var i=start; i<end; i++)
+            result.set(i, functor(source.get(i)));
+        return result;
+    }
+    
+    ###
+        Reduces elements of collection into single value using n2functor
+    ###
+    defn reduce(collection, n2functor){
+        var init = collection.get(0);
+        return __reduce(collection, init, n2functor, 1, collection.size());
+    }
+    
+    defn __reduce(source, result, functor, start, end){
+        for (var i=start; i<end; i++)
+            result = functor(source.get(i), result);
+        return result;
     }
 };

@@ -2,4 +2,4 @@
 *.log*
 *.jks
 *.cert
-plang
+/plang/
